@@ -4,7 +4,7 @@ Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C3UA7
 Tags: public-post-preview, public, post, preview, posts
 Requires at least: 2.7
 Tested up to: 2.7
-Stable tag: 1.0
+Stable tag: 1.1
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
 
@@ -39,6 +39,9 @@ NOTE: See "Other Notes" for Upgrade and Usage Instructions as well as other pert
 1. To disable public post preview for a specific post uncheck the public preview post box and save the post.
 
 == Change Log ==
+
+= 1.1 (2009-03-11): =
+* Don't limit public previews to posts in draft or pending status.  Just exclude posts in publish status.
 
 = 1.0 (2009-02-20): =
 * Initial Public Release

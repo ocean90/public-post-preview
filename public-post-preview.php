@@ -4,7 +4,7 @@ Plugin Name: Public Post Preview
 Plugin URI: http://sivel.net/wordpress/
 Description: Enables you to give a link to anonymous users for public preview of a post before it is published.
 Author: Matt Martz
-Version: 1.0
+Version: 1.1
 Author URI: http://sivel.net/
 */
 
@@ -15,7 +15,7 @@ class Public_Post_Preview {
 
 	// Plugin startup
 	function Public_Post_Preview() {
-		if (!is_admin()) {
+		if ( ! is_admin() ) {
 			add_action('init', array(&$this, 'show_preview'));
 		} else {
 			register_activation_hook(__FILE__, array(&$this, 'init'));
@@ -26,7 +26,7 @@ class Public_Post_Preview {
 
 	// Initialize plugin
 	function init() {
-		if ( !get_option('public_post_preview') )
+		if ( ! get_option('public_post_preview') )
 			add_option('public_post_preview', array());
 	}
 
@@ -49,7 +49,7 @@ class Public_Post_Preview {
 	// Content for meta box
 	function preview_link($post) {
 		$preview_posts = get_option('public_post_preview');
-		if ( in_array($post->post_status, array('draft', 'pending')) ) {
+		if ( ! in_array($post->post_status, array('publish')) ) {
 ?>
 			<p>
 				<label for="public_preview_status" class="selectit">
@@ -58,7 +58,7 @@ class Public_Post_Preview {
 				</label>
 			</p>
 <?php
-			if ( !isset($preview_posts[$post->ID]) ) {
+			if ( ! isset($preview_posts[$post->ID]) ) {
 				$this->id = (int) $post->ID;
 				$nonce = $this->create_nonce('public_post_preview_' . $this->id);
 
@@ -82,9 +82,9 @@ class Public_Post_Preview {
 		$post_id = $_POST['post_ID'];
 		if ( $post != $post_id )
 			return;
-		if ( (isset($_POST['public_preview_status']) && $_POST['public_preview_status'] == 'on') && in_array($_POST['post_status'], array('draft', 'pending')) && isset($preview_posts[$post_id]) ) {
+		if ( (isset($_POST['public_preview_status']) && $_POST['public_preview_status'] == 'on') && ! in_array($_POST['post_status'], array('publish')) && isset($preview_posts[$post_id]) ) {
 				unset($preview_posts[$post_id]);
-		} elseif ( !isset($_POST['public_preview_status']) && $_POST['original_post_status'] != 'publish' && in_array($_POST['post_status'], array('draft', 'pending')) && !isset($preview_posts[$post_id]) ) {
+		} elseif ( ! isset($_POST['public_preview_status']) && $_POST['original_post_status'] != 'publish' && in_array($_POST['post_status'], array('publish')) && ! isset($preview_posts[$post_id]) ) {
 				$preview_posts[$post_id] = false;
 		}
 		update_option('public_post_preview', $preview_posts);
@@ -92,7 +92,7 @@ class Public_Post_Preview {
 
 	// Show the post preview
 	function show_preview() {
-		if ( !is_admin() && isset($_GET['p']) && isset($_GET['preview_id']) && isset($_GET['preview']) && isset($_GET['public']) && isset($_GET['nonce']) ) {
+		if ( ! is_admin() && isset($_GET['p']) && isset($_GET['preview_id']) && isset($_GET['preview']) && isset($_GET['public']) && isset($_GET['nonce']) ) {
 			$this->id = (int) $_GET['preview_id'];
 			$preview_posts = get_option('public_post_preview');	
 
@@ -109,5 +109,5 @@ class Public_Post_Preview {
 		return $posts;
 	}
 }
-$public_post_preview = new Public_Post_Preview();
+$Public_Post_Preview = new Public_Post_Preview();
 ?>
