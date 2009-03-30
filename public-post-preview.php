@@ -4,7 +4,7 @@ Plugin Name: Public Post Preview
 Plugin URI: http://sivel.net/wordpress/
 Description: Enables you to give a link to anonymous users for public preview of a post before it is published.
 Author: Matt Martz
-Version: 1.1
+Version: 1.2
 Author URI: http://sivel.net/
 */
 
@@ -62,7 +62,7 @@ class Public_Post_Preview {
 				$this->id = (int) $post->ID;
 				$nonce = $this->create_nonce('public_post_preview_' . $this->id);
 
-				$url = htmlentities(add_query_arg(array('preview' => 'true', 'preview_id' => $this->id, 'public' => true, 'nonce' => $nonce), get_permalink($this->id)));
+				$url = htmlentities(add_query_arg(array('p' => $this->id, 'preview' => 'true', 'preview_id' => $this->id, 'public' => true, 'nonce' => $nonce), get_option('home') . '/'));
 
 				echo "<p><a href='$url'>$url</a><br /><br />\r\n";
 			}
@@ -98,7 +98,7 @@ class Public_Post_Preview {
 
 			if ( false == $this->verify_nonce($_GET['nonce'], 'public_post_preview_' . $this->id) || isset($preview_posts[$this->id]) )
 				wp_die('You do not have permission to publicly preview this post.');
-	
+
 			add_filter('the_posts', array(&$this, 'insert_preview'));
 		}
 	}
