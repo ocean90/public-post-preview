@@ -3,7 +3,7 @@
 Plugin Name: Public Post Preview
 Plugin URI: http://sivel.net/wordpress/
 Description: Enables you to give a link to anonymous users for public preview of a post before it is published.
-Author: Matt Martz
+Author: Matt Martz</a> and <a href='http://www.ginside.com/'>Jonathan Dingman</a>
 Version: 1.2
 Author URI: http://sivel.net/
 */
