@@ -3,7 +3,7 @@ Contributors: sivel, jdingman
 Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C3UA7TDWM4NLQ&lc=US&item_name=Donations%20for%20Sivel%2enet%20WordPress%20Plugins&cn=Add%20special%20instructions%20to%20the%20seller&no_shipping=1&rm=1&return=http%3a%2f%2fsivel%2enet%2fthanks&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: public-post-preview, public, post, preview, posts
 Requires at least: 2.7
-Tested up to: 2.7.1
+Tested up to: 2.9
 Stable tag: 1.2
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
