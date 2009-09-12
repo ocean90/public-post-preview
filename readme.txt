@@ -1,10 +1,10 @@
 === Public Post Preview ===
 Contributors: sivel, jdingman
-Donate Link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C3UA7TDWM4NLQ&lc=US&item_name=Donations%20for%20Sivel%2enet%20WordPress%20Plugins&cn=Add%20special%20instructions%20to%20the%20seller&no_shipping=1&rm=1&return=http%3a%2f%2fsivel%2enet%2fthanks&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
+Donate Link: http://sivel.net/donate
 Tags: public-post-preview, public, post, preview, posts
 Requires at least: 2.7
 Tested up to: 2.9
-Stable tag: 1.2
+Stable tag: 1.3
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
 
@@ -38,7 +38,11 @@ NOTE: See "Other Notes" for Upgrade and Usage Instructions as well as other pert
 1. By default all posts in draft or pending review status will have public preview links that can be found diretly below the edit post box.
 1. To disable public post preview for a specific post uncheck the public preview post box and save the post.
 
-== Changelog ==
+== Change Log ==
+
+= 1.3 (2009-06-30): =
+* Hook in earlier in the post selection process to fix PHP notices
+* Add uninstall functionality to remove options from the options table
 
 = 1.2 (2009-03-30): =
 * Fix preview URL for scheduled posts on sites with a permalink other than default activated.
