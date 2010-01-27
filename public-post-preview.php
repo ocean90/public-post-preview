@@ -19,6 +19,8 @@ class Public_Post_Preview {
 			add_action('init', array(&$this, 'show_preview'));
 		} else {
 			register_activation_hook(__FILE__, array(&$this, 'init'));
+			add_action('admin_init', array(&$this, 'register_settings'));
+			add_action('admin_menu', array(&$this, 'add_options_page')) ;
 			add_action('admin_menu', array(&$this, 'meta_box'));
 			add_action('save_post', array(&$this, 'save_post'));
 		}
@@ -28,6 +30,9 @@ class Public_Post_Preview {
 	function init() {
 		if ( ! get_option('public_post_preview') )
 			add_option('public_post_preview', array());
+		if ( ! get_option('ppp_opts') ) {
+			$ppp_opts['time'] = 24;
+		}
 	}
 
 	// verify a nonce
@@ -62,10 +67,12 @@ class Public_Post_Preview {
 				$this->id = (int) $post->ID;
 				$nonce = $this->create_nonce('public_post_preview_' . $this->id);
 
-				$url = htmlentities(add_query_arg(array('p' => $this->id, 'preview' => 'true', 'preview_id' => $this->id, 'public' => true, 'nonce' => $nonce), get_option('home') . '/'));
+				$p = $post->post_type == 'page' ? 'page_id' : 'p';
+
+				$url = htmlentities(add_query_arg(array($p => $this->id, 'preview' => 'true', 'preview_id' => $this->id, 'public' => true, 'nonce' => $nonce), get_option('home') . '/'));
 
 				echo "<p><a href='$url'>$url</a></p>\r\n";
-			} else if ( $post->ID == 0  ) {
+			} else if ( $post->ID == 0	) {
 				echo "<p>Please save this post to get the preview url.</p>";
 			}
 		} else {
@@ -76,6 +83,7 @@ class Public_Post_Preview {
 	// Register meta box
 	function meta_box() {
 		add_meta_box('publicpostpreview', 'Public Post Preview', array(&$this, 'preview_link'), 'post', 'normal', 'high');
+		add_meta_box('publicpostpreview', 'Public Post Preview', array(&$this, 'preview_link'), 'page', 'normal', 'high');
 	}
 
 	// Update options on post save
@@ -94,7 +102,7 @@ class Public_Post_Preview {
 
 	// Show the post preview
 	function show_preview() {
-		if ( ! is_admin() && isset($_GET['p']) && isset($_GET['preview_id']) && isset($_GET['preview']) && isset($_GET['public']) && isset($_GET['nonce']) ) {
+		if ( ! is_admin() && isset($_GET['preview_id']) && isset($_GET['preview']) && isset($_GET['public']) && isset($_GET['nonce']) ) {
 			$this->id = (int) $_GET['preview_id'];
 			$preview_posts = get_option('public_post_preview');	
 
@@ -109,6 +117,41 @@ class Public_Post_Preview {
 	function fake_publish($posts) {
 		$posts[0]->post_status = 'publish';
 		return $posts;
+	}
+
+	function register_settings() {
+		register_setting('ppp_opts', 'ppp_opts');
+	}
+
+	function add_options_page () {
+		if ( current_user_can ( 'manage_options' ) && function_exists ( 'add_options_page' ) ) {
+			$this->hookname = add_options_page (
+				__( 'Public Post Preview' , 'public-post-preview' ) ,
+				__( 'Public Post Preview' , 'public-post-preview' ) ,
+				'manage_options' ,
+				'public-post-preview' ,
+				array ( &$this , 'options_page' )
+			);
+		}
+	}
+
+	// Options page
+	function options_page () {
+		$options = get_option('ppp_opts');
+		?>
+		<div class="wrap">
+			<h2><?php _e( 'Public Post Preview' , 'public-post-preview' ); ?></h2>
+			<form action="options.php" method="post">
+				<?php settings_fields('ppp_opts'); ?>
+				<h3><?php _e( 'General Configuration' , 'geekga' ); ?></h3>
+				<p><?php _e( 'Please enter the length of time to keep link active:' , 'public-post-preview' ); ?></p>
+				<p><input type="text" name="ppp_opts[time]" value="<?php echo $options['time']; ?>" /></p>
+				<p class="submit">
+					<input type="submit" class="button-primary" value="<?php _e( 'Save Changes' , 'public-post-preview' ) ?>" />
+				</p>
+			</form>
+		</div>
+	<?php
 	}
 }
 
