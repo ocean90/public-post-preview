@@ -10,6 +10,8 @@ Enables you to give a link to anonymous users for public preview of a post befor
 
 == Description ==
 
+= This plugin is no longer maintained. If you would like to become the maintainer of this plugin please contact the author. =
+
 Enables you to give a link to anonymous users for public preview of a post before it is published.
 
 Have you ever been writing a post with the help of someone who does not have access to your blog and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating a URL with an expiring nonce that can be given out for public preview.
