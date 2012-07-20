@@ -1,208 +1,350 @@
 <?php
-/*
-Plugin Name: Public Post Preview
-Plugin URI: http://sivel.net/wordpress/
-Description: Enables you to give a link to anonymous users for public preview of a post before it is published.
-Author: Matt Martz</a> and <a href='http://wpvibe.com/'>Jonathan Dingman</a>
-Version: 1.4
-Author URI: http://sivel.net/
+/**
+ * Plugin Name: Public Post Preview
+ * Version: 2.0
+ * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
+ * Author: Dominik Schilling
+ * Author URI: http://wphelper.de/
+ * Plugin URI: http://wpgrafie.de/wp-plugins/public-post-preview/en/
+ *
+ * Text Domain: ds-public-post-preview
+ * Domain Path: /lang
+ *
+ * License: GPLv2 or later
+ *
+ * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
+ *
+ *	Copyright (C) 2012 Dominik Schilling
+ *
+ *	This program is free software; you can redistribute it and/or
+ *	modify it under the terms of the GNU General Public License
+ *	as published by the Free Software Foundation; either version 2
+ *	of the License, or (at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program; if not, write to the Free Software
+ *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
-        Copyright (c) 2009-2010 Matt Martz (http://sivel.net)
-        Public Post Preview is released under the GNU General Public License (GPL)
-        http://www.gnu.org/licenses/gpl-2.0.txt
-*/
+/**
+ * Don't call this file directly.
+ */
+if ( ! class_exists( 'WP' ) ) {
+	die();
+}
 
-class Public_Post_Preview {
+/**
+ * The class which controls the plugin.
+ *
+ * Used hooks:
+ *  - pre_get_posts
+ *  - add_meta_boxes
+ *  - save_post
+ *  - posts_results
+ *  - admin_print_styles-post.php
+ *  - admin_print_styles-post-new.php
+ *
+ *  Init at 'plugins_loaded' hook.
+ *
+ */
+class DS_Public_Post_Preview {
 
-	// Variable place holder for post ID for easy passing between functions
-	var $id;
+	/**
+	 * Hooks into 'pre_get_posts' to handle public preview, only nn-admin
+	 * Hooks into 'add_meta_boxes' to register the meta box.
+	 * Hooks into 'save_post' to handle the values of the meta box.
+	 * Hooks into 'admin_print_styles-*' to print some inline css.
+	 *
+	 * @since 1.0.0
+	 */
+	public static function init() {
+		if ( ! is_admin() )
+			add_filter( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
 
-	// Plugin startup
-	function Public_Post_Preview() {
-		if ( ! is_admin() ) {
-			add_action('init', array(&$this, 'show_preview'));
-		} else {
-			register_activation_hook(__FILE__, array(&$this, 'init'));
-			add_action('admin_init', array(&$this, 'register_settings'));
-			add_action('admin_menu', array(&$this, 'add_options_page')) ;
-			add_action('admin_menu', array(&$this, 'meta_box'));
-			add_action('save_post', array(&$this, 'save_post'));
-			add_action('admin_footer-post.php', array(&$this, 'footer_scripts'));
-			add_action('admin_footer-post-new.php', array(&$this, 'footer_scripts'));
-			add_action('wp_ajax_pppgetlink', array(&$this, 'ajax_get_preview_link'));
-		}
+		add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
+
+		add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
+
+		add_action( 'admin_print_styles-post.php' , array( __CLASS__, 'print_inline_css' ) );
+		add_action( 'admin_print_styles-post-new.php' , array( __CLASS__, 'print_inline_css' ) );
 	}
 
-	function footer_scripts() {
-?>
-<script type="text/javascript">
-	jQuery("#getpreviewlink").click(function() {
-		jQuery.get('<?php echo admin_url('admin-ajax.php'); ?>', 'action=pppgetlink&p=<?php echo $this->id; ?>&_wpnonce=<?php echo wp_create_nonce(); ?>', function(link) {
-			if ( link != '' ) {
-				jQuery('#previewlink').attr('href', link);
-				jQuery('#previewlink').text(link);
-			}
-		});
-	});
-</script>
-<?php
-	}
+	/**
+	 * Registers for each post type a meta box.
+	 * Only public post types are used.
+	 *
+	 * @since 2.0.0
+	 */
+	public static function register_meta_boxes() {
+		$post_types = get_post_types(
+			array(
+				'public' => true
+			)
+		);
 
-	// Initialize plugin
-	function init() {
-		if ( ! get_option('public_post_preview') )
-			add_option('public_post_preview', array());
-		if ( ! get_option('ppp_opts') ) {
-			$ppp_opts['nonce'] = 'true';
-		}
-	}
-
-	// verify a nonce
-	function verify_nonce($nonce, $action = -1) {
-		$i = wp_nonce_tick();
-		if ( substr(wp_hash($i . $action, 'nonce'), -12, 10) == $nonce )
-			return 12;
-		if ( substr(wp_hash(($i - 1) . $action, 'nonce'), -12, 10) == $nonce )
-			return 24;
-		return false;
-	}
-
-	// create a nonce
-	function create_nonce($action = -1) {
-		$i = wp_nonce_tick();
-		return substr(wp_hash($i . $action, 'nonce'), -12, 10);
-	}
-
-	function ajax_get_preview_link() {
-		if ( current_user_can('edit_posts') && wp_verify_nonce($_GET['_wpnonce']) ) {
-			if ( ! isset( $_GET['p'] ) )
-				die();
-			$post = get_post( $_GET['p'] );
-			$this->id = (int) $post->ID;
-			$nonce = $this->create_nonce('public_post_preview_' . $this->id);
-
-			$p = $post->post_type == 'page' ? 'page_id' : 'p';
-			echo $this->get_preview_link($p, $nonce);
-		}
-		die();
-	}
-
-	function get_preview_link($p, $nonce) {
-		return add_query_arg(array($p => $this->id, 'preview' => 'true', 'preview_id' => $this->id, 'public' => true, 'nonce' => $nonce), get_option('home') . '/');
-	}
-
-	// Content for meta box
-	function preview_link_box($post) {
-		$preview_posts = get_option('public_post_preview');
-		//echo '<pre>'; var_dump($post); echo '</pre>';
-		if ( ! in_array($post->post_status, array('publish')) ) {
-			if ( $post->ID != 0 && $post->post_status != 'auto-draft' ) :
-?>
-			<p>
-				<label for="public_preview_status" class="selectit">
-					<input type="checkbox" name="public_preview_status" id="public_preview_status"<?php if ( !isset($preview_posts[$post->ID]) ) echo ' checked="checked"'; ?>/>
-					Public Preview
-				</label>
-			</p>
-<?php
-			endif;
-			if ( ! isset($preview_posts[$post->ID]) && $post->ID != 0 && $post->post_status != 'auto-draft' ) {
-				$this->id = (int) $post->ID;
-				$nonce = $this->create_nonce('public_post_preview_' . $this->id);
-
-				$p = $post->post_type == 'page' ? 'page_id' : 'p';
-
-				$url = $this->get_prevew_link($p, $nonce);
-
-				echo "<p><a id='previewlink' href='$url'>$url</a></p>\n";
-				echo "<a id='getpreviewlink' class='button' href='#'>Update Preview Link</a>";
-			} else if ( $post->ID == 0 || $post->post_status == 'auto-draft' ) {
-				echo "<p>Please save this post to get the preview url.</p>";
-			}
-		} else {
-			echo '<p>This post is already public.  Public post preview not available.</p>';
-		}
-	}
-
-	// Register meta box
-	function meta_box() {
-		add_meta_box('publicpostpreview', 'Public Post Preview', array(&$this, 'preview_link_box'), 'post', 'normal', 'high');
-		add_meta_box('publicpostpreview', 'Public Post Preview', array(&$this, 'preview_link_box'), 'page', 'normal', 'high');
-	}
-
-	// Update options on post save
-	function save_post($post) {
-		$preview_posts = get_option('public_post_preview');
-		$post_id = $_POST['post_ID'];
-		if ( $post != $post_id )
-			return;
-		if ( (isset($_POST['public_preview_status']) && $_POST['public_preview_status'] == 'on') && ! in_array($_POST['post_status'], array('publish')) && isset($preview_posts[$post_id]) ) {
-				unset($preview_posts[$post_id]);
-		} elseif ( ! isset($_POST['public_preview_status']) && $_POST['original_post_status'] != 'publish' && in_array($_POST['post_status'], array('publish')) && ! isset($preview_posts[$post_id]) ) {
-				$preview_posts[$post_id] = false;
-		}
-		update_option('public_post_preview', $preview_posts);
-	}
-
-	// Show the post preview
-	function show_preview() {
-		if ( ! is_admin() && isset($_GET['preview_id']) && isset($_GET['preview']) && isset($_GET['public']) && isset($_GET['nonce']) ) {
-			$this->id = (int) $_GET['preview_id'];
-			$preview_posts = get_option('public_post_preview');	
-
-			if ( false == $this->verify_nonce($_GET['nonce'], 'public_post_preview_' . $this->id) || isset($preview_posts[$this->id]) )
-				wp_die('You do not have permission to publicly preview this post.');
-
-			add_filter('posts_results', array(&$this, 'fake_publish'));
-		}
-	}
-
-	// Fake the post being published so we don't have to do anything *too* hacky to get it to load the preview
-	function fake_publish($posts) {
-		$posts[0]->post_status = 'publish';
-		return $posts;
-	}
-
-	function register_settings() {
-		register_setting('ppp_opts', 'ppp_opts');
-	}
-
-	function add_options_page () {
-		if ( current_user_can ( 'manage_options' ) && function_exists ( 'add_options_page' ) ) {
-			$this->hookname = add_options_page (
-				__( 'Public Post Preview' , 'public-post-preview' ) ,
-				__( 'Public Post Preview' , 'public-post-preview' ) ,
-				'manage_options' ,
-				'public-post-preview' ,
-				array ( &$this , 'options_page' )
+	    foreach ( $post_types as $post_type ) {
+			add_meta_box(
+					'public_post_preview',
+					__( 'Public Post Preview', 'ds-public-post-preview' ),
+					array( __CLASS__, 'public_post_preview_metabox_cb' ),
+					$post_type,
+					'normal',
+					'high'
 			);
 		}
 	}
 
-	// Options page
-	function options_page () {
-		$options = get_option('ppp_opts');
+	/**
+	 * Callback method for the meta boxes.
+	 * Checks current post status and shows the checkbox + link field if the post status
+	 * is draft, pending or future.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param  object $post The current post object.
+	 */
+	public static function public_post_preview_metabox_cb( $post ) {
+		if ( in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) ) :
+			wp_nonce_field( 'public_post_preview', 'public_post_preview_wpnonce' );
+
+		$preview_post_ids = self::get_preview_post_ids();
 		?>
-		<div class="wrap">
-			<h2><?php _e( 'Public Post Preview' , 'public-post-preview' ); ?></h2>
-			<form action="options.php" method="post">
-				<?php settings_fields('ppp_opts'); ?>
-				<h3><?php _e( 'General Configuration' , 'public-post-preview' ); ?></h3>
-				<p><?php _e( 'Disable funky time length?' , 'public-post-preview' ); ?></p>
-				<select name="ppp_opts[nonce]">
-					<option value="true"<?php selected ( 'true' , $options['nonce'] ); ?>><?php _e( 'true' , 'public-post-preview' ); ?></option>
-					<option value="false"<?php selected ( 'false' , $options['nonce'] ); ?>><?php _e( 'false' , 'public-post-preview' ); ?></option>
-				</select>
-				<p>The current time length is a little funky.  It is based on the nonce functions that WordPress uses, but isn't really good for exact time calculation.  The current implementation allows the link to remain active for up to 24 hours.  This doesn't mean it will last 24 hours.  It could be 3 minutes.  So feel free to disable this.  Disabling reduces security a bit.</p>
-				<p class="submit">
-					<input type="submit" class="button-primary" value="<?php _e( 'Save Changes' , 'public-post-preview' ) ?>" />
-				</p>
-			</form>
-		</div>
-	<?php
+<p>
+	<input type="checkbox"<?php checked( in_array( $post->ID, $preview_post_ids ) ); ?> name="public_post_preview" id="public-post-preview" value="1" />
+	<label for="public-post-preview"><?php _e( 'Enable public preview', 'ds-public-post-preview' ); ?></label>
+
+	<label id="public-post-preview-link">
+		<input type="text" name="public_post_preview_link" class="regular-text disabled" value="<?php echo esc_attr( self::get_preview_link( $post->ID ) ); ?>" style="width:99%;" disabled="disabled" />
+		<?php _e( '(Copy and share this link.)', 'ds-public-post-preview' ); ?>
+	</label>
+</p>
+		<?php
+		elseif ( in_array( $post->post_status, array( 'publish' ) ) ) :
+		?>
+<p><?php _e( 'This post is already public.', 'ds-public-post-preview' ); ?>
+		<?php
+		else :
+		?>
+<p><?php _e( 'The current post status is not supported. It needs to be draft, pending or future.', 'ds-public-post-preview' ); ?>
+		<?php
+		endif;
+	}
+
+	/**
+	 * Returns the post ids which are registered for a public preview.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @return array The post ids. (Empty array if no ids are registered.)
+	 */
+	public static function get_preview_post_ids() {
+		return get_option( 'public_post_preview', array() );
+	}
+
+	/**
+	 * Returns the public preview link.
+	 *
+	 * The link is the permalink with these parameters:
+	 *  - preview, always true (query var for core)
+	 *  - public, always true
+	 *  - nonce, a custom nonce, see DS_Public_Post_Preview::create_nonce()
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param  int    $post_id  The post id.
+	 * @return string           The generated public preview link.
+	 */
+	private static function get_preview_link( $post_id ) {
+		return add_query_arg(
+			array(
+				'preview' => true,
+				'public'  => true,
+				'nonce'   => self::create_nonce( 'public_post_preview_' . $post_id ),
+			),
+			get_permalink( $post_id )
+		);
+	}
+
+	/**
+	 * Prints some fancy inline CSS.
+	 *
+	 * It controls the visibility of the public preview link.
+	 *
+	 * @since 2.0.0
+	 */
+	public static function print_inline_css() {
+		?>
+<style>
+	#public-post-preview-link {
+		display: none;
+	}
+
+	input[type="checkbox"]:checked ~ #public-post-preview-link {
+		display: block !important;
+	}
+</style>
+		<?php
+	}
+
+	/**
+	 * Registers a post for a public preview.
+	 *
+	 * Don't runs on an autosave and ignores post revisions.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param  int    $post_id The post id.
+	 * @param  object $post    The post object.
+	 * @return bool            Returns false on a failure, true on a success.
+	 */
+	public static function register_public_preview( $post_id, $post ) {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+			return false;
+
+		if( wp_is_post_revision( $post_id ) )
+			return false;
+
+		if ( empty( $_POST['public_post_preview_wpnonce'] ) || ! wp_verify_nonce( $_POST['public_post_preview_wpnonce'], 'public_post_preview' ) )
+			return false;
+
+		$preview_post_ids = self::get_preview_post_ids();
+		$preview_post_id  = $post->ID;
+
+		if ( empty( $_POST['public_post_preview'] ) && in_array( $preview_post_id, $preview_post_ids ) )
+			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
+		elseif (
+				! empty( $_POST['public_post_preview'] ) &&
+				! empty( $_POST['original_post_status'] ) &&
+				'publish' != $_POST['original_post_status'] &&
+				'publish' == $post->post_status &&
+				in_array( $preview_post_id, $preview_post_ids )
+			)
+			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
+		elseif ( ! empty( $_POST['public_post_preview'] ) && ! in_array( $preview_post_id, $preview_post_ids ) )
+			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
+		else
+			return false; // Nothing changed.
+
+		return update_option( 'public_post_preview', $preview_post_ids );
+	}
+
+	/**
+	 * Show the post if it's a public preview.
+	 *
+	 * Only if it's the main query, a preview, a singular page and
+	 * DS_Public_Post_Preview::public_preview_available() return true.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param  object $query The WP_Query object.
+	 * @return object        The WP_Query object, unchanged.
+	 */
+	public static function show_public_preview( $query ) {
+		if ( $query->is_main_query() && $query->is_preview() && $query->is_singular() ) {
+			$post_id = get_query_var( 'page_id' ) ? get_query_var( 'page_id' ) : get_query_var( 'p' );
+
+			if ( self::public_preview_available( $post_id ) )
+				add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ) );
+		}
+
+		return $query;
+	}
+
+	/**
+	 * Checks if a public preview is available and allowed.
+	 * Verifies the nonce and if the post id is registered for a public preview.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param  int   $post_id The post id.
+	 * @return bool           True if a public preview is allowed, false on a failure.
+	 */
+	private static function public_preview_available( $post_id ) {
+		if ( empty( $post_id ) || empty( $_GET['public'] ) || empty( $_GET['nonce'] ) )
+			return false;
+
+		if( ! self::verify_nonce( $_GET['nonce'], 'public_post_preview_' . $post_id ) )
+			return false;
+
+		if ( ! in_array( $post_id, get_option( 'public_post_preview', array() ) ) )
+			return false;
+
+		return true;
+	}
+
+	/**
+	 * Sets the post status of the first post to publish, so we don't have to do anything
+	 * *too* hacky to get it to load the preview.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param array $posts The post to preview.
+	 */
+	public static function set_post_to_publish( $posts ) {
+		$posts[0]->post_status = 'publish';
+
+		return $posts;
+	}
+
+	/**
+	 * Creates a random, one time use token. Without an UID.
+	 *
+	 * @see    wp_create_nonce()
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param  string|int $action Scalar value to add context to the nonce.
+	 * @return string             The one use form token
+	 */
+	private static function create_nonce( $action = -1 ) {
+		$i = wp_nonce_tick();
+
+		return substr( wp_hash( $i . $action, 'nonce' ), -12, 10 );
+	}
+
+	/**
+	 * Verifies that correct nonce was used with time limit. Without an UID.
+	 *
+	 * @see    wp_verify_nonce()
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param  string     $nonce  Nonce that was used in the form to verify
+	 * @param  string|int $action Should give context to what is taking place and be the same when nonce was created.
+	 * @return bool               Whether the nonce check passed or failed.
+	 */
+	private static function verify_nonce( $nonce, $action = -1 ) {
+		$i = wp_nonce_tick();
+
+		// Nonce generated 0-12 hours ago
+		if ( substr( wp_hash( $i . $action, 'nonce' ), -12, 10 ) == $nonce )
+			return 1;
+
+		// Nonce generated 12-24 hours ago
+		if ( substr( wp_hash( ( $i - 1 ) . $action, 'nonce' ), -12, 10 ) == $nonce )
+			return 2;
+
+		// Invalid nonce
+		return false;
+	}
+
+	/**
+	 * Delets the option 'public_post_preview' if the plugin will be uninstalled.
+	 *
+	 * @since 2.0.0
+	 */
+	public static function uninstall() {
+		delete_option( 'public_post_preview' );
 	}
 }
 
-$Public_Post_Preview = new Public_Post_Preview();
+// Go go go.
+add_action( 'plugins_loaded', array( 'DS_Public_Post_Preview', 'init' ) );
 
-?>
+// Register the uninstall function.
+register_uninstall_hook( __FILE__, array( 'DS_Public_Post_Preview', 'uninstall' ) );
