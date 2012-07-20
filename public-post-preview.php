@@ -151,8 +151,7 @@ class DS_Public_Post_Preview {
 	 *
 	 * The link is the permalink with these parameters:
 	 *  - preview, always true (query var for core)
-	 *  - public, always true
-	 *  - nonce, a custom nonce, see DS_Public_Post_Preview::create_nonce()
+	 *  - _ppp, a custom nonce, see DS_Public_Post_Preview::create_nonce()
 	 *
 	 * @since  2.0.0
 	 *
@@ -163,8 +162,7 @@ class DS_Public_Post_Preview {
 		return add_query_arg(
 			array(
 				'preview' => true,
-				'public'  => true,
-				'nonce'   => self::create_nonce( 'public_post_preview_' . $post_id ),
+				'_ppp'     => self::create_nonce( 'public_post_preview_' . $post_id ),
 			),
 			get_permalink( $post_id )
 		);
@@ -265,10 +263,10 @@ class DS_Public_Post_Preview {
 	 * @return bool           True if a public preview is allowed, false on a failure.
 	 */
 	private static function public_preview_available( $post_id ) {
-		if ( empty( $post_id ) || empty( $_GET['public'] ) || empty( $_GET['nonce'] ) )
+		if ( empty( $post_id ) || empty( $_GET['_ppp'] ) )
 			return false;
 
-		if( ! self::verify_nonce( $_GET['nonce'], 'public_post_preview_' . $post_id ) )
+		if( ! self::verify_nonce( $_GET['_ppp'], 'public_post_preview_' . $post_id ) )
 			return false;
 
 		if ( ! in_array( $post_id, get_option( 'public_post_preview', array() ) ) )
@@ -343,8 +341,6 @@ class DS_Public_Post_Preview {
 	}
 }
 
-// Go go go.
 add_action( 'plugins_loaded', array( 'DS_Public_Post_Preview', 'init' ) );
 
-// Register the uninstall function.
 register_uninstall_hook( __FILE__, array( 'DS_Public_Post_Preview', 'uninstall' ) );
