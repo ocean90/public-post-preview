@@ -46,10 +46,11 @@ if ( ! class_exists( 'WP' ) ) {
  *  - add_meta_boxes
  *  - save_post
  *  - posts_results
- *  - admin_print_styles-post.php
- *  - admin_print_styles-post-new.php
+ *  - wp_ajax_public-post-preview
+ *  - admin_enqueue_scripts
+ *  - admin_init
  *
- *  Init at 'plugins_loaded' hook.
+ *  Inits at 'plugins_loaded' hook.
  *
  */
 class DS_Public_Post_Preview {
@@ -58,7 +59,7 @@ class DS_Public_Post_Preview {
 	 * Hooks into 'pre_get_posts' to handle public preview, only nn-admin
 	 * Hooks into 'add_meta_boxes' to register the meta box.
 	 * Hooks into 'save_post' to handle the values of the meta box.
-	 * Hooks into 'admin_print_styles-*' to print some inline css.
+	 * Hooks into 'admin_enqueue_scripts' to register JavaScript.
 	 *
 	 * @since 1.0.0
 	 */
@@ -66,13 +67,59 @@ class DS_Public_Post_Preview {
 		if ( ! is_admin() )
 			add_filter( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
 
+		add_action( 'admin_init', array( __CLASS__, 'load_textdomain' ) );
+
 		add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
 
 		add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
 
-		add_action( 'admin_print_styles-post.php' , array( __CLASS__, 'print_inline_css' ) );
-		add_action( 'admin_print_styles-post-new.php' , array( __CLASS__, 'print_inline_css' ) );
+		add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
+
+		add_action( 'admin_enqueue_scripts' , array( __CLASS__, 'enqueue_script' ) );
 	}
+
+	/**
+	 * Registers the textdomain.
+	 *
+	 * @since 2.0.0
+	 */
+	public static function load_textdomain() {
+		return load_plugin_textdomain(
+			'ds-public-post-preview',
+			false,
+			dirname( plugin_basename( __FILE__ ) ) . '/lang'
+		);
+	}
+
+	/**
+	 * Registers the JavaScript file for post(-new).php.
+	 *
+	 * @since 2.0.0
+	 */
+	public static function enqueue_script( $hook_suffix ) {
+		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) )
+			return;
+
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '.dev' : '';
+
+		wp_enqueue_script(
+			'ds-public-post-preview',
+			plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
+			array( 'jquery' ),
+			self::get_plugin_info( 'Version' ),
+			true
+		);
+
+		wp_localize_script(
+			'ds-public-post-preview',
+			'DSPublicPostPreviewL10n',
+			array(
+				'enabled'  => __( 'Enabled!', 'ds-public-post-preview' ),
+				'disabled' => __( 'Disabled!', 'ds-public-post-preview' )
+			)
+		);
+	}
+
 
 	/**
 	 * Registers for each post type a meta box.
@@ -89,7 +136,7 @@ class DS_Public_Post_Preview {
 
 	    foreach ( $post_types as $post_type ) {
 			add_meta_box(
-					'public_post_preview',
+					'ds-public-post-preview',
 					__( 'Public Post Preview', 'ds-public-post-preview' ),
 					array( __CLASS__, 'public_post_preview_metabox_cb' ),
 					$post_type,
@@ -115,10 +162,11 @@ class DS_Public_Post_Preview {
 		$preview_post_ids = self::get_preview_post_ids();
 		?>
 <p>
-	<input type="checkbox"<?php checked( in_array( $post->ID, $preview_post_ids ) ); ?> name="public_post_preview" id="public-post-preview" value="1" />
-	<label for="public-post-preview"><?php _e( 'Enable public preview', 'ds-public-post-preview' ); ?></label>
-
-	<label id="public-post-preview-link">
+	<label><input type="checkbox"<?php checked( in_array( $post->ID, $preview_post_ids ) ); ?> name="public_post_preview" id="public-post-preview" value="1" />
+	<?php _e( 'Enable public preview', 'ds-public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
+</p>
+<p id="public-post-preview-link">
+	<label>
 		<input type="text" name="public_post_preview_link" class="regular-text disabled" value="<?php echo esc_attr( self::get_preview_link( $post->ID ) ); ?>" style="width:99%;" disabled="disabled" />
 		<?php _e( '(Copy and share this link.)', 'ds-public-post-preview' ); ?>
 	</label>
@@ -133,17 +181,6 @@ class DS_Public_Post_Preview {
 <p><?php _e( 'The current post status is not supported. It needs to be draft, pending or future.', 'ds-public-post-preview' ); ?>
 		<?php
 		endif;
-	}
-
-	/**
-	 * Returns the post ids which are registered for a public preview.
-	 *
-	 * @since  2.0.0
-	 *
-	 * @return array The post ids. (Empty array if no ids are registered.)
-	 */
-	public static function get_preview_post_ids() {
-		return get_option( 'public_post_preview', array() );
 	}
 
 	/**
@@ -169,28 +206,7 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Prints some fancy inline CSS.
-	 *
-	 * It controls the visibility of the public preview link.
-	 *
-	 * @since 2.0.0
-	 */
-	public static function print_inline_css() {
-		?>
-<style>
-	#public-post-preview-link {
-		display: none;
-	}
-
-	input[type="checkbox"]:checked ~ #public-post-preview-link {
-		display: block !important;
-	}
-</style>
-		<?php
-	}
-
-	/**
-	 * Registers a post for a public preview.
+	 * (Un)Registers a post for a public preview.
 	 *
 	 * Don't runs on an autosave and ignores post revisions.
 	 *
@@ -228,7 +244,43 @@ class DS_Public_Post_Preview {
 		else
 			return false; // Nothing changed.
 
-		return update_option( 'public_post_preview', $preview_post_ids );
+		return self::set_preview_post_ids( $preview_post_ids );
+	}
+
+	/**
+	 * (Un)Registers a post for a public preview for an AJAX request.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @return string Returns '0' on a failure, '1' on success.
+	 */
+	public static function ajax_register_public_preview() {
+		check_ajax_referer( 'public_post_preview' );
+
+		$preview_post_id = (int) $_POST['post_ID'];
+		$post = get_post( $preview_post_id );
+
+		if ( ( 'page' == $post->post_type && ! current_user_can( 'edit_page', $preview_post_id ) ) || ! current_user_can( 'edit_post', $preview_post_id ) )
+			die( '0' );
+
+		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) )
+			die( '0' );
+
+		$preview_post_ids = self::get_preview_post_ids();
+
+		if ( empty( $_POST['checked'] ) && in_array( $preview_post_id, $preview_post_ids ) )
+			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
+		elseif ( ! empty( $_POST['checked'] ) && ! in_array( $preview_post_id, $preview_post_ids ) )
+			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
+		else
+			die( '0' );
+
+		$ret = self::set_preview_post_ids( $preview_post_ids );
+
+		if ( ! $ret )
+			die( '0' );
+
+		die( '1' );
 	}
 
 	/**
@@ -267,10 +319,10 @@ class DS_Public_Post_Preview {
 			return false;
 
 		if( ! self::verify_nonce( $_GET['_ppp'], 'public_post_preview_' . $post_id ) )
-			return false;
+			wp_die( __( 'The link has been expired!', 'ds-public-post-preview' ) );
 
 		if ( ! in_array( $post_id, get_option( 'public_post_preview', array() ) ) )
-			return false;
+			wp_die( __( 'No Public Preview available!', 'ds-public-post-preview' ) );
 
 		return true;
 	}
@@ -328,6 +380,44 @@ class DS_Public_Post_Preview {
 			return 2;
 
 		// Invalid nonce
+		return false;
+	}
+
+	/**
+	 * Returns the post ids which are registered for a public preview.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @return array The post ids. (Empty array if no ids are registered.)
+	 */
+	private static function get_preview_post_ids() {
+		return get_option( 'public_post_preview', array() );
+	}
+
+	/**
+	 * Saves the post ids which are registered for a public preview.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @return array The post ids. (Empty array if no ids are registered.)
+	 */
+	private static function set_preview_post_ids( $post_ids = array( )) {
+		return update_option( 'public_post_preview', $post_ids );
+	}
+
+	/**
+	 * Small helper to get some plugin info.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param  string        $key The key to get the info from, see get_plugin_data().
+	 * @return string|bool        Either the value, or if the key doesn't exists false.
+	 */
+	private static function get_plugin_info( $key = null ) {
+		$plugin_data = get_plugin_data( __FILE__);
+		if ( array_key_exists( $key, $plugin_data ) )
+			return $plugin_data[ $key ];
+
 		return false;
 	}
 

@@ -1,9 +1,8 @@
 === Public Post Preview ===
-Contributors: sivel, jdingman
-Donate Link: http://sivel.net/donate
-Tags: public-post-preview, public, post, preview, posts
-Requires at least: 2.7
-Tested up to: 2.9
+Contributors: ocean90, sivel
+Tags: public-post-preview, public, post, preview, posts, custom post type
+Requires at least: 3.2
+Tested up to: 3.5-alpha
 Stable tag: 1.3
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
@@ -41,6 +40,11 @@ NOTE: See "Other Notes" for Upgrade and Usage Instructions as well as other pert
 1. To disable public post preview for a specific post uncheck the public preview post box and save the post.
 
 == Change Log ==
+
+= 2.0 (20012-07-XX): =
+* Support for all public post types
+* Saves via AJAX
+* I18n
 
 = 1.3 (2009-06-30): =
 * Hook in earlier in the post selection process to fix PHP notices
