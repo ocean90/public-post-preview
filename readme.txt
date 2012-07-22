@@ -3,6 +3,7 @@ Contributors: ocean90, sivel
 Tags: public-post-preview, public, post, preview, posts, custom post type
 Requires at least: 3.3
 Tested up to: 3.5-alpha
+License: GPLv2 or later
 Stable tag: 1.3
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
@@ -22,6 +23,8 @@ If you want, you can drop me a line @[ocean90](http://twitter.com/ocean90) on Tw
 
 = More =
 Try also some of my [other plugins](http://profiles.wordpress.org/users/ocean90) or visit my site [wpGrafie.de](http://wpgrafie.de/).
+
+*Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
 
 == Installation ==
 
