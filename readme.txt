@@ -1,7 +1,7 @@
 === Public Post Preview ===
 Contributors: ocean90, sivel
 Tags: public-post-preview, public, post, preview, posts, custom post type
-Requires at least: 3.2
+Requires at least: 3.3
 Tested up to: 3.5-alpha
 Stable tag: 1.3
 
@@ -9,42 +9,63 @@ Enables you to give a link to anonymous users for public preview of a post befor
 
 == Description ==
 
-= This plugin is no longer maintained. If you would like to become the maintainer of this plugin please contact the author. =
-
-Enables you to give a link to anonymous users for public preview of a post before it is published.
+Enables you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.
 
 Have you ever been writing a post with the help of someone who does not have access to your blog and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating a URL with an expiring nonce that can be given out for public preview.
 
-Props to [Jonathan Dingman](http://www.ginside.com/) for the idea behind this plugin, testing and feedback.
+**Sounds pretty good? Install now!**
+
+*Previously this plugin was maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/) for the idea behind this plugin, testing and feedback.
+
+= Feedback = 
+If you want, you can drop me a line @[ocean90](http://twitter.com/ocean90) on Twitter or @[Dominik Schilling](https://plus.google.com/101675293278434581718/) on Google+.
+
+= More =
+Try also some of my [other plugins](http://profiles.wordpress.org/users/ocean90) or visit my site [wpGrafie.de](http://wpgrafie.de/).
 
 == Installation ==
 
-1. Upload the `public-post-preview` folder to the `/wp-content/plugins/` directory or install directly through the plugin installer.
-1. Activate the plugin through the 'Plugins' menu in WordPress or by using the link provided by the plugin installer
+Note: There will be NO settings page.
 
-NOTE: See "Other Notes" for Upgrade and Usage Instructions as well as other pertinent topics.
+For an automatic installation through WordPress:
+
+1. Go to the 'Add New' plugins screen in your WordPress admin area
+1. Search for 'Public Post Preview'
+1. Click 'Install Now' and activate the plugin
+
+
+For a manual installation via FTP:
+
+1. Upload the `public-post-preview` directory to the `/wp-content/plugins/` directory
+1. Activate the plugin through the 'Plugins' screen in your WordPress admin area
+
+
+To upload the plugin through WordPress, instead of FTP:
+
+1. Upload the downloaded zip file on the 'Add New' plugins screen (see the 'Upload' tab) in your WordPress admin area and activate.
 
 == Screenshots ==
 
 1. Edit Posts Page
 
-== Upgrade ==
+== Upgrade Notice ==
 
-1. Use the plugin updater in WordPress or...
-1. Delete the previous `public-post-preview` folder from the `/wp-content/plugins/` directory
-1. Upload the new `public-post-preview` folder to the `/wp-content/plugins/` directory
+= 2.0 =
+New plugin maintainer, supports now all public post types, saves preview status via an AJAX request, ready for translation, requires at least WordPress 3.3.
 
 == Usage ==
+* To enable a public post preview check the box below the edit post box.
+* The link will be displayed if the checkbox is checked, just copy and share the link with your frieds.
+* To disable a preview just uncheck the box.
 
-1. By default all posts in draft or pending review status will have public preview links that can be found diretly below the edit post box.
-1. To disable public post preview for a specific post uncheck the public preview post box and save the post.
 
 == Change Log ==
 
-= 2.0 (20012-07-XX): =
+= 2.0 (20012-07-23): =
 * Support for all public post types
-* Saves via AJAX
+* Saves public preview status via an AJAX request
 * I18n
+* Requires at least WordPress 3.3
 
 = 1.3 (2009-06-30): =
 * Hook in earlier in the post selection process to fix PHP notices
