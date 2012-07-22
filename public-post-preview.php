@@ -48,7 +48,7 @@ if ( ! class_exists( 'WP' ) ) {
  *  - posts_results
  *  - wp_ajax_public-post-preview
  *  - admin_enqueue_scripts
- *  - admin_init
+ *  - init
  *
  *  Inits at 'plugins_loaded' hook.
  *
@@ -67,7 +67,7 @@ class DS_Public_Post_Preview {
 		if ( ! is_admin() )
 			add_filter( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
 
-		add_action( 'admin_init', array( __CLASS__, 'load_textdomain' ) );
+		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 
 		add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
 
