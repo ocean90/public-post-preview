@@ -1,10 +1,10 @@
 === Public Post Preview ===
-Contributors: ocean90, sivel
-Tags: public-post-preview, public, post, preview, posts, custom post type
+Contributors: ocean90
+Tags: public, post, preview, posts, custom post types
 Requires at least: 3.3
 Tested up to: 3.5-alpha
 License: GPLv2 or later
-Stable tag: 1.3
+Stable tag: 2.0
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
 
@@ -16,7 +16,7 @@ Have you ever been writing a post with the help of someone who does not have acc
 
 **Sounds pretty good? Install now!**
 
-*Previously this plugin was maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/) for the idea behind this plugin, testing and feedback.
+*Previously this plugin was maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/).
 
 = Feedback = 
 If you want, you can drop me a line @[ocean90](http://twitter.com/ocean90) on Twitter or @[Dominik Schilling](https://plus.google.com/101675293278434581718/) on Google+.
