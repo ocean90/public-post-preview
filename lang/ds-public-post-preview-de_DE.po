@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Public Post Preview v2.0\n"
+"Project-Id-Version: Public Post Preview v2.0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2012-07-21 23:09:45+0000\n"
+"PO-Revision-Date: 2012-07-25 11:54:00+0000\n"
 "Last-Translator: Dominik Schilling <dominik.schilling@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -50,12 +50,6 @@ msgstr "Dominik Schilling"
 msgid "http://wphelper.de/"
 msgstr "http://wphelper.de/"
 
-#. translators: plugin header field 'Version'
-#: public-post-preview.php:0
-#@ ds-public-post-preview
-msgid "2.0"
-msgstr "2.0-DE"
-
 #: public-post-preview.php:117
 #@ ds-public-post-preview
 msgid "Enabled!"
@@ -95,4 +89,10 @@ msgstr "Der Link ist nicht mehr gültig!"
 #@ ds-public-post-preview
 msgid "No Public Preview available!"
 msgstr "Keine öffentliche Vorschau verfügbar!"
+
+#. translators: plugin header field 'Version'
+#: public-post-preview.php:0
+#@ ds-public-post-preview
+msgid "2.0.1"
+msgstr ""
 
