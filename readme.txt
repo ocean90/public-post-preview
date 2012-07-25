@@ -4,7 +4,7 @@ Tags: public, post, preview, posts, custom post types
 Requires at least: 3.3
 Tested up to: 3.5-alpha
 License: GPLv2 or later
-Stable tag: 2.0
+Stable tag: 2.0.1
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
 
