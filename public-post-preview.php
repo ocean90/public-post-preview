@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.0
+ * Version: 2.0.1
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -167,7 +167,7 @@ class DS_Public_Post_Preview {
 </p>
 <p id="public-post-preview-link">
 	<label>
-		<input type="text" name="public_post_preview_link" class="regular-text disabled" value="<?php echo esc_attr( self::get_preview_link( $post->ID ) ); ?>" style="width:99%;" disabled="disabled" />
+		<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post->ID ) ); ?>" style="width:99%;" readonly />
 		<?php _e( '(Copy and share this link.)', 'ds-public-post-preview' ); ?>
 	</label>
 </p>

@@ -63,6 +63,8 @@ New plugin maintainer, supports now all public post types, saves preview status 
 
 
 == Change Log ==
+= 2.0.1 (20012-07-25): =
+* Makes the preview link copyable again
 
 = 2.0 (20012-07-23): =
 * Support for all public post types
