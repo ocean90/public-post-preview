@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.0.1
+ * Version: 2.0.2
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -342,6 +342,21 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
+	 * Get the time-dependent variable for nonce creation.
+	 *
+	 * @see    wp_nonce_tick()
+	 *
+	 * @since  2.0.2
+	 *
+	 * @return int The time-dependent variable
+	 */
+	private static function nonce_tick() {
+		$nonce_life = apply_filters( 'ppp_nonce_life', 60 * 60 * 24 ); // 24 hours
+
+		return ceil( time() / ( $nonce_life / 2 ) );
+	}
+
+	/**
 	 * Creates a random, one time use token. Without an UID.
 	 *
 	 * @see    wp_create_nonce()
@@ -352,7 +367,7 @@ class DS_Public_Post_Preview {
 	 * @return string             The one use form token
 	 */
 	private static function create_nonce( $action = -1 ) {
-		$i = wp_nonce_tick();
+		$i = self::nonce_tick();
 
 		return substr( wp_hash( $i . $action, 'nonce' ), -12, 10 );
 	}
@@ -369,7 +384,7 @@ class DS_Public_Post_Preview {
 	 * @return bool               Whether the nonce check passed or failed.
 	 */
 	private static function verify_nonce( $nonce, $action = -1 ) {
-		$i = wp_nonce_tick();
+		$i = self::nonce_tick();
 
 		// Nonce generated 0-12 hours ago
 		if ( substr( wp_hash( $i . $action, 'nonce' ), -12, 10 ) == $nonce )

@@ -63,6 +63,9 @@ New plugin maintainer, supports now all public post types, saves preview status 
 
 
 == Change Log ==
+= 2.0.2 (20012-XX-XX): =
+* Introduces a filter `ppp_nonce_life`. With this you can adjust the expiration of a link. By default a link has a lifetime of 24 hours.
+
 = 2.0.1 (20012-07-25): =
 * Makes the preview link copyable again
 
