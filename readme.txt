@@ -1,10 +1,12 @@
 === Public Post Preview ===
 Contributors: ocean90
 Tags: public, post, preview, posts, custom post types
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46
 Requires at least: 3.3
-Tested up to: 3.5-alpha
-License: GPLv2 or later
+Tested up to: 3.5
 Stable tag: 2.0.1
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
 
