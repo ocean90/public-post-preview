@@ -43,14 +43,15 @@ if ( ! class_exists( 'WP' ) ) {
  *
  * Used hooks:
  *  - pre_get_posts
+ *  - query_vars
+ *  - init
  *  - add_meta_boxes
  *  - save_post
  *  - posts_results
  *  - wp_ajax_public-post-preview
  *  - admin_enqueue_scripts
- *  - init
  *
- *  Inits at 'plugins_loaded' hook.
+ * Inits at 'plugins_loaded' hook.
  *
  */
 class DS_Public_Post_Preview {
@@ -373,7 +374,7 @@ class DS_Public_Post_Preview {
 	 * @return int The time-dependent variable
 	 */
 	private static function nonce_tick() {
-		$nonce_life = apply_filters( 'ppp_nonce_life', 60 * 60 * 24 ); // 24 hours
+		$nonce_life = apply_filters( 'ppp_nonce_life', 60 * 60 * 48 ); // 48 hours
 
 		return ceil( time() / ( $nonce_life / 2 ) );
 	}

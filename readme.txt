@@ -14,7 +14,7 @@ Enables you to give a link to anonymous users for public preview of a post befor
 
 Enables you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.
 
-Have you ever been writing a post with the help of someone who does not have access to your blog and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating a URL with an expiring nonce that can be given out for public preview.
+Have you ever been writing a post with the help of someone who does not have access to your blog and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating an URL with an expiring nonce that can be given out for public preview.
 
 **Sounds pretty good? Install now!**
 
@@ -63,10 +63,31 @@ New plugin maintainer, supports now all public post types, saves preview status 
 * The link will be displayed if the checkbox is checked, just copy and share the link with your frieds.
 * To disable a preview just uncheck the box.
 
+== FAQ ==
+
+**I have activated the "WordPress SEO by Yoast" plugin and enabled the option "Redirect ugly URL's to clean permalinks.". The public preview doesn't work. What can I do?**
+
+Please add <strong>_ppp</strong> to the input field "Other variables not to clean:" on SEO -> Permalinks screen.
+
+
+**After some time the preview link returns the message "The link has been expired!". Why?**
+
+The plugin generates an URL with an expiring nonce. By default a link "lives" 48 hours. After 48 hours the link is expired and you need to copy and share a new link which is automatically generated on the same place under the editor.
+
+
+**48 hours are not enough to me. Can I extend the nonce time?**
+
+Yes, of course. You can use the filter `ppp_nonce_life`. Example for 5 days:
+
+`add_filter( 'ppp_nonce_life', 'my_nonce_life' );
+function my_nonce_life() {
+	return 60 * 60 * 24 * 5; // 5 days
+}`
 
 == Change Log ==
-= 2.0.2 (20012-XX-XX): =
+= 2.1 (20012-09-XX): =
 * Introduces a filter `ppp_nonce_life`. With this you can adjust the expiration of a link. By default a link has a lifetime of 24 hours.
+* In some situations (still not sure when) the preview link is rewritten as a permalink which results in an error. The plugin now works in this situations too.
 
 = 2.0.1 (20012-07-25): =
 * Makes the preview link copyable again
