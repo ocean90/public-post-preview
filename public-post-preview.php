@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.0.2
+ * Version: 2.1
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -64,18 +64,22 @@ class DS_Public_Post_Preview {
 	 * @since 1.0.0
 	 */
 	public static function init() {
-		if ( ! is_admin() )
+		if ( ! is_admin() ) {
 			add_filter( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
 
-		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
+			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
+		} else {
 
-		add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
+			add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 
-		add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
+			add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
 
-		add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
+			add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
 
-		add_action( 'admin_enqueue_scripts' , array( __CLASS__, 'enqueue_script' ) );
+			add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
+
+			add_action( 'admin_enqueue_scripts' , array( __CLASS__, 'enqueue_script' ) );
+		}
 	}
 
 	/**
@@ -284,10 +288,23 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Show the post if it's a public preview.
+	 * Registers the new query var `_ppp`.
 	 *
-	 * Only if it's the main query, a preview, a singular page and
-	 * DS_Public_Post_Preview::public_preview_available() return true.
+	 * @since  2.1
+	 *
+	 * @return array List of query variables.
+	 */
+	public static function add_query_var( $qv ) {
+		$qv[] = '_ppp';
+
+		return $qv;
+	}
+
+	/**
+	 * Registers the filter to handle a public preview.
+	 *
+	 * Filter will be set if it's the main query, a preview, a singular page
+	 * and the query var `_ppp` exists.
 	 *
 	 * @since  2.0.0
 	 *
@@ -295,12 +312,13 @@ class DS_Public_Post_Preview {
 	 * @return object        The WP_Query object, unchanged.
 	 */
 	public static function show_public_preview( $query ) {
-		if ( $query->is_main_query() && $query->is_preview() && $query->is_singular() ) {
-			$post_id = get_query_var( 'page_id' ) ? get_query_var( 'page_id' ) : get_query_var( 'p' );
-
-			if ( self::public_preview_available( $post_id ) )
-				add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ) );
-		}
+		if (
+			$query->is_main_query() &&
+			$query->is_preview() &&
+			$query->is_singular() &&
+			$query->get( '_ppp' )
+		)
+			add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
 
 		return $query;
 	}
@@ -315,10 +333,10 @@ class DS_Public_Post_Preview {
 	 * @return bool           True if a public preview is allowed, false on a failure.
 	 */
 	private static function public_preview_available( $post_id ) {
-		if ( empty( $post_id ) || empty( $_GET['_ppp'] ) )
+		if ( empty( $post_id ) )
 			return false;
 
-		if( ! self::verify_nonce( $_GET['_ppp'], 'public_post_preview_' . $post_id ) )
+		if( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) )
 			wp_die( __( 'The link has been expired!', 'ds-public-post-preview' ) );
 
 		if ( ! in_array( $post_id, get_option( 'public_post_preview', array() ) ) )
@@ -336,7 +354,11 @@ class DS_Public_Post_Preview {
 	 * @param array $posts The post to preview.
 	 */
 	public static function set_post_to_publish( $posts ) {
-		$posts[0]->post_status = 'publish';
+		if ( empty( $posts ) )
+			return;
+
+		if ( self::public_preview_available( $posts[0]->ID ) )
+			$posts[0]->post_status = 'publish';
 
 		return $posts;
 	}
@@ -346,7 +368,7 @@ class DS_Public_Post_Preview {
 	 *
 	 * @see    wp_nonce_tick()
 	 *
-	 * @since  2.0.2
+	 * @since  2.1
 	 *
 	 * @return int The time-dependent variable
 	 */
