@@ -89,7 +89,7 @@ function my_nonce_life() {
 
 == Change Log ==
 = 2.1 (20012-09-16): =
-* Introduces a filter `ppp_nonce_life`. With this you can adjust the expiration of a link. By default a link has a lifetime of 24 hours.
+* Introduces a filter `ppp_nonce_life`. With the filter you can adjust the expiration of a link. By default a link has a lifetime of 48 hours.
 * In some situations (still not sure when) the preview link is rewritten as a permalink which results in an error. The plugin now works in this situations too.
 
 = 2.0.1 (20012-07-25): =
