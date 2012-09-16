@@ -4,7 +4,7 @@ Tags: public, post, preview, posts, custom post types
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 2.0.1
+Stable tag: 2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,9 @@ To upload the plugin through WordPress, instead of FTP:
 
 == Upgrade Notice ==
 
+= 2.1 =
+The update fixes a rare issue which had created 404 errors.
+
 = 2.0 =
 New plugin maintainer, supports now all public post types, saves preview status via an AJAX request, ready for translation, requires at least WordPress 3.3.
 
@@ -85,7 +88,7 @@ function my_nonce_life() {
 }`
 
 == Change Log ==
-= 2.1 (20012-09-XX): =
+= 2.1 (20012-09-16): =
 * Introduces a filter `ppp_nonce_life`. With this you can adjust the expiration of a link. By default a link has a lifetime of 24 hours.
 * In some situations (still not sure when) the preview link is rewritten as a permalink which results in an error. The plugin now works in this situations too.
 
