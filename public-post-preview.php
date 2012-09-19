@@ -355,6 +355,9 @@ class DS_Public_Post_Preview {
 	 * @param array $posts The post to preview.
 	 */
 	public static function set_post_to_publish( $posts ) {
+		// Remove the filter again, otherwise it will be applied to other queries too.
+		remove_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
+
 		if ( empty( $posts ) )
 			return;
 
