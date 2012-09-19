@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.1.1-dev
+ * Version: 2.1.1
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -72,7 +72,6 @@ class DS_Public_Post_Preview {
 
 			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
 		} else {
-
 			add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
 
 			add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );

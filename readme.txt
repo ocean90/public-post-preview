@@ -4,7 +4,7 @@ Tags: public, post, preview, posts, custom post types
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 2.1
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,7 +89,7 @@ function my_nonce_life() {
 
 == Change Log ==
 = 2.1.1 (20012-09-19): =
-* Through a change in 2.1 a filter was applied to each query by mistake. Props Aki Björklund and Jonathan Channon.
+* Sorry for the new update. Through a change in 2.1 a filter was applied to each query. The misplaced "The link has been expired!" message is now gone. Props Aki Björklund and Jonathan Channon.
 
 = 2.1 (20012-09-16): =
 * Introduces a filter `ppp_nonce_life`. With the filter you can adjust the expiration of a link. By default a link has a lifetime of 48 hours.
