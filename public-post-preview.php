@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.1
+ * Version: 2.1.1-dev
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -65,13 +65,13 @@ class DS_Public_Post_Preview {
 	 * @since 1.0.0
 	 */
 	public static function init() {
+		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
+
 		if ( ! is_admin() ) {
 			add_filter( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
 
-			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
+			//add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
 		} else {
-
-			add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 
 			add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
 
@@ -295,11 +295,11 @@ class DS_Public_Post_Preview {
 	 *
 	 * @return array List of query variables.
 	 */
-	public static function add_query_var( $qv ) {
-		$qv[] = '_ppp';
-
-		return $qv;
-	}
+//	public static function add_query_var( $qv ) {
+//		$qv[] = '_ppp';
+//
+//		return $qv;
+//	}
 
 	/**
 	 * Registers the filter to handle a public preview.
@@ -317,7 +317,7 @@ class DS_Public_Post_Preview {
 			$query->is_main_query() &&
 			$query->is_preview() &&
 			$query->is_singular() &&
-			$query->get( '_ppp' )
+			! empty( $_REQUEST['_ppp'] )
 		)
 			add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
 
@@ -337,7 +337,7 @@ class DS_Public_Post_Preview {
 		if ( empty( $post_id ) )
 			return false;
 
-		if( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) )
+		if( ! self::verify_nonce( $_REQUEST['_ppp'], 'public_post_preview_' . $post_id ) )
 			wp_die( __( 'The link has been expired!', 'ds-public-post-preview' ) );
 
 		if ( ! in_array( $post_id, get_option( 'public_post_preview', array() ) ) )
