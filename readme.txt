@@ -66,7 +66,7 @@ New plugin maintainer, supports now all public post types, saves preview status 
 * The link will be displayed if the checkbox is checked, just copy and share the link with your frieds.
 * To disable a preview just uncheck the box.
 
-== FAQ ==
+== Frequently Asked Questions ==
 
 **I have activated the "WordPress SEO by Yoast" plugin and enabled the option "Redirect ugly URL's to clean permalinks.". The public preview doesn't work. What can I do?**
 
