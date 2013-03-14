@@ -2,9 +2,9 @@
 **Contributors:** ocean90  
 **Tags:** public, post, preview, posts, custom post types  
 **Donate link:** <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46>  
-**Requires at least:** 3.3  
-**Tested up to:** 3.5  
-**Stable tag:** 2.1.1  
+**Requires at least:** 3.5  
+**Tested up to:** 3.6  
+**Stable tag:** 2.2  
 **License:** GPLv2 or later  
 **License URI:** <http://www.gnu.org/licenses/gpl-2.0.html>  
   
@@ -56,6 +56,8 @@ To upload the plugin through WordPress, instead of FTP:
 
   
 ## Upgrade Notice  
+#### 2.2
+Based on feedback: Removed the extra metabox and added preview link to the main Publish metabox. Requires now WordPress 3.5  
   
 #### 2.1  
 The update fixes a rare issue which had created 404 errors.  
@@ -91,7 +93,12 @@ function my_nonce_life() {
 }
 ```  
   
-## Change Log  
+## Change Log
+#### 2.2 (20013-03-15):
+* Based on user feedback: Removed the extra metabox and added preview link to the main Publish metabox
+* Only shows the checkbox if the post status/post type is good
+* Requires now WordPress 3.5  
+
 #### 2.1.1 (20012-09-19):  
 * Sorry for the new update. Through a change in 2.1 a filter was applied to each query. The misplaced "The link has been expired!" message is now gone. Props Aki Björklund and Jonathan Channon.  
   
