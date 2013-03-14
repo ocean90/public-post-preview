@@ -1,15 +1,16 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Public Post Preview v2.0.1\n"
+"Project-Id-Version: Public Post Preview v2.2-beta\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2012-07-25 11:54:00+0000\n"
+"PO-Revision-Date: 2013-03-14 20:18:03+0000\n"
 "Last-Translator: Dominik Schilling <dominik.schilling@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: CSL v1.x\n"
 "X-Poedit-Language: German\n"
 "X-Poedit-Country: GERMANY\n"
 "X-Poedit-SourceCharset: utf-8\n"
@@ -21,7 +22,6 @@ msgstr ""
 
 #. translators: plugin header field 'Name'
 #: public-post-preview.php:0
-#: public-post-preview.php:140
 #@ ds-public-post-preview
 msgid "Public Post Preview"
 msgstr "Öffentliche Vorschau"
@@ -50,42 +50,32 @@ msgstr "Dominik Schilling"
 msgid "http://wphelper.de/"
 msgstr "http://wphelper.de/"
 
-#: public-post-preview.php:117
+#: public-post-preview.php:121
 #@ ds-public-post-preview
 msgid "Enabled!"
 msgstr "Aktiviert!"
 
-#: public-post-preview.php:118
+#: public-post-preview.php:122
 #@ ds-public-post-preview
 msgid "Disabled!"
 msgstr "Deaktiviert!"
 
-#: public-post-preview.php:166
+#: public-post-preview.php:168
 #@ ds-public-post-preview
 msgid "Enable public preview"
 msgstr "Öffentliche Vorschau aktivieren"
 
-#: public-post-preview.php:171
+#: public-post-preview.php:173
 #@ ds-public-post-preview
 msgid "(Copy and share this link.)"
 msgstr "(Kopiere und teile diesen Link.)"
 
-#: public-post-preview.php:177
-#@ ds-public-post-preview
-msgid "This post is already public."
-msgstr "Dieser Artikel ist schon veröffentlicht."
-
-#: public-post-preview.php:181
-#@ ds-public-post-preview
-msgid "The current post status is not supported. It needs to be draft, pending or future."
-msgstr "Der aktuelle Status wird nicht unterstützt. Nur „Ausstehender Review“, „Entwurf“ oder „Planung“ werden unterstützt."
-
-#: public-post-preview.php:322
+#: public-post-preview.php:329
 #@ ds-public-post-preview
 msgid "The link has been expired!"
 msgstr "Der Link ist nicht mehr gültig!"
 
-#: public-post-preview.php:325
+#: public-post-preview.php:332
 #@ ds-public-post-preview
 msgid "No Public Preview available!"
 msgstr "Keine öffentliche Vorschau verfügbar!"
@@ -93,6 +83,6 @@ msgstr "Keine öffentliche Vorschau verfügbar!"
 #. translators: plugin header field 'Version'
 #: public-post-preview.php:0
 #@ ds-public-post-preview
-msgid "2.0.1"
+msgid "2.2-beta"
 msgstr ""
 
