@@ -97,7 +97,7 @@
 			e.css( 'color', color )
 				.animate( { opacity: 1 }, 600, 'linear' )
 				.animate( { opacity: 0 }, 600, 'linear', function() {
-					e.text( '' );
+					e.empty();
 				} );
 		}
 	};
