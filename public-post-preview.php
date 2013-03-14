@@ -254,10 +254,10 @@ class DS_Public_Post_Preview {
 		$post = get_post( $preview_post_id );
 
 		if ( ( 'page' == $post->post_type && ! current_user_can( 'edit_page', $preview_post_id ) ) || ! current_user_can( 'edit_post', $preview_post_id ) )
-			die( '0' );
+			wp_die( 0 );
 
 		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) )
-			die( '0' );
+			wp_die( 0 );
 
 		$preview_post_ids = self::get_preview_post_ids();
 
@@ -266,14 +266,14 @@ class DS_Public_Post_Preview {
 		elseif ( ! empty( $_POST['checked'] ) && ! in_array( $preview_post_id, $preview_post_ids ) )
 			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
 		else
-			die( '0' );
+			wp_die( 0 );
 
 		$ret = self::set_preview_post_ids( $preview_post_ids );
 
 		if ( ! $ret )
-			die( '0' );
+			wp_die( 0 );
 
-		die( '1' );
+		wp_die( 1 );
 	}
 
 	/**

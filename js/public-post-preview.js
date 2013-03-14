@@ -103,8 +103,6 @@
 	};
 
 	// Document is ready.
-	$( function() {
-		DSPublicPostPreview.initialize();
-	} );
+	$( DSPublicPostPreview.initialize() );
 
 } )( jQuery );
