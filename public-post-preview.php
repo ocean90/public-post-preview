@@ -45,7 +45,7 @@ if ( ! class_exists( 'WP' ) ) {
  *  - pre_get_posts
  *  - query_vars
  *  - init
- *  - add_meta_boxes
+ *  - post_submitbox_misc_actions
  *  - save_post
  *  - posts_results
  *  - wp_ajax_public-post-preview
@@ -192,7 +192,7 @@ class DS_Public_Post_Preview {
 		return add_query_arg(
 			array(
 				'preview' => true,
-				'_ppp'     => self::create_nonce( 'public_post_preview_' . $post_id ),
+				'_ppp'    => self::create_nonce( 'public_post_preview_' . $post_id ),
 			),
 			get_permalink( $post_id )
 		);

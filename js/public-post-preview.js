@@ -58,7 +58,7 @@
 					}
 
 					// Enable the checkbox again
-					t.checkbox.prop('disabled', '');
+					t.checkbox.prop( 'disabled', '' );
 				}
 			);
 		},
