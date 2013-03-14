@@ -104,7 +104,7 @@ class DS_Public_Post_Preview {
 		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) )
 			return;
 
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '.dev' : '';
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_script(
 			'ds-public-post-preview',
