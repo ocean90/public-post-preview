@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.1.1
+ * Version: 2.2-beta
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -14,7 +14,7 @@
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *	Copyright (C) 2012 Dominik Schilling
+ *	Copyright (C) 2012-2013 Dominik Schilling
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -72,7 +72,7 @@ class DS_Public_Post_Preview {
 
 			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
 		} else {
-			add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
+			add_action( 'post_submitbox_misc_actions', array( __CLASS__, 'post_submitbox_misc_actions' ) );
 
 			add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
 
@@ -124,67 +124,56 @@ class DS_Public_Post_Preview {
 		);
 	}
 
-
 	/**
-	 * Registers for each post type a meta box.
-	 * Only public post types are used.
+	 * Adds the checkbox to the submit metabox
 	 *
-	 * @since 2.0.0
+	 * @since 2.2.0
 	 */
-	public static function register_meta_boxes() {
+	public static function post_submitbox_misc_actions() {
 		$post_types = get_post_types(
 			array(
 				'public' => true
 			)
 		);
 
-	    foreach ( $post_types as $post_type ) {
-			add_meta_box(
-					'ds-public-post-preview',
-					__( 'Public Post Preview', 'ds-public-post-preview' ),
-					array( __CLASS__, 'public_post_preview_metabox_cb' ),
-					$post_type,
-					'normal',
-					'high'
-			);
-		}
+		$post = get_post();
+
+		if ( ! in_array( $post->post_type, $post_types ) )
+			return false;
+
+		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) )
+			return false;
+
+		?>
+		<div class="misc-pub-section public-post-preview">
+			<?php self::get_checkbox_html( $post ); ?>
+		</div>
+		<?php
+
 	}
 
 	/**
-	 * Callback method for the meta boxes.
-	 * Checks current post status and shows the checkbox + link field if the post status
-	 * is draft, pending or future.
+	 * Prints the checkbox if the is draft, pending or future.
 	 *
-	 * @since  2.0.0
-	 *
-	 * @param  object $post The current post object.
 	 */
-	public static function public_post_preview_metabox_cb( $post ) {
-		if ( in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) ) :
-			wp_nonce_field( 'public_post_preview', 'public_post_preview_wpnonce' );
+	private static function get_checkbox_html( $post ) {
+		if ( empty( $post ) )
+			$post = get_post();
+
+		wp_nonce_field( 'public_post_preview', 'public_post_preview_wpnonce' );
 
 		$preview_post_ids = self::get_preview_post_ids();
 		?>
-<p>
-	<label><input type="checkbox"<?php checked( in_array( $post->ID, $preview_post_ids ) ); ?> name="public_post_preview" id="public-post-preview" value="1" />
-	<?php _e( 'Enable public preview', 'ds-public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
-</p>
-<p id="public-post-preview-link">
-	<label>
-		<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post->ID ) ); ?>" style="width:99%;" readonly />
-		<?php _e( '(Copy and share this link.)', 'ds-public-post-preview' ); ?>
-	</label>
-</p>
+		<label><input type="checkbox"<?php checked( in_array( $post->ID, $preview_post_ids ) ); ?> name="public_post_preview" id="public-post-preview" value="1" />
+		<?php _e( 'Enable public preview', 'ds-public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
+
+		<div id="public-post-preview-link" style="margin-top:6px">
+			<label>
+				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post->ID ) ); ?>" style="width:99%" readonly />
+				<span class="description"><?php _e( '(Copy and share this link.)', 'ds-public-post-preview' ); ?></span>
+			</label>
+		</div>
 		<?php
-		elseif ( in_array( $post->post_status, array( 'publish' ) ) ) :
-		?>
-<p><?php _e( 'This post is already public.', 'ds-public-post-preview' ); ?>
-		<?php
-		else :
-		?>
-<p><?php _e( 'The current post status is not supported. It needs to be draft, pending or future.', 'ds-public-post-preview' ); ?>
-		<?php
-		endif;
 	}
 
 	/**
@@ -224,7 +213,7 @@ class DS_Public_Post_Preview {
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
 			return false;
 
-		if( wp_is_post_revision( $post_id ) )
+		if ( wp_is_post_revision( $post_id ) )
 			return false;
 
 		if ( empty( $_POST['public_post_preview_wpnonce'] ) || ! wp_verify_nonce( $_POST['public_post_preview_wpnonce'], 'public_post_preview' ) )
