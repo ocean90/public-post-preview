@@ -14,6 +14,8 @@
 			t.nonce    = $( '#public_post_preview_wpnonce' );
 			t.status   = $( '#public-post-preview-ajax' );
 
+			t.status.css( 'opacity', 0 );
+
 			if ( ! t.checkbox.prop( 'checked' ) )
 				t.link.hide();
 
@@ -93,9 +95,6 @@
 		 */
 		_pulsate : function( e, color ) {
 			e.css( 'color', color )
-				.animate( { opacity: 0 }, 600, 'linear' )
-				.animate( { opacity: 1 }, 600, 'linear' )
-				.animate( { opacity: 0 }, 600, 'linear' )
 				.animate( { opacity: 1 }, 600, 'linear' )
 				.animate( { opacity: 0 }, 600, 'linear', function() {
 					e.text( '' );
