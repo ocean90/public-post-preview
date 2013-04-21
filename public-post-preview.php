@@ -189,13 +189,15 @@ class DS_Public_Post_Preview {
 	 * @return string           The generated public preview link.
 	 */
 	private static function get_preview_link( $post_id ) {
-		return add_query_arg(
+		$link = add_query_arg(
 			array(
 				'preview' => true,
 				'_ppp'    => self::create_nonce( 'public_post_preview_' . $post_id ),
 			),
 			get_permalink( $post_id )
 		);
+
+		return apply_filters( 'ppp_preview_link', $link, $post_id );
 	}
 
 	/**
