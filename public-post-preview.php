@@ -375,7 +375,7 @@ class DS_Public_Post_Preview {
 		if ( 'publish' != get_post_status( $post_id ) )
 			return false;
 
-		wp_redirect( get_permalink( $post_id ) );
+		wp_redirect( get_permalink( $post_id ), 301 );
 		exit;
 	}
 
