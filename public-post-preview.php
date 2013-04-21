@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.2
+ * Version: 2.3-beta
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -328,7 +328,7 @@ class DS_Public_Post_Preview {
 		if( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) )
 			wp_die( __( 'The link has been expired!', 'ds-public-post-preview' ) );
 
-		if ( ! in_array( $post_id, get_option( 'public_post_preview', array() ) ) )
+		if ( ! in_array( $post_id, self::get_preview_post_ids() ) )
 			wp_die( __( 'No Public Preview available!', 'ds-public-post-preview' ) );
 
 		return true;
