@@ -66,7 +66,7 @@ New plugin maintainer, supports now all public post types, saves preview status 
 
 == Usage ==
 * To enable a public post preview check the box below the edit post box.
-* The link will be displayed if the checkbox is checked, just copy and share the link with your frieds.
+* The link will be displayed if the checkbox is checked, just copy and share the link with your friends.
 * To disable a preview just uncheck the box.
 
 == Frequently Asked Questions ==
