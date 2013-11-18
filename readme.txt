@@ -71,11 +71,6 @@ New plugin maintainer, supports now all public post types, saves preview status 
 
 == Frequently Asked Questions ==
 
-**I have activated the "WordPress SEO by Yoast" plugin and enabled the option "Redirect ugly URL's to clean permalinks.". The public preview doesn't work. What can I do?**
-
-Please add <strong>_ppp</strong> to the input field "Other variables not to clean:" on SEO -> Permalinks screen.
-
-
 **After some time the preview link returns the message "The link has been expired!". Why?**
 
 The plugin generates an URL with an expiring nonce. By default a link "lives" 48 hours. After 48 hours the link is expired and you need to copy and share a new link which is automatically generated on the same place under the editor.

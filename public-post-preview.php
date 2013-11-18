@@ -72,7 +72,7 @@ class DS_Public_Post_Preview {
 
 			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
 
-			// Add query var to WordPress SEO by Yoast query var whitelist.
+			// Add the query var to WordPress SEO by Yoast whitelist.
 			add_filter( 'wpseo_whitelist_permalink_vars', array( __CLASS__, 'add_query_var' ) );
 		} else {
 			add_action( 'post_submitbox_misc_actions', array( __CLASS__, 'post_submitbox_misc_actions' ) );
