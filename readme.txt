@@ -1,9 +1,9 @@
 === Public Post Preview ===
 Contributors: ocean90
-Tags: public, post, preview, posts, custom post types
+Tags: public, post, preview, posts, custom post types, draft
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46
 Requires at least: 3.5
-Tested up to: 3.6
+Tested up to: 3.7
 Stable tag: 2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -21,7 +21,7 @@ Have you ever been writing a post with the help of someone who does not have acc
 *Previously this plugin was maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/).*
 
 = Feedback =
-If you want, you can drop me a line @[ocean90](http://twitter.com/ocean90) on Twitter or @[Dominik Schilling](https://plus.google.com/101675293278434581718/) on Google+.
+If you want, you can drop me a line @[ocean90](http://twitter.com/ocean90) on Twitter or @[Dominik Schilling](https://plus.google.com/+DominikSchilling/) on Google+.
 
 = More =
 Try also some of my [other plugins](http://profiles.wordpress.org/users/ocean90) or visit my site [wpGrafie.de](http://wpgrafie.de/).
@@ -86,22 +86,27 @@ function my_nonce_life() {
 }`
 
 == Change Log ==
-= 2.2 (20013-03-15): =
-* Based on feedback I have removed the extra metabox and added the preview link to the main Publish metabox
-* Only shows the checkbox if the post status/post type is good
-* Requires now WordPress 3.5
+= 2.3 (2013-11-18): =
+* Introduces a filter `ppp_preview_link`. With the filter you can adjust the preview link.
+* If a post has gone live, redirect to it's proper permalink.
+* Adds the query var `_ppp` to WordPress SEO by Yoast whitelist.
 
-= 2.1.1 (20012-09-19): =
+= 2.2 (2013-03-15): =
+* Based on feedback I have removed the extra metabox and added the preview link to the main Publish metabox.
+* Only show the checkbox if the post status/post type is good.
+* Requires WordPress 3.5.
+
+= 2.1.1 (2012-09-19): =
 * Sorry for the new update. Through a change in 2.1 a filter was applied to each query. The misplaced "The link has been expired!" message is now gone. Props Aki Björklund and Jonathan Channon.
 
-= 2.1 (20012-09-16): =
+= 2.1 (2012-09-16): =
 * Introduces a filter `ppp_nonce_life`. With the filter you can adjust the expiration of a link. By default a link has a lifetime of 48 hours.
 * In some situations (still not sure when) the preview link is rewritten as a permalink which results in an error. The plugin now works in this situations too.
 
-= 2.0.1 (20012-07-25): =
+= 2.0.1 (2012-07-25): =
 * Makes the preview link copyable again
 
-= 2.0 (20012-07-23): =
+= 2.0 (2012-07-23): =
 * Support for all public post types
 * Saves public preview status via an AJAX request
 * I18n
