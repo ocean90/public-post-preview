@@ -428,7 +428,7 @@ class DS_Public_Post_Preview {
 	 * @param  int      $post_id The post id.
 	 */
 	private static function maybe_redirect_to_published_post( $post_id ) {
-		if ( 'publish' != get_post_status( $post_id ) ) {
+		if ( in_array( get_post_status( $post_id ), self::get_published_statuses() ) ) {
 			return false;
 		}
 
