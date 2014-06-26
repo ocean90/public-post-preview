@@ -339,7 +339,7 @@ class DS_Public_Post_Preview {
 	 * @param  int   $post_id The post id.
 	 * @return bool           True if a public preview is allowed, false on a failure.
 	 */
-	private static function public_preview_available( $post_id ) {
+	private static function is_public_preview_available( $post_id ) {
 		if ( empty( $post_id ) ) {
 			return false;
 		}
@@ -376,7 +376,7 @@ class DS_Public_Post_Preview {
 		// If the post has gone live, redirect to it's proper permalink
 		self::maybe_redirect_to_published_post( $post_id );
 
-		if ( self::public_preview_available( $post_id ) ) {
+		if ( self::is_public_preview_available( $post_id ) ) {
 			// Set post status to publish so that it's visible
 			$posts[0]->post_status = 'publish';
 
