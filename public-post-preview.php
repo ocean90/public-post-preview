@@ -377,7 +377,11 @@ class DS_Public_Post_Preview {
 		self::maybe_redirect_to_published_post( $post_id );
 
 		if ( self::public_preview_available( $post_id ) ) {
+			// Set post status to publish so that it's visible
 			$posts[0]->post_status = 'publish';
+
+			// Disable comments for this post
+			add_filter( 'comments_open', '__return_false' );
 		}
 
 		return $posts;
