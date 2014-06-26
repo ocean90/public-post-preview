@@ -16,9 +16,6 @@
 
 			t.status.css( 'opacity', 0 );
 
-			if ( ! t.checkbox.prop( 'checked' ) )
-				t.link.hide();
-
 			t.checkbox.bind( 'change', function() {
 				t.change();
 			} );

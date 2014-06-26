@@ -209,11 +209,12 @@ class DS_Public_Post_Preview {
 		wp_nonce_field( 'public_post_preview', 'public_post_preview_wpnonce' );
 
 		$preview_post_ids = self::get_preview_post_ids();
+		$enabeld = in_array( $post->ID, $preview_post_ids );
 		?>
-		<label><input type="checkbox"<?php checked( in_array( $post->ID, $preview_post_ids ) ); ?> name="public_post_preview" id="public-post-preview" value="1" />
+		<label><input type="checkbox"<?php checked( $enabeld ); ?> name="public_post_preview" id="public-post-preview" value="1" />
 		<?php _e( 'Enable public preview', 'ds-public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
 
-		<div id="public-post-preview-link" style="margin-top:6px">
+		<div id="public-post-preview-link" style="margin-top:6px"<?php echo $enabeld ? '' : ' class="hidden"'; ?>>
 			<label>
 				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post ) ); ?>" style="width:99%" readonly />
 				<span class="description"><?php _e( '(Copy and share this link.)', 'ds-public-post-preview' ); ?></span>
