@@ -51,6 +51,7 @@ if ( ! class_exists( 'WP' ) ) {
  *  - wp_ajax_public-post-preview
  *  - admin_enqueue_scripts
  *  - comments_open
+ *  - pings_open
  *
  * Inits at 'plugins_loaded' hook.
  *
@@ -411,8 +412,9 @@ class DS_Public_Post_Preview {
 			// Set post status to publish so that it's visible
 			$posts[0]->post_status = 'publish';
 
-			// Disable comments for this post
+			// Disable comments and pings for this post
 			add_filter( 'comments_open', '__return_false' );
+			add_filter( 'pings_open', '__return_false' );
 		}
 
 		return $posts;
