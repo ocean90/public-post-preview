@@ -52,7 +52,7 @@ To upload the plugin through WordPress, instead of FTP:
 ## Screenshots  
   
 *Edit Posts Page*  
-![Edit Posts Page](https://raw.github.com/ocean90/public-post-preview/master/assets-wp-repo/screenshot-1.png)
+![Edit Posts Page](https://raw.github.com/ocean90/public-post-preview/master/assets-wp-repo/screenshot-1.gif)
 
   
 ## Upgrade Notice  
@@ -87,7 +87,7 @@ function my_nonce_life() {
 	return 60 * 60 * 24 * 5; // 5 days  
 }
 ```  
-  
+
 ## Changelog
 #### 2.4-beta (2014-XX-XX):
 * Supports EditFlow and custom statuses
