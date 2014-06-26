@@ -163,6 +163,11 @@ class DS_Public_Post_Preview {
 			return false;
 		}
 
+		// Do nothing for auto drafts
+		if ( $post->post_status == 'auto-draft' ) {
+			return false;
+		}
+
 		// Post is already published
 		if ( in_array( $post->post_status, self::get_published_statuses() ) ) {
 			return false;
@@ -443,7 +448,7 @@ class DS_Public_Post_Preview {
 	 * @param  int      $post_id The post id.
 	 */
 	private static function maybe_redirect_to_published_post( $post_id ) {
-		if ( in_array( get_post_status( $post_id ), self::get_published_statuses() ) ) {
+		if ( ! in_array( get_post_status( $post_id ), self::get_published_statuses() ) ) {
 			return false;
 		}
 
