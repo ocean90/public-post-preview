@@ -88,7 +88,13 @@ function my_nonce_life() {
 }
 ```  
   
-## Change Log
+## Changelog
+#### 2.4-beta (2014-XX-XX):
+* Supports EditFlow and custom statuses
+* Disables comments and pings during public post preview
+* Adds __Public Preview__ to the list of display states used in the Posts list table
+* Prevents flickering of link box on Post edit while loading
+
 #### 2.3 (2013-11-18):
 * Introduces a filter `ppp_preview_link`. With the filter you can adjust the preview link.
 * If a post has gone live, redirect to it's proper permalink.
