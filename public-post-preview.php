@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.3
+ * Version: 2.4-beta
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -14,7 +14,7 @@
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *	Copyright (C) 2012-2013 Dominik Schilling
+ *	Copyright (C) 2012-2014 Dominik Schilling
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -50,6 +50,7 @@ if ( ! class_exists( 'WP' ) ) {
  *  - posts_results
  *  - wp_ajax_public-post-preview
  *  - admin_enqueue_scripts
+ *  - comments_open
  *
  * Inits at 'plugins_loaded' hook.
  *
@@ -129,7 +130,7 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Adds the checkbox to the submit metabox
+	 * Adds the checkbox to the submit metabox.
 	 *
 	 * @since 2.2.0
 	 */
@@ -146,7 +147,8 @@ class DS_Public_Post_Preview {
 			return false;
 		}
 
-		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) ) {
+		// Post is already published
+		if ( in_array( $post->post_status, self::get_published_statuses() ) ) {
 			return false;
 		}
 
@@ -159,8 +161,24 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Prints the checkbox if the is draft, pending or future.
+	 * Returns post statuses which represent a published post.
 	 *
+	 * @since  2.4.0
+	 *
+	 * @return array List with post statuses.
+	 */
+	private static function get_published_statuses() {
+		$published_statuses = array( 'publish', 'private' );
+
+		return apply_filters( 'ppp_published_statuses', $published_statuses );
+	}
+
+	/**
+	 * Prints the checkbox with the input field for the preview link.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param  WP_Post    $post  The post object.
 	 */
 	private static function get_checkbox_html( $post ) {
 		if ( empty( $post ) ) {
@@ -176,7 +194,7 @@ class DS_Public_Post_Preview {
 
 		<div id="public-post-preview-link" style="margin-top:6px">
 			<label>
-				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post->ID ) ); ?>" style="width:99%" readonly />
+				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post ) ); ?>" style="width:99%" readonly />
 				<span class="description"><?php _e( '(Copy and share this link.)', 'ds-public-post-preview' ); ?></span>
 			</label>
 		</div>
@@ -184,27 +202,40 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Returns the public preview link.
-	 *
-	 * The link is the permalink with these parameters:
-	 *  - preview, always true (query var for core)
-	 *  - _ppp, a custom nonce, see DS_Public_Post_Preview::create_nonce()
-	 *
-	 * @since  2.0.0
-	 *
-	 * @param  int    $post_id  The post id.
-	 * @return string           The generated public preview link.
-	 */
-	private static function get_preview_link( $post_id ) {
-		$link = add_query_arg(
-			array(
-				'preview' => true,
-				'_ppp'    => self::create_nonce( 'public_post_preview_' . $post_id ),
-			),
-			get_permalink( $post_id )
-		);
+	  * Returns the public preview link.
+	  *
+	  * The link is the home link with these parameters:
+	  *  - preview, always true (query var for core)
+	  *  - _ppp, a custom nonce, see DS_Public_Post_Preview::create_nonce()
+	  *  - page_id or p or p and post_type to specify the post.
+	  *
+	  * @since  2.0.0
+	  *
+	  * @param  WP_Post $post  The post object.
+	  * @return string         The generated public preview link.
+	  */
+	private static function get_preview_link( $post ) {
+		if ( 'page' == $post->post_type ) {
+			$args = array(
+				'page_id'    => $post->ID,
+			);
+		} else if ( 'post' == $post->post_type ) {
+			$args = array(
+				'p'          => $post->ID,
+			);
+		} else {
+			$args = array(
+				'p'          => $post->ID,
+				'post_type'  => $post->post_type,
+			);
+		}
 
-		return apply_filters( 'ppp_preview_link', $link, $post_id );
+		$args['preview'] = true;
+		$args['_ppp'] = self::create_nonce( 'public_post_preview_' . $post->ID );
+
+		$link = add_query_arg( $args, home_url( '/' ) );
+
+		return apply_filters( 'ppp_preview_link', $link,  $post->ID, $post );
 	}
 
 	/**
@@ -247,7 +278,7 @@ class DS_Public_Post_Preview {
 		} elseif ( ! empty( $_POST['public_post_preview'] ) && ! in_array( $preview_post_id, $preview_post_ids ) ) {
 			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
 		} else {
-			return false; // Nothing changed.
+			return false; // Nothing has changed.
 		}
 
 		return self::set_preview_post_ids( $preview_post_ids );
@@ -270,7 +301,7 @@ class DS_Public_Post_Preview {
 			wp_die( 0 );
 		}
 
-		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) ) {
+		if ( in_array( $post->post_status, self::get_published_statuses() ) ) {
 			wp_die( 0 );
 		}
 
@@ -296,7 +327,7 @@ class DS_Public_Post_Preview {
 	/**
 	 * Registers the new query var `_ppp`.
 	 *
-	 * @since  2.1
+	 * @since  2.1.0
 	 *
 	 * @return array List of query variables.
 	 */
