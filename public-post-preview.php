@@ -84,6 +84,8 @@ class DS_Public_Post_Preview {
 			add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
 
 			add_action( 'admin_enqueue_scripts' , array( __CLASS__, 'enqueue_script' ) );
+
+			add_filter( 'display_post_states', array( __CLASS__, 'display_preview_state' ), 20, 2 );
 		}
 	}
 
@@ -128,6 +130,19 @@ class DS_Public_Post_Preview {
 				'disabled' => __( 'Disabled!', 'ds-public-post-preview' )
 			)
 		);
+	}
+
+	/**
+	 * Adds "Public Preview" to the list of display states used in the Posts list table.
+	 *
+	 * @since 2.4.0
+	 */
+	public static function display_preview_state( $post_states, $post ) {
+		if ( in_array( $post->ID, self::get_preview_post_ids() ) ) {
+			$post_states['ppp_enabled'] = __( 'Public Preview', 'ds-public-post-preview' );
+		}
+
+		return $post_states;
 	}
 
 	/**
