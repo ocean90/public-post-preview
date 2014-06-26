@@ -104,8 +104,9 @@ class DS_Public_Post_Preview {
 	 * @since 2.0.0
 	 */
 	public static function enqueue_script( $hook_suffix ) {
-		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) )
+		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) ) {
 			return;
+		}
 
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
@@ -141,11 +142,13 @@ class DS_Public_Post_Preview {
 
 		$post = get_post();
 
-		if ( ! in_array( $post->post_type, $post_types ) )
+		if ( ! in_array( $post->post_type, $post_types ) ) {
 			return false;
+		}
 
-		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) )
+		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) ) {
 			return false;
+		}
 
 		?>
 		<div class="misc-pub-section public-post-preview">
@@ -160,8 +163,9 @@ class DS_Public_Post_Preview {
 	 *
 	 */
 	private static function get_checkbox_html( $post ) {
-		if ( empty( $post ) )
+		if ( empty( $post ) ) {
 			$post = get_post();
+		}
 
 		wp_nonce_field( 'public_post_preview', 'public_post_preview_wpnonce' );
 
@@ -215,32 +219,36 @@ class DS_Public_Post_Preview {
 	 * @return bool            Returns false on a failure, true on a success.
 	 */
 	public static function register_public_preview( $post_id, $post ) {
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return false;
+		}
 
-		if ( wp_is_post_revision( $post_id ) )
+		if ( wp_is_post_revision( $post_id ) ) {
 			return false;
+		}
 
-		if ( empty( $_POST['public_post_preview_wpnonce'] ) || ! wp_verify_nonce( $_POST['public_post_preview_wpnonce'], 'public_post_preview' ) )
+		if ( empty( $_POST['public_post_preview_wpnonce'] ) || ! wp_verify_nonce( $_POST['public_post_preview_wpnonce'], 'public_post_preview' ) ) {
 			return false;
+		}
 
 		$preview_post_ids = self::get_preview_post_ids();
 		$preview_post_id  = $post->ID;
 
-		if ( empty( $_POST['public_post_preview'] ) && in_array( $preview_post_id, $preview_post_ids ) )
+		if ( empty( $_POST['public_post_preview'] ) && in_array( $preview_post_id, $preview_post_ids ) ) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
-		elseif (
+		} elseif (
 				! empty( $_POST['public_post_preview'] ) &&
 				! empty( $_POST['original_post_status'] ) &&
 				'publish' != $_POST['original_post_status'] &&
 				'publish' == $post->post_status &&
 				in_array( $preview_post_id, $preview_post_ids )
-			)
+			) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
-		elseif ( ! empty( $_POST['public_post_preview'] ) && ! in_array( $preview_post_id, $preview_post_ids ) )
+		} elseif ( ! empty( $_POST['public_post_preview'] ) && ! in_array( $preview_post_id, $preview_post_ids ) ) {
 			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
-		else
+		} else {
 			return false; // Nothing changed.
+		}
 
 		return self::set_preview_post_ids( $preview_post_ids );
 	}
@@ -258,25 +266,29 @@ class DS_Public_Post_Preview {
 		$preview_post_id = (int) $_POST['post_ID'];
 		$post = get_post( $preview_post_id );
 
-		if ( ( 'page' == $post->post_type && ! current_user_can( 'edit_page', $preview_post_id ) ) || ! current_user_can( 'edit_post', $preview_post_id ) )
+		if ( ( 'page' == $post->post_type && ! current_user_can( 'edit_page', $preview_post_id ) ) || ! current_user_can( 'edit_post', $preview_post_id ) ) {
 			wp_die( 0 );
+		}
 
-		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) )
+		if ( ! in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) ) {
 			wp_die( 0 );
+		}
 
 		$preview_post_ids = self::get_preview_post_ids();
 
-		if ( empty( $_POST['checked'] ) && in_array( $preview_post_id, $preview_post_ids ) )
+		if ( empty( $_POST['checked'] ) && in_array( $preview_post_id, $preview_post_ids ) ) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
-		elseif ( ! empty( $_POST['checked'] ) && ! in_array( $preview_post_id, $preview_post_ids ) )
+		} elseif ( ! empty( $_POST['checked'] ) && ! in_array( $preview_post_id, $preview_post_ids ) ) {
 			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
-		else
+		} else {
 			wp_die( 0 );
+		}
 
 		$ret = self::set_preview_post_ids( $preview_post_ids );
 
-		if ( ! $ret )
+		if ( ! $ret ) {
 			wp_die( 0 );
+		}
 
 		wp_die( 1 );
 	}
@@ -311,8 +323,9 @@ class DS_Public_Post_Preview {
 			$query->is_preview() &&
 			$query->is_singular() &&
 			$query->get( '_ppp' )
-		)
+		) {
 			add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
+		}
 
 		return $query;
 	}
@@ -327,14 +340,17 @@ class DS_Public_Post_Preview {
 	 * @return bool           True if a public preview is allowed, false on a failure.
 	 */
 	private static function public_preview_available( $post_id ) {
-		if ( empty( $post_id ) )
+		if ( empty( $post_id ) ) {
 			return false;
+		}
 
-		if ( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) )
+		if ( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) ) {
 			wp_die( __( 'The link has been expired!', 'ds-public-post-preview' ) );
+		}
 
-		if ( ! in_array( $post_id, self::get_preview_post_ids() ) )
+		if ( ! in_array( $post_id, self::get_preview_post_ids() ) ) {
 			wp_die( __( 'No Public Preview available!', 'ds-public-post-preview' ) );
+		}
 
 		return true;
 	}
@@ -351,16 +367,18 @@ class DS_Public_Post_Preview {
 		// Remove the filter again, otherwise it will be applied to other queries too.
 		remove_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
 
-		if ( empty( $posts ) )
+		if ( empty( $posts ) ) {
 			return;
+		}
 
 		$post_id = $posts[0]->ID;
 
 		// If the post has gone live, redirect to it's proper permalink
 		self::maybe_redirect_to_published_post( $post_id );
 
-		if ( self::public_preview_available( $post_id ) )
+		if ( self::public_preview_available( $post_id ) ) {
 			$posts[0]->post_status = 'publish';
+		}
 
 		return $posts;
 	}
@@ -375,8 +393,9 @@ class DS_Public_Post_Preview {
 	 * @return boolean           False, if post isn't published.
 	 */
 	private static function maybe_redirect_to_published_post( $post_id ) {
-		if ( 'publish' != get_post_status( $post_id ) )
+		if ( 'publish' != get_post_status( $post_id ) ) {
 			return false;
+		}
 
 		wp_redirect( get_permalink( $post_id ), 301 );
 		exit;
@@ -428,12 +447,14 @@ class DS_Public_Post_Preview {
 		$i = self::nonce_tick();
 
 		// Nonce generated 0-12 hours ago
-		if ( substr( wp_hash( $i . $action, 'nonce' ), -12, 10 ) == $nonce )
+		if ( substr( wp_hash( $i . $action, 'nonce' ), -12, 10 ) == $nonce ) {
 			return 1;
+		}
 
 		// Nonce generated 12-24 hours ago
-		if ( substr( wp_hash( ( $i - 1 ) . $action, 'nonce' ), -12, 10 ) == $nonce )
+		if ( substr( wp_hash( ( $i - 1 ) . $action, 'nonce' ), -12, 10 ) == $nonce ) {
 			return 2;
+		}
 
 		// Invalid nonce
 		return false;
@@ -471,8 +492,9 @@ class DS_Public_Post_Preview {
 	 */
 	private static function get_plugin_info( $key = null ) {
 		$plugin_data = get_plugin_data( __FILE__);
-		if ( array_key_exists( $key, $plugin_data ) )
+		if ( array_key_exists( $key, $plugin_data ) ) {
 			return $plugin_data[ $key ];
+		}
 
 		return false;
 	}
