@@ -388,13 +388,11 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Sets the post status of the first post to publish, so we don't have to do anything
-	 * *too* hacky to get it to load the preview.
+	 * Redirects to post's proper permalink, if it has gone live.
 	 *
 	 * @since 2.0.0
 	 *
 	 * @param  int      $post_id The post id.
-	 * @return boolean           False, if post isn't published.
 	 */
 	private static function maybe_redirect_to_published_post( $post_id ) {
 		if ( 'publish' != get_post_status( $post_id ) ) {
