@@ -77,6 +77,9 @@ function my_nonce_life() {
 }
 ```
 
+Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/public-post-preview-configurator/).
+
+
 ## Changelog
 #### 2.4 (2014-08-21):
 * Supports EditFlow and custom statuses

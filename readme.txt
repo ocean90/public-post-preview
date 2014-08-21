@@ -74,6 +74,8 @@ function my_nonce_life() {
 	return 60 * 60 * 24 * 5; // 5 days
 }`
 
+Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/public-post-preview-configurator/).
+
 == Change Log ==
 = 2.4 (2014-08-21):
 * Supports EditFlow and custom statuses
