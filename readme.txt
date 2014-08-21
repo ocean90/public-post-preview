@@ -3,8 +3,8 @@ Contributors: ocean90
 Tags: public, post, preview, posts, custom post types, draft
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46
 Requires at least: 3.5
-Tested up to: 3.7
-Stable tag: 2.3
+Tested up to: 4.0
+Stable tag: 2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,12 @@ function my_nonce_life() {
 }`
 
 == Change Log ==
+= 2.4 (2014-08-21):
+* Supports EditFlow and custom statuses
+* Disables comments and pings during public post preview
+* Adds **Public Preview** to the list of display states used in the Posts list table
+* Prevents flickering of link box on Post edit while loading
+
 = 2.3 (2013-11-18): =
 * Introduces a filter `ppp_preview_link`. With the filter you can adjust the preview link.
 * If a post has gone live, redirect to it's proper permalink.
