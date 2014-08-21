@@ -1,12 +1,12 @@
 # Public Post Preview
-**Contributors:** ocean90
-**Tags:** public, post, preview, posts, custom post types, draft
-**Donate link:** <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46>
-**Requires at least:** 3.5
-**Tested up to:** 3.7
-**Stable tag:** 2.3
-**License:** GPLv2 or later
-**License URI:** <http://www.gnu.org/licenses/gpl-2.0.html>
+**Contributors:** ocean90  
+**Tags:** public, post, preview, posts, custom post types, draft  
+**Donate link:** <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46>  
+**Requires at least:** 3.5  
+**Tested up to:** 4.0  
+**Stable tag:** 2.4  
+**License:** GPLv2 or later  
+**License URI:** <http://www.gnu.org/licenses/gpl-2.0.html>  
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
 
@@ -53,17 +53,6 @@ To upload the plugin through WordPress, instead of FTP:
 
 *Edit Posts Page*
 ![Edit Posts Page](https://raw.github.com/ocean90/public-post-preview/master/assets-wp-repo/screenshot-1.gif)
-
-
-## Upgrade Notice
-#### 2.2
-Based on feedback: Removed the extra metabox and added preview link to the main Publish metabox. Requires now WordPress 3.5
-
-#### 2.1
-The update fixes a rare issue which had created 404 errors.
-
-#### 2.0
-New plugin maintainer, supports now all public post types, saves preview status via an AJAX request, ready for translation, requires at least WordPress 3.3.
 
 ## Usage
 * To enable a public post preview check the box below the edit post box.

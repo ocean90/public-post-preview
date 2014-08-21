@@ -53,17 +53,6 @@ To upload the plugin through WordPress, instead of FTP:
 
 1. Edit Posts Page
 
-== Upgrade Notice ==
-
-= 2.2 =
-Based on feedback: Removed the extra metabox and added preview link to the main Publish metabox. Requires now WordPress 3.5
-
-= 2.1 =
-The update fixes a rare issue which had created 404 errors.
-
-= 2.0 =
-New plugin maintainer, supports now all public post types, saves preview status via an AJAX request, ready for translation, requires at least WordPress 3.3.
-
 == Usage ==
 * To enable a public post preview check the box below the edit post box.
 * The link will be displayed if the checkbox is checked, just copy and share the link with your friends.
