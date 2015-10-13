@@ -7,8 +7,7 @@
  * Author URI: http://wphelper.de/
  * Plugin URI: http://wpgrafie.de/wp-plugins/public-post-preview/en/
  *
- * Text Domain: ds-public-post-preview
- * Domain Path: /lang
+ * Text Domain: public-post-preview
  *
  * License: GPLv2 or later
  *
@@ -96,7 +95,7 @@ class DS_Public_Post_Preview {
 	 */
 	public static function load_textdomain() {
 		return load_plugin_textdomain(
-			'ds-public-post-preview',
+			'public-post-preview',
 			false,
 			dirname( plugin_basename( __FILE__ ) ) . '/lang'
 		);
@@ -115,7 +114,7 @@ class DS_Public_Post_Preview {
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_script(
-			'ds-public-post-preview',
+			'public-post-preview',
 			plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
 			array( 'jquery' ),
 			self::get_plugin_info( 'Version' ),
@@ -123,11 +122,11 @@ class DS_Public_Post_Preview {
 		);
 
 		wp_localize_script(
-			'ds-public-post-preview',
+			'public-post-preview',
 			'DSPublicPostPreviewL10n',
 			array(
-				'enabled'  => __( 'Enabled!', 'ds-public-post-preview' ),
-				'disabled' => __( 'Disabled!', 'ds-public-post-preview' )
+				'enabled'  => __( 'Enabled!', 'public-post-preview' ),
+				'disabled' => __( 'Disabled!', 'public-post-preview' )
 			)
 		);
 	}
@@ -139,7 +138,7 @@ class DS_Public_Post_Preview {
 	 */
 	public static function display_preview_state( $post_states, $post ) {
 		if ( in_array( $post->ID, self::get_preview_post_ids() ) ) {
-			$post_states['ppp_enabled'] = __( 'Public Preview', 'ds-public-post-preview' );
+			$post_states['ppp_enabled'] = __( 'Public Preview', 'public-post-preview' );
 		}
 
 		return $post_states;
@@ -212,12 +211,12 @@ class DS_Public_Post_Preview {
 		$enabeld = in_array( $post->ID, $preview_post_ids );
 		?>
 		<label><input type="checkbox"<?php checked( $enabeld ); ?> name="public_post_preview" id="public-post-preview" value="1" />
-		<?php _e( 'Enable public preview', 'ds-public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
+		<?php _e( 'Enable public preview', 'public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
 
 		<div id="public-post-preview-link" style="margin-top:6px"<?php echo $enabeld ? '' : ' class="hidden"'; ?>>
 			<label>
 				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post ) ); ?>" style="width:99%" readonly />
-				<span class="description"><?php _e( '(Copy and share this link.)', 'ds-public-post-preview' ); ?></span>
+				<span class="description"><?php _e( '(Copy and share this link.)', 'public-post-preview' ); ?></span>
 			</label>
 		</div>
 		<?php
@@ -398,11 +397,11 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) ) {
-			wp_die( __( 'The link has been expired!', 'ds-public-post-preview' ) );
+			wp_die( __( 'The link has been expired!', 'public-post-preview' ) );
 		}
 
 		if ( ! in_array( $post_id, self::get_preview_post_ids() ) ) {
-			wp_die( __( 'No Public Preview available!', 'ds-public-post-preview' ) );
+			wp_die( __( 'No Public Preview available!', 'public-post-preview' ) );
 		}
 
 		return true;
