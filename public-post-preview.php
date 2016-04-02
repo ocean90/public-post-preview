@@ -105,6 +105,8 @@ class DS_Public_Post_Preview {
 	 * Registers the JavaScript file for post(-new).php.
 	 *
 	 * @since 2.0.0
+	 *
+	 * @param string $hook_suffix Unique page identifier.
 	 */
 	public static function enqueue_script( $hook_suffix ) {
 		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) ) {
@@ -208,12 +210,12 @@ class DS_Public_Post_Preview {
 		wp_nonce_field( 'public_post_preview', 'public_post_preview_wpnonce' );
 
 		$preview_post_ids = self::get_preview_post_ids();
-		$enabeld = in_array( $post->ID, $preview_post_ids );
+		$enabled = in_array( $post->ID, $preview_post_ids );
 		?>
-		<label><input type="checkbox"<?php checked( $enabeld ); ?> name="public_post_preview" id="public-post-preview" value="1" />
+		<label><input type="checkbox"<?php checked( $enabled ); ?> name="public_post_preview" id="public-post-preview" value="1" />
 		<?php _e( 'Enable public preview', 'public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
 
-		<div id="public-post-preview-link" style="margin-top:6px"<?php echo $enabeld ? '' : ' class="hidden"'; ?>>
+		<div id="public-post-preview-link" style="margin-top:6px"<?php echo $enabled ? '' : ' class="hidden"'; ?>>
 			<label>
 				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post ) ); ?>" style="width:99%" readonly />
 				<span class="description"><?php _e( '(Copy and share this link.)', 'public-post-preview' ); ?></span>
@@ -223,18 +225,18 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	  * Returns the public preview link.
-	  *
-	  * The link is the home link with these parameters:
-	  *  - preview, always true (query var for core)
-	  *  - _ppp, a custom nonce, see DS_Public_Post_Preview::create_nonce()
-	  *  - page_id or p or p and post_type to specify the post.
-	  *
-	  * @since  2.0.0
-	  *
-	  * @param  WP_Post $post  The post object.
-	  * @return string         The generated public preview link.
-	  */
+	 * Returns the public preview link.
+	 *
+	 * The link is the home link with these parameters:
+	 *  - preview, always true (query var for core)
+	 *  - _ppp, a custom nonce, see DS_Public_Post_Preview::create_nonce()
+	 *  - page_id or p or p and post_type to specify the post.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param  WP_Post $post The post object.
+	 * @return string        The generated public preview link.
+	 */
 	private static function get_preview_link( $post ) {
 		if ( 'page' == $post->post_type ) {
 			$args = array(
@@ -350,7 +352,8 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since  2.1.0
 	 *
-	 * @return array List of query variables.
+	 * @param  array $qv Existing list of query variables.
+	 * @return array     List of query variables.
 	 */
 	public static function add_query_var( $qv ) {
 		$qv[] = '_ppp';
@@ -388,8 +391,8 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since  2.0.0
 	 *
-	 * @param  int   $post_id The post id.
-	 * @return bool           True if a public preview is allowed, false on a failure.
+	 * @param  int  $post_id The post id.
+	 * @return bool          True if a public preview is allowed, false on a failure.
 	 */
 	private static function is_public_preview_available( $post_id ) {
 		if ( empty( $post_id ) ) {
@@ -413,11 +416,12 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param array $posts The post to preview.
+	 * @param  array $posts The post to preview.
+	 * @return array        The post that is being previewed.
 	 */
 	public static function set_post_to_publish( $posts ) {
 		// Remove the filter again, otherwise it will be applied to other queries too.
-		remove_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
+		remove_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10 );
 
 		if ( empty( $posts ) ) {
 			return;
@@ -445,7 +449,7 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param  int      $post_id The post id.
+	 * @param int $post_id The post id.
 	 */
 	private static function maybe_redirect_to_published_post( $post_id ) {
 		if ( ! in_array( get_post_status( $post_id ), self::get_published_statuses() ) ) {
@@ -463,7 +467,7 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since  2.1
 	 *
-	 * @return int The time-dependent variable
+	 * @return int The time-dependent variable.
 	 */
 	private static function nonce_tick() {
 		$nonce_life = apply_filters( 'ppp_nonce_life', 60 * 60 * 48 ); // 48 hours
@@ -479,7 +483,7 @@ class DS_Public_Post_Preview {
 	 * @since  1.0.0
 	 *
 	 * @param  string|int $action Scalar value to add context to the nonce.
-	 * @return string             The one use form token
+	 * @return string             The one use form token.
 	 */
 	private static function create_nonce( $action = -1 ) {
 		$i = self::nonce_tick();
@@ -494,7 +498,7 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since  1.0.0
 	 *
-	 * @param  string     $nonce  Nonce that was used in the form to verify
+	 * @param  string     $nonce  Nonce that was used in the form to verify.
 	 * @param  string|int $action Should give context to what is taking place and be the same when nonce was created.
 	 * @return bool               Whether the nonce check passed or failed.
 	 */
@@ -531,7 +535,8 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since  2.0.0
 	 *
-	 * @return array The post ids. (Empty array if no ids are registered.)
+	 * @param  array $post_ids List of post IDs that have a preview.
+	 * @return array           The post ids. (Empty array if no ids are registered.)
 	 */
 	private static function set_preview_post_ids( $post_ids = array( )) {
 		return update_option( 'public_post_preview', $post_ids );
@@ -542,11 +547,11 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since  2.0.0
 	 *
-	 * @param  string        $key The key to get the info from, see get_plugin_data().
-	 * @return string|bool        Either the value, or if the key doesn't exists false.
+	 * @param  string      $key The key to get the info from, see get_plugin_data().
+	 * @return string|bool      Either the value, or if the key doesn't exists false.
 	 */
 	private static function get_plugin_info( $key = null ) {
-		$plugin_data = get_plugin_data( __FILE__);
+		$plugin_data = get_plugin_data( __FILE__ );
 		if ( array_key_exists( $key, $plugin_data ) ) {
 			return $plugin_data[ $key ];
 		}
@@ -555,7 +560,7 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Delets the option 'public_post_preview' if the plugin will be uninstalled.
+	 * Deletes the option 'public_post_preview' if the plugin will be uninstalled.
 	 *
 	 * @since 2.0.0
 	 */
