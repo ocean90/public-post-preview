@@ -539,23 +539,6 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Small helper to get some plugin info.
-	 *
-	 * @since  2.0.0
-	 *
-	 * @param  string      $key The key to get the info from, see get_plugin_data().
-	 * @return string|bool      Either the value, or if the key doesn't exists false.
-	 */
-	private static function get_plugin_info( $key = null ) {
-		$plugin_data = get_plugin_data( __FILE__ );
-		if ( array_key_exists( $key, $plugin_data ) ) {
-			return $plugin_data[ $key ];
-		}
-
-		return false;
-	}
-
-	/**
 	 * Deletes the option 'public_post_preview' if the plugin will be uninstalled.
 	 *
 	 * @since 2.0.0
