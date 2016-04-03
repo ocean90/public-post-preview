@@ -3,7 +3,7 @@
 **Tags:** public, post, preview, posts, custom post types, draft  
 **Donate link:** <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46>  
 **Requires at least:** 3.5  
-**Tested up to:** 4.3  
+**Tested up to:** 4.5  
 **Stable tag:** 2.4.1  
 **License:** GPLv2 or later  
 **License URI:** <http://www.gnu.org/licenses/gpl-2.0.html>  
@@ -82,7 +82,7 @@ Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/publ
 
 ## Changelog
 #### 2.4.1 (2015-10-13):
-* Update text domain to support language packs. Translations are now managed via  http://translate.wordpress.org/projects/wp-plugins/public-post-preview. 
+* Update text domain to support language packs. Translations are now managed via  http://translate.wordpress.org/projects/wp-plugins/public-post-preview.
 
 #### 2.4 (2014-08-21):
 * Supports EditFlow and custom statuses
