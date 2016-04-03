@@ -94,11 +94,7 @@ class DS_Public_Post_Preview {
 	 * @since 2.0.0
 	 */
 	public static function load_textdomain() {
-		return load_plugin_textdomain(
-			'public-post-preview',
-			false,
-			dirname( plugin_basename( __FILE__ ) ) . '/lang'
-		);
+		return load_plugin_textdomain( 'public-post-preview' );
 	}
 
 	/**
