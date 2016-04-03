@@ -113,7 +113,7 @@ class DS_Public_Post_Preview {
 			'public-post-preview',
 			plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
 			array( 'jquery' ),
-			self::get_plugin_info( 'Version' ),
+			'20160403',
 			true
 		);
 
@@ -531,23 +531,6 @@ class DS_Public_Post_Preview {
 	 */
 	private static function set_preview_post_ids( $post_ids = array( )) {
 		return update_option( 'public_post_preview', $post_ids );
-	}
-
-	/**
-	 * Small helper to get some plugin info.
-	 *
-	 * @since  2.0.0
-	 *
-	 * @param  string        $key The key to get the info from, see get_plugin_data().
-	 * @return string|bool        Either the value, or if the key doesn't exists false.
-	 */
-	private static function get_plugin_info( $key = null ) {
-		$plugin_data = get_plugin_data( __FILE__);
-		if ( array_key_exists( $key, $plugin_data ) ) {
-			return $plugin_data[ $key ];
-		}
-
-		return false;
 	}
 
 	/**
