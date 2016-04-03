@@ -1,12 +1,12 @@
 # Public Post Preview
-**Contributors:** ocean90
-**Tags:** public, post, preview, posts, custom post types, draft
-**Donate link:** <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46>
-**Requires at least:** 3.5
-**Tested up to:** 4.5
-**Stable tag:** 2.4.1
-**License:** GPLv2 or later
-**License URI:** <http://www.gnu.org/licenses/gpl-2.0.html>
+**Contributors:** ocean90  
+**Tags:** public, post, preview, posts, custom post types, draft  
+**Donate link:** <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46>  
+**Requires at least:** 3.5  
+**Tested up to:** 4.5  
+**Stable tag:** 2.4.1  
+**License:** GPLv2 or later  
+**License URI:** <http://www.gnu.org/licenses/gpl-2.0.html>  
 
 Enables you to give a link to anonymous users for public preview of a post before it is published.
 
