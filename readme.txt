@@ -24,7 +24,7 @@ Have you ever been writing a post with the help of someone who does not have acc
 If you want, you can drop me a line @[ocean90](http://twitter.com/ocean90) on Twitter or @[Dominik Schilling](https://plus.google.com/+DominikSchilling/) on Google+.
 
 = More =
-Try also some of my [other plugins](http://profiles.wordpress.org/users/ocean90) or visit my site [wpGrafie.de](http://wpgrafie.de/).
+Try also some of my [other plugins](http://profiles.wordpress.org/users/ocean90).
 
 *Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
 
@@ -77,10 +77,14 @@ function my_nonce_life() {
 Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/public-post-preview-configurator/).
 
 == Change Log ==
-= 2.4.1 (2015-10-13):
+= 2.5.0 (2016-04-05): =
+* Auto select preview link on focus. Props [@JeroenSormani](https://github.com/JeroenSormani).
+* Remove preview status from posts which are trashed or after scheduled posts are published.
+
+= 2.4.1 (2015-10-13): =
 * Update text domain to support language packs. Translations are now managed via http://translate.wordpress.org/projects/wp-plugins/public-post-preview.
 
-= 2.4 (2014-08-21):
+= 2.4 (2014-08-21): =
 * Supports EditFlow and custom statuses
 * Disables comments and pings during public post preview
 * Adds **Public Preview** to the list of display states used in the Posts list table

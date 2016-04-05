@@ -4,7 +4,7 @@
 **Donate link:** <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46>  
 **Requires at least:** 3.5  
 **Tested up to:** 4.5  
-**Stable tag:** 2.4.1  
+**Stable tag:** 2.5.0  
 **License:** GPLv2 or later  
 **License URI:** <http://www.gnu.org/licenses/gpl-2.0.html>  
 
@@ -24,7 +24,7 @@ Have you ever been writing a post with the help of someone who does not have acc
 If you want, you can drop me a line @[ocean90](http://twitter.com/ocean90) on Twitter or @[Dominik Schilling](https://plus.google.com/101675293278434581718/) on Google+.
 
 #### More
-Try also some of my [other plugins](http://profiles.wordpress.org/users/ocean90) or visit my site [wpGrafie.de](http://wpgrafie.de/).
+Try also some of my [other plugins](http://profiles.wordpress.org/users/ocean90).
 
 *Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
 
@@ -81,8 +81,12 @@ Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/publ
 
 
 ## Changelog
+#### 2.5.0 (2016-04-05):
+* Auto select preview link on focus. Props [@JeroenSormani](https://github.com/JeroenSormani).
+* Remove preview status from posts which are trashed or after scheduled posts are published.
+
 #### 2.4.1 (2015-10-13):
-* Update text domain to support language packs. Translations are now managed via  http://translate.wordpress.org/projects/wp-plugins/public-post-preview.
+* Update text domain to support language packs. Translations are now managed via http://translate.wordpress.org/projects/wp-plugins/public-post-preview.
 
 #### 2.4 (2014-08-21):
 * Supports EditFlow and custom statuses
