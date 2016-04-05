@@ -80,6 +80,7 @@ Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/publ
 = 2.5.0 (2016-04-05): =
 * Auto select preview link on focus. Props [@JeroenSormani](https://github.com/JeroenSormani).
 * Remove preview status from posts which are trashed or after scheduled posts are published.
+* Add support for paged posts.
 
 = 2.4.1 (2015-10-13): =
 * Update text domain to support language packs. Translations are now managed via http://translate.wordpress.org/projects/wp-plugins/public-post-preview.
