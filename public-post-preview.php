@@ -104,7 +104,7 @@ class DS_Public_Post_Preview {
 			'DSPublicPostPreviewL10n',
 			array(
 				'enabled'  => __( 'Enabled!', 'public-post-preview' ),
-				'disabled' => __( 'Disabled!', 'public-post-preview' )
+				'disabled' => __( 'Disabled!', 'public-post-preview' ),
 			)
 		);
 	}
@@ -113,6 +113,10 @@ class DS_Public_Post_Preview {
 	 * Adds "Public Preview" to the list of display states used in the Posts list table.
 	 *
 	 * @since 2.4.0
+	 *
+	 * @param array   $post_states An array of post display states.
+	 * @param WP_Post $post        The current post object.
+	 * @return Filtered array of post display states.
 	 */
 	public static function display_preview_state( $post_states, $post ) {
 		if ( in_array( $post->ID, self::get_preview_post_ids() ) ) {
@@ -130,7 +134,7 @@ class DS_Public_Post_Preview {
 	public static function post_submitbox_misc_actions() {
 		$post_types = get_post_types(
 			array(
-				'public' => true
+				'public' => true,
 			)
 		);
 
@@ -140,12 +144,12 @@ class DS_Public_Post_Preview {
 			return false;
 		}
 
-		// Do nothing for auto drafts
-		if ( $post->post_status == 'auto-draft' ) {
+		// Do nothing for auto drafts.
+		if ( 'auto-draft' === $post->post_status ) {
 			return false;
 		}
 
-		// Post is already published
+		// Post is already published.
 		if ( in_array( $post->post_status, self::get_published_statuses() ) ) {
 			return false;
 		}
@@ -161,7 +165,7 @@ class DS_Public_Post_Preview {
 	/**
 	 * Returns post statuses which represent a published post.
 	 *
-	 * @since  2.4.0
+	 * @since 2.4.0
 	 *
 	 * @return array List with post statuses.
 	 */
@@ -174,9 +178,9 @@ class DS_Public_Post_Preview {
 	/**
 	 * Prints the checkbox with the input field for the preview link.
 	 *
-	 * @since  2.0.0
+	 * @since 2.0.0
 	 *
-	 * @param  WP_Post    $post  The post object.
+	 * @param WP_Post $post The post object.
 	 */
 	private static function get_checkbox_html( $post ) {
 		if ( empty( $post ) ) {
@@ -208,10 +212,10 @@ class DS_Public_Post_Preview {
 	 *  - _ppp, a custom nonce, see DS_Public_Post_Preview::create_nonce()
 	 *  - page_id or p or p and post_type to specify the post.
 	 *
-	 * @since  2.0.0
+	 * @since 2.0.0
 	 *
-	 * @param  WP_Post $post The post object.
-	 * @return string        The generated public preview link.
+	 * @param WP_Post $post The post object.
+	 * @return string The generated public preview link.
 	 */
 	private static function get_preview_link( $post ) {
 		if ( 'page' == $post->post_type ) {
@@ -242,11 +246,11 @@ class DS_Public_Post_Preview {
 	 *
 	 * Don't runs on an autosave and ignores post revisions.
 	 *
-	 * @since  2.0.0
+	 * @since 2.0.0
 	 *
-	 * @param  int    $post_id The post id.
-	 * @param  object $post    The post object.
-	 * @return bool            Returns false on a failure, true on a success.
+	 * @param int    $post_id The post id.
+	 * @param object $post    The post object.
+	 * @return bool Returns false on a failure, true on a success.
 	 */
 	public static function register_public_preview( $post_id, $post ) {
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -309,8 +313,8 @@ class DS_Public_Post_Preview {
 	 *
 	 * @since 2.5.0
 	 *
-	 * @param int     $post_id    Post ID.
-	 * @param WP_Post $post_after Post object
+	 * @param int     $post_id Post ID.
+	 * @param WP_Post $post    Post object.
 	 * @return bool Returns false on a failure, true on a success.
 	 */
 	public static function unregister_public_preview_on_edit( $post_id, $post ) {
@@ -347,9 +351,9 @@ class DS_Public_Post_Preview {
 	/**
 	 * (Un)Registers a post for a public preview for an AJAX request.
 	 *
-	 * @since  2.0.0
+	 * Returns '0' on a failure, '1' on success.
 	 *
-	 * @return string Returns '0' on a failure, '1' on success.
+	 * @since 2.0.0
 	 */
 	public static function ajax_register_public_preview() {
 		check_ajax_referer( 'public_post_preview' );
@@ -387,10 +391,10 @@ class DS_Public_Post_Preview {
 	/**
 	 * Registers the new query var `_ppp`.
 	 *
-	 * @since  2.1.0
+	 * @since 2.1.0
 	 *
 	 * @param  array $qv Existing list of query variables.
-	 * @return array     List of query variables.
+	 * @return array List of query variables.
 	 */
 	public static function add_query_var( $qv ) {
 		$qv[] = '_ppp';
@@ -404,10 +408,10 @@ class DS_Public_Post_Preview {
 	 * Filter will be set if it's the main query, a preview, a singular page
 	 * and the query var `_ppp` exists.
 	 *
-	 * @since  2.0.0
+	 * @since 2.0.0
 	 *
-	 * @param  object $query The WP_Query object.
-	 * @return object        The WP_Query object, unchanged.
+	 * @param object $query The WP_Query object.
+	 * @return object The WP_Query object, unchanged.
 	 */
 	public static function show_public_preview( $query ) {
 		if (
@@ -426,10 +430,10 @@ class DS_Public_Post_Preview {
 	 * Checks if a public preview is available and allowed.
 	 * Verifies the nonce and if the post id is registered for a public preview.
 	 *
-	 * @since  2.0.0
+	 * @since 2.0.0
 	 *
-	 * @param  int  $post_id The post id.
-	 * @return bool          True if a public preview is allowed, false on a failure.
+	 * @param int $post_id The post id.
+	 * @return bool True if a public preview is allowed, false on a failure.
 	 */
 	private static function is_public_preview_available( $post_id ) {
 		if ( empty( $post_id ) ) {
@@ -454,7 +458,7 @@ class DS_Public_Post_Preview {
 	 * @since 2.0.0
 	 *
 	 * @param  array $posts The post to preview.
-	 * @return array        The post that is being previewed.
+	 * @return array The post that is being previewed.
 	 */
 	public static function set_post_to_publish( $posts ) {
 		// Remove the filter again, otherwise it will be applied to other queries too.
@@ -466,14 +470,14 @@ class DS_Public_Post_Preview {
 
 		$post_id = $posts[0]->ID;
 
-		// If the post has gone live, redirect to it's proper permalink
+		// If the post has gone live, redirect to it's proper permalink.
 		self::maybe_redirect_to_published_post( $post_id );
 
 		if ( self::is_public_preview_available( $post_id ) ) {
-			// Set post status to publish so that it's visible
+			// Set post status to publish so that it's visible.
 			$posts[0]->post_status = 'publish';
 
-			// Disable comments and pings for this post
+			// Disable comments and pings for this post.
 			add_filter( 'comments_open', '__return_false' );
 			add_filter( 'pings_open', '__return_false' );
 		}
@@ -487,6 +491,7 @@ class DS_Public_Post_Preview {
 	 * @since 2.0.0
 	 *
 	 * @param int $post_id The post id.
+	 * @return false False of post status is not a published status.
 	 */
 	private static function maybe_redirect_to_published_post( $post_id ) {
 		if ( ! in_array( get_post_status( $post_id ), self::get_published_statuses() ) ) {
@@ -500,9 +505,9 @@ class DS_Public_Post_Preview {
 	/**
 	 * Get the time-dependent variable for nonce creation.
 	 *
-	 * @see    wp_nonce_tick()
+	 * @see wp_nonce_tick()
 	 *
-	 * @since  2.1
+	 * @since 2.1.0
 	 *
 	 * @return int The time-dependent variable.
 	 */
@@ -515,12 +520,12 @@ class DS_Public_Post_Preview {
 	/**
 	 * Creates a random, one time use token. Without an UID.
 	 *
-	 * @see    wp_create_nonce()
+	 * @see wp_create_nonce()
 	 *
-	 * @since  1.0.0
+	 * @since 1.0.0
 	 *
 	 * @param  string|int $action Scalar value to add context to the nonce.
-	 * @return string             The one use form token.
+	 * @return string The one use form token.
 	 */
 	private static function create_nonce( $action = -1 ) {
 		$i = self::nonce_tick();
@@ -531,35 +536,35 @@ class DS_Public_Post_Preview {
 	/**
 	 * Verifies that correct nonce was used with time limit. Without an UID.
 	 *
-	 * @see    wp_verify_nonce()
+	 * @see wp_verify_nonce()
 	 *
-	 * @since  1.0.0
+	 * @since 1.0.0
 	 *
-	 * @param  string     $nonce  Nonce that was used in the form to verify.
-	 * @param  string|int $action Should give context to what is taking place and be the same when nonce was created.
+	 * @param string     $nonce  Nonce that was used in the form to verify.
+	 * @param string|int $action Should give context to what is taking place and be the same when nonce was created.
 	 * @return bool               Whether the nonce check passed or failed.
 	 */
 	private static function verify_nonce( $nonce, $action = -1 ) {
 		$i = self::nonce_tick();
 
-		// Nonce generated 0-12 hours ago
+		// Nonce generated 0-12 hours ago.
 		if ( substr( wp_hash( $i . $action, 'nonce' ), -12, 10 ) == $nonce ) {
 			return 1;
 		}
 
-		// Nonce generated 12-24 hours ago
+		// Nonce generated 12-24 hours ago.
 		if ( substr( wp_hash( ( $i - 1 ) . $action, 'nonce' ), -12, 10 ) == $nonce ) {
 			return 2;
 		}
 
-		// Invalid nonce
+		// Invalid nonce.
 		return false;
 	}
 
 	/**
 	 * Returns the post ids which are registered for a public preview.
 	 *
-	 * @since  2.0.0
+	 * @since 2.0.0
 	 *
 	 * @return array The post ids. (Empty array if no ids are registered.)
 	 */
@@ -570,12 +575,12 @@ class DS_Public_Post_Preview {
 	/**
 	 * Saves the post ids which are registered for a public preview.
 	 *
-	 * @since  2.0.0
+	 * @since 2.0.0
 	 *
-	 * @param  array $post_ids List of post IDs that have a preview.
-	 * @return array           The post ids. (Empty array if no ids are registered.)
+	 * @param array $post_ids List of post IDs that have a preview.
+	 * @return array The post ids. (Empty array if no ids are registered.)
 	 */
-	private static function set_preview_post_ids( $post_ids = array( )) {
+	private static function set_preview_post_ids( $post_ids = array() ) {
 		return update_option( 'public_post_preview', $post_ids );
 	}
 
