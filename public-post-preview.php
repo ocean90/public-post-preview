@@ -452,6 +452,28 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
+	 * Filters the HTML output of individual page number links to use the
+	 * preview link.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param string $link        The page number HTML output.
+	 * @param int    $page_number Page number for paginated posts' page links.
+	 * @return string The filtered HTML output.
+	 */
+	public static function filter_wp_link_pages_link( $link, $page_number ) {
+		$post = get_post();
+		if ( ! $post ) {
+			return $link;
+		}
+
+		$preview_link = self::get_preview_link( $post );
+		$preview_link = add_query_arg( 'page', $page_number, $preview_link );
+
+		return preg_replace( '~href=(["|\'])(.+?)\1~', 'href=$1' . $preview_link . '$1', $link );
+	}
+
+	/**
 	 * Sets the post status of the first post to publish, so we don't have to do anything
 	 * *too* hacky to get it to load the preview.
 	 *
@@ -480,6 +502,7 @@ class DS_Public_Post_Preview {
 			// Disable comments and pings for this post.
 			add_filter( 'comments_open', '__return_false' );
 			add_filter( 'pings_open', '__return_false' );
+			add_filter( 'wp_link_pages_link', array( __CLASS__, 'filter_wp_link_pages_link' ), 10, 2 );
 		}
 
 		return $posts;
