@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.4.1
+ * Version: 2.5.0
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -13,7 +13,7 @@
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *	Copyright (C) 2012-2014 Dominik Schilling
+ *	Copyright (C) 2012-2016 Dominik Schilling
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -40,50 +40,30 @@ if ( ! class_exists( 'WP' ) ) {
 /**
  * The class which controls the plugin.
  *
- * Used hooks:
- *  - pre_get_posts
- *  - query_vars
- *  - init
- *  - post_submitbox_misc_actions
- *  - save_post
- *  - posts_results
- *  - wp_ajax_public-post-preview
- *  - admin_enqueue_scripts
- *  - comments_open
- *  - pings_open
- *
  * Inits at 'plugins_loaded' hook.
- *
  */
 class DS_Public_Post_Preview {
 
 	/**
-	 * Hooks into 'pre_get_posts' to handle public preview, only nn-admin
-	 * Hooks into 'add_meta_boxes' to register the meta box.
-	 * Hooks into 'save_post' to handle the values of the meta box.
-	 * Hooks into 'admin_enqueue_scripts' to register JavaScript.
+	 * Registers actions and filters.
 	 *
 	 * @since 1.0.0
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
+		add_action( 'transition_post_status', array( __CLASS__, 'unregister_public_preview_on_status_change' ), 20, 3 );
+		add_action( 'post_updated', array( __CLASS__, 'unregister_public_preview_on_edit' ), 20, 2 );
 
 		if ( ! is_admin() ) {
 			add_filter( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
-
 			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
-
 			// Add the query var to WordPress SEO by Yoast whitelist.
 			add_filter( 'wpseo_whitelist_permalink_vars', array( __CLASS__, 'add_query_var' ) );
 		} else {
 			add_action( 'post_submitbox_misc_actions', array( __CLASS__, 'post_submitbox_misc_actions' ) );
-
 			add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
-
 			add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
-
 			add_action( 'admin_enqueue_scripts' , array( __CLASS__, 'enqueue_script' ) );
-
 			add_filter( 'display_post_states', array( __CLASS__, 'display_preview_state' ), 20, 2 );
 		}
 	}
@@ -287,18 +267,79 @@ class DS_Public_Post_Preview {
 		if ( empty( $_POST['public_post_preview'] ) && in_array( $preview_post_id, $preview_post_ids ) ) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
 		} elseif (
-				! empty( $_POST['public_post_preview'] ) &&
-				! empty( $_POST['original_post_status'] ) &&
-				'publish' != $_POST['original_post_status'] &&
-				'publish' == $post->post_status &&
-				in_array( $preview_post_id, $preview_post_ids )
-			) {
+			! empty( $_POST['public_post_preview'] ) &&
+			! empty( $_POST['original_post_status'] ) &&
+			! in_array( $_POST['original_post_status'], self::get_published_statuses() ) &&
+			in_array( $post->post_status, self::get_published_statuses() )
+		) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
 		} elseif ( ! empty( $_POST['public_post_preview'] ) && ! in_array( $preview_post_id, $preview_post_ids ) ) {
 			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
 		} else {
 			return false; // Nothing has changed.
 		}
+
+		return self::set_preview_post_ids( $preview_post_ids );
+	}
+
+	/**
+	 * Unregisters a post for public preview when a (scheduled) post gets published
+	 * or trashed.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param string  $new_status New post status.
+	 * @param string  $old_status Old post status.
+	 * @param WP_Post $post       Post object.
+	 * @return bool Returns false on a failure, true on a success.
+	 */
+	public static function unregister_public_preview_on_status_change( $new_status, $old_status, $post ) {
+		$disallowed_status = self::get_published_statuses();
+		$disallowed_status[] = 'trash';
+
+		if ( in_array( $new_status, $disallowed_status ) ) {
+			return self::unregister_public_preview( $post->ID );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Unregisters a post for public preview when a post gets published or trashed.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param int     $post_id    Post ID.
+	 * @param WP_Post $post_after Post object
+	 * @return bool Returns false on a failure, true on a success.
+	 */
+	public static function unregister_public_preview_on_edit( $post_id, $post ) {
+		$disallowed_status = self::get_published_statuses();
+		$disallowed_status[] = 'trash';
+
+		if ( in_array( $post->post_status, $disallowed_status ) ) {
+			return self::unregister_public_preview( $post_id );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Unregisters a post for public preview.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param int $post_id Post ID.
+	 * @return bool Returns false on a failure, true on a success.
+	 */
+	private static function unregister_public_preview( $post_id ) {
+		$preview_post_ids = self::get_preview_post_ids();
+
+		if ( ! in_array( $post_id, $preview_post_ids ) ) {
+			return false;
+		}
+
+		$preview_post_ids = array_diff( $preview_post_ids, (array) $post_id );
 
 		return self::set_preview_post_ids( $preview_post_ids );
 	}
