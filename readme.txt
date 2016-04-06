@@ -60,6 +60,11 @@ To upload the plugin through WordPress, instead of FTP:
 
 == Frequently Asked Questions ==
 
+**I can't find the option for preview links. Where is it?**
+
+The checkbox is only available for non-published posts and once a post was saved as a draft.
+
+
 **After some time the preview link returns the message "The link has been expired!". Why?**
 
 The plugin generates an URL with an expiring nonce. By default a link "lives" 48 hours. After 48 hours the link is expired and you need to copy and share a new link which is automatically generated on the same place under the editor.
