@@ -233,6 +233,19 @@ class DS_Public_Post_Preview {
 			);
 		}
 
+		if ( class_exists( 'CF_preview_fix' ) ) {
+			$post_time =
+				isset($post->post_modified)
+				? date('YmdHis', strtotime($post->post_modified))
+				: current_time('YmdHis');
+			$preview_time = current_time('YmdHis');
+
+			$args += array(
+				'post_date'    => $post_time,
+		 		'preview_time' => $preview_time
+			);
+		}
+
 		$args['preview'] = true;
 		$args['_ppp'] = self::create_nonce( 'public_post_preview_' . $post->ID );
 
