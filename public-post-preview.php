@@ -217,7 +217,7 @@ class DS_Public_Post_Preview {
 	 * @param WP_Post $post The post object.
 	 * @return string The generated public preview link.
 	 */
-	private static function get_preview_link( $post ) {
+	public static function get_preview_link( $post ) {
 		if ( 'page' == $post->post_type ) {
 			$args = array(
 				'page_id'    => $post->ID,
