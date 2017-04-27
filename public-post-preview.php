@@ -420,6 +420,10 @@ class DS_Public_Post_Preview {
 			$query->is_singular() &&
 			$query->get( '_ppp' )
 		) {
+			if ( ! headers_sent() ) {
+				nocache_headers();
+			}
+
 			add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
 		}
 
