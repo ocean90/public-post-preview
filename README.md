@@ -4,7 +4,11 @@ WordPress plugin to enable you to give a link to anonymous users for public prev
 
 Have you ever been writing a post with the help of someone who does not have access to your blog and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating an URL with an expiring nonce that can be given out for public preview.
 
-*Previously this plugin was maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/). Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
+<p align="center">
+<img src="https://raw.github.com/ocean90/public-post-preview/master/assets-wp-repo/screenshot-1.gif" alt="" width="400">
+</p>
+
+*This plugin was previously maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/). Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
 
 ## Installation
 
@@ -26,11 +30,6 @@ For a manual installation via FTP:
 To upload the plugin through WordPress, instead of FTP:
 
 1. Upload the downloaded zip file on the 'Add New' plugins screen (see the 'Upload' tab) in your WordPress admin area and activate.
-
-## Screenshots
-
-*Edit Posts Page*
-![Edit Posts Page](https://raw.github.com/ocean90/public-post-preview/master/assets-wp-repo/screenshot-1.gif)
 
 ## Usage
 * To enable a public post preview check the box below the edit post box.
