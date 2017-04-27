@@ -1,0 +1,71 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Public Post Preview\n"
+"POT-Creation-Date: 2015-08-31 22:10+0900\n"
+"PO-Revision-Date: 2015-08-31 23:01+0900\n"
+"Last-Translator: \n"
+"Language-Team: Kamibu <doi@kamibu.jp>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.4\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-WPHeader: public-post-preview.php\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: public-post-preview.php:129
+msgid "Enabled!"
+msgstr "生成しました"
+
+#: public-post-preview.php:130
+msgid "Disabled!"
+msgstr "削除しました"
+
+#: public-post-preview.php:142
+msgid "Public Preview"
+msgstr "限定プレビュー"
+
+#: public-post-preview.php:215
+msgid "Enable public preview"
+msgstr "公開プレビューリンクを生成"
+
+#: public-post-preview.php:220
+msgid "(Copy and share this link.)"
+msgstr "(このリンクを伝えてください)"
+
+#: public-post-preview.php:401
+msgid "The link has been expired!"
+msgstr "このリンクは有効期限切れです。"
+
+#: public-post-preview.php:405
+msgid "No Public Preview available!"
+msgstr "プレビューリンクが設定されていません"
+
+#. Plugin Name of the plugin/theme
+msgid "Public Post Preview"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "http://wpgrafie.de/wp-plugins/public-post-preview/en/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Enables you to give a link to anonymous users for public preview of any post "
+"type before it is published."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Dominik Schilling"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://wphelper.de/"
+msgstr ""
