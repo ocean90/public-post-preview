@@ -64,6 +64,10 @@ Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/publ
 
 
 ## Changelog
+#### 2.6.0 (2017-04-27):
+* Make `DS_Public_Post_Preview::get_preview_link()` public. Props [@rcstr](https://github.com/rcstr).
+* Send no-cache headers for public post previews.
+
 #### 2.5.0 (2016-04-05):
 * Auto select preview link on focus. Props [@JeroenSormani](https://github.com/JeroenSormani).
 * Remove preview status from posts which are trashed or after scheduled posts are published.

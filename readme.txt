@@ -1,7 +1,6 @@
 === Public Post Preview ===
 Contributors: ocean90
 Tags: public, post, preview, posts, custom post types, draft
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46
 Requires at least: 3.5
 Tested up to: 4.7
 Stable tag: 2.5.0
@@ -72,6 +71,10 @@ function my_nonce_life() {
 Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/public-post-preview-configurator/).
 
 == Change Log ==
+= 2.6.0 (2017-04-27): =
+* Make `DS_Public_Post_Preview::get_preview_link()` public. Props [@rcstr](https://github.com/rcstr).
+* Send no-cache headers for public post previews.
+
 = 2.5.0 (2016-04-05): =
 * Auto select preview link on focus. Props [@JeroenSormani](https://github.com/JeroenSormani).
 * Remove preview status from posts which are trashed or after scheduled posts are published.
