@@ -1,32 +1,10 @@
 # Public Post Preview
-**Contributors:** ocean90  
-**Tags:** public, post, preview, posts, custom post types, draft  
-**Donate link:** <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VR8YU922B7K46>  
-**Requires at least:** 3.5  
-**Tested up to:** 4.5  
-**Stable tag:** 2.5.0  
-**License:** GPLv2 or later  
-**License URI:** <http://www.gnu.org/licenses/gpl-2.0.html>  
 
-Enables you to give a link to anonymous users for public preview of a post before it is published.
-
-## Description
-
-Enables you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.
+WordPress plugin to enable you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.
 
 Have you ever been writing a post with the help of someone who does not have access to your blog and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating an URL with an expiring nonce that can be given out for public preview.
 
-**Sounds pretty good? Install now!**
-
-*Previously this plugin was maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/).*
-
-#### Feedback
-If you want, you can drop me a line @[ocean90](http://twitter.com/ocean90) on Twitter or @[Dominik Schilling](https://plus.google.com/101675293278434581718/) on Google+.
-
-#### More
-Try also some of my [other plugins](http://profiles.wordpress.org/users/ocean90).
-
-*Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
+*Previously this plugin was maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/). Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
 
 ## Installation
 
