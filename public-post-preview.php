@@ -37,6 +37,8 @@ if ( ! class_exists( 'WP' ) ) {
 	die();
 }
 
+include_once dirname( __FILE__ ).'/options.php';
+
 /**
  * The class which controls the plugin.
  *
@@ -60,12 +62,32 @@ class DS_Public_Post_Preview {
 			// Add the query var to WordPress SEO by Yoast whitelist.
 			add_filter( 'wpseo_whitelist_permalink_vars', array( __CLASS__, 'add_query_var' ) );
 		} else {
+			add_action('admin_init' , array( __CLASS__, 'register_setting' ) );
+
+			add_action('admin_menu' , array( __CLASS__, 'add_options_page' ) );
+
 			add_action( 'post_submitbox_misc_actions', array( __CLASS__, 'post_submitbox_misc_actions' ) );
 			add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
 			add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
 			add_action( 'admin_enqueue_scripts' , array( __CLASS__, 'enqueue_script' ) );
 			add_filter( 'display_post_states', array( __CLASS__, 'display_preview_state' ), 20, 2 );
 		}
+	}
+
+	/**
+	 * Registers the expiration hours setting.
+	 *
+	 */
+	public static function register_setting() {
+		register_setting('public_post_preview_group', 'public_post_preview_expiration_hours');
+	}
+
+	/**
+	 * Adds the option page to the menu.
+	 *
+	 */
+	public static function add_options_page() {
+		add_options_page(__('Public Post Preview'), __('Public Post Preview'), 'manage_options', basename(__FILE__), 'public_post_preview_show_settings_page');
 	}
 
 	/**
@@ -535,7 +557,11 @@ class DS_Public_Post_Preview {
 	 * @return int The time-dependent variable.
 	 */
 	private static function nonce_tick() {
-		$nonce_life = apply_filters( 'ppp_nonce_life', 60 * 60 * 48 ); // 48 hours
+		$expiration_hours = (int) get_option('public_post_preview_expiration_hours');
+		if ($expiration_hours <= 0) {
+			$expiration_hours = 48;
+		}
+		$nonce_life = apply_filters( 'ppp_nonce_life', 60 * 60 * $expiration_hours );
 
 		return ceil( time() / ( $nonce_life / 2 ) );
 	}
