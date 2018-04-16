@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.6.0
+ * Version: 2.7.0-alpha
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: http://wphelper.de/
@@ -88,6 +88,14 @@ class DS_Public_Post_Preview {
 		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) ) {
 			return;
 		}
+
+		wp_enqueue_script(
+			'public-post-preview-gutenberg',
+			plugins_url( "js/gutenberg.build.js", __FILE__ ),
+			array( 'wp-edit-post' ),
+			time(),
+			true
+		);
 
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
