@@ -4,16 +4,12 @@ const externals = {
 
 // Define WordPress dependencies
 const wpDependencies = [
-	'blocks',
 	'components',
-	'date',
 	'editor',
 	'element',
 	'i18n',
 	'utils',
 	'data',
-	'viewport',
-	'core-data',
 	'plugins',
 	'edit-post',
 ];
@@ -44,12 +40,12 @@ wpDependencies.forEach( ( name ) => {
 const config = {
 	mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
 
-	entry: './js/gutenberg.js',
+	entry: './js/src/index.js',
 
 	// https://webpack.js.org/configuration/output/
 	output: {
 		path: __dirname,
-		filename: 'js/gutenberg.build.js',
+		filename: 'js/gutenberg-integration.js',
 		library: [ 'publicPostPreview', '[name]' ],
 		libraryTarget: 'this',
 	},

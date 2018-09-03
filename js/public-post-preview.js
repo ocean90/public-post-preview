@@ -32,7 +32,7 @@
 		 */
 		change : function() {
 			var t = this,
-				checked = t.checkbox.prop( 'checked' ) ? 1 : 0;
+				checked = t.checkbox.prop( 'checked' ) ? 'true' : 'false';
 
 			// Toggle visibility of the link
 			t.link.toggle();
