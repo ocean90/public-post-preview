@@ -47,6 +47,12 @@ class PreviewToggle extends Component {
 		this.onClick = this.onClick.bind( this );
 	}
 
+	componentWillUnmount() {
+		if ( this.timerId ) {
+			clearTimeout( this.timerId );
+		}
+	}
+
 	onChange( checked ) {
 		this.request( {
 			checked,
