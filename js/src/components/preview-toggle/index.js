@@ -19,6 +19,16 @@ const pluginPostStatusInfoPreviewUrl = css`
 	margin-top: 10px;
 `
 
+const pluginPostStatusInfoPreviewUrlInput = css`
+	cursor: pointer;
+`
+
+const pluginPostStatusInfoPreviewDescription = css`
+	font-style: italic;
+	color: #666;
+	margin: .2em 0 0 !important;
+`
+
 class PreviewToggle extends Component {
 
 	constructor( props ) {
@@ -27,9 +37,14 @@ class PreviewToggle extends Component {
 		this.state = {
 			previewEnabled: DSPublicPostPreviewData.previewEnabled,
 			previewUrl: DSPublicPostPreviewData.previewUrl,
+			urlCopied: false,
 		}
 
-		this.onChange = this.onChange.bind( this )
+		this.previewUrlInput = React.createRef();
+
+		this.onChange = this.onChange.bind( this );
+		this.onFocus = this.onFocus.bind( this );
+		this.onClick = this.onClick.bind( this );
 	}
 
 	onChange( checked ) {
@@ -39,6 +54,25 @@ class PreviewToggle extends Component {
 		}, () => {
 			this.setState( { previewEnabled: ! this.state.previewEnabled } );
 		} )
+	}
+
+	onFocus() {
+		this.previewUrlInput.current.focus();
+		this.previewUrlInput.current.select();
+	}
+
+	onClick() {
+		if ( this.timerId ) {
+			clearTimeout( this.timerId );
+		}
+
+		this.previewUrlInput.current.select();
+		const copied = document.execCommand( 'copy' );
+		this.setState( { urlCopied: copied } );
+
+		if ( copied ) {
+			this.timerId = setTimeout( () => this.setState( { urlCopied: false } ), 2000 );
+		}
 	}
 
 	/**
@@ -66,6 +100,7 @@ class PreviewToggle extends Component {
 		const {
 			previewEnabled,
 			previewUrl,
+			urlCopied,
 		} = this.state;
 
 		return (
@@ -80,8 +115,20 @@ class PreviewToggle extends Component {
 				{ previewEnabled &&
 					<PluginPostStatusInfo className={ pluginPostStatusInfoPreviewUrl }>
 						<label htmlFor="public-post-preview-url" className="screen-reader-text">{ __( 'Preview URL', 'public-post-preview' ) }</label>
-						<input type="text" id="public-post-preview-url" value={ previewUrl } readOnly />
-						{ __( '(Copy and share this link.)', 'public-post-preview' ) }
+						<input
+							ref={ this.previewUrlInput }
+							type="text"
+							id="public-post-preview-url"
+							className={ pluginPostStatusInfoPreviewUrlInput }
+							value={ previewUrl }
+							readOnly
+							onFocus={ this.onFocus }
+							onClick={ this.onClick }
+						/>
+						<p className={ pluginPostStatusInfoPreviewDescription }>
+							{ __( '(Click to copy and share the link.)', 'public-post-preview' ) }
+							{ urlCopied && <strong>{ ' ' + __( 'Copied!', 'public-post-preview' ) }</strong> }
+						</p>
 					</PluginPostStatusInfo>
 				}
 			</Fragment>
@@ -95,3 +142,4 @@ export default withSelect( ( select ) => {
 		postId: getCurrentPostId(),
 	};
 } )( PreviewToggle );
+
