@@ -423,6 +423,7 @@ class DS_Public_Post_Preview {
 			if ( ! headers_sent() ) {
 				nocache_headers();
 			}
+			add_action( 'wp_head', 'wp_no_robots' );
 
 			add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
 		}
