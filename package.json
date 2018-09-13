@@ -19,7 +19,9 @@
     "node": ">=8"
   },
   "devDependencies": {
+    "@wordpress/babel-plugin-makepot": "^2.1.0",
     "@wordpress/babel-preset-default": "^1.1.2",
+    "@wordpress/i18n": "^2.0.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
     "babel-plugin-emotion": "^9.2.8",
@@ -31,6 +33,8 @@
   },
   "scripts": {
     "build": "cross-env BABEL_ENV=production NODE_ENV=production webpack",
-    "dev": "cross-env BABEL_ENV=development webpack --watch"
+    "dev": "cross-env BABEL_ENV=development webpack --watch",
+    "pot-to-php": "pot-to-php languages/public-post-preview.pot languages/public-post-preview.php public-post-preview",
+    "release": "npm run build && npm run pot-to-php"
   }
 }
