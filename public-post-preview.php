@@ -89,43 +89,55 @@ class DS_Public_Post_Preview {
 			return;
 		}
 
-		wp_enqueue_script(
-			'public-post-preview-gutenberg',
-			plugins_url( 'js/gutenberg-integration.js', __FILE__ ),
-			array( 'wp-edit-post' ),
-			time(),
-			true
-		);
+		if ( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() ) {
+			wp_enqueue_script(
+				'public-post-preview-gutenberg',
+				plugins_url( 'js/gutenberg-integration.js', __FILE__ ),
+				array( 'wp-edit-post' ),
+				time(),
+				true
+			);
 
-		$post = get_post();
-		wp_localize_script(
-			'public-post-preview-gutenberg',
-			'DSPublicPostPreviewData',
-			array(
-				'previewEnabled' => self::is_public_preview_enabled( $post ),
-				'previewUrl'     => self::get_preview_link( $post ),
-				'nonce'          => wp_create_nonce( 'public-post-preview_' . $post->ID ),
-			)
-		);
+			$post = get_post();
+			wp_localize_script(
+				'public-post-preview-gutenberg',
+				'DSPublicPostPreviewData',
+				array(
+					'previewEnabled' => self::is_public_preview_enabled( $post ),
+					'previewUrl'     => self::get_preview_link( $post ),
+					'nonce'          => wp_create_nonce( 'public-post-preview_' . $post->ID ),
+				)
+			);
 
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+			if ( function_exists( 'gutenberg_get_jed_locale_data' ) ) {
+				// Prepare Jed locale data.
+				$locale_data = gutenberg_get_jed_locale_data( 'public-post-preview' );
+				wp_add_inline_script(
+					'public-post-preview-gutenberg',
+					'wp.i18n.setLocaleData( ' . wp_json_encode( $locale_data ) . ', "public-post-preview" );',
+					'before'
+				);
+			}
+		} else {
+			$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		wp_enqueue_script(
-			'public-post-preview',
-			plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
-			array( 'jquery' ),
-			'20160403',
-			true
-		);
+			wp_enqueue_script(
+				'public-post-preview',
+				plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
+				array( 'jquery' ),
+				'20160403',
+				true
+			);
 
-		wp_localize_script(
-			'public-post-preview',
-			'DSPublicPostPreviewL10n',
-			array(
-				'enabled'  => __( 'Enabled!', 'public-post-preview' ),
-				'disabled' => __( 'Disabled!', 'public-post-preview' ),
-			)
-		);
+			wp_localize_script(
+				'public-post-preview',
+				'DSPublicPostPreviewL10n',
+				array(
+					'enabled'  => __( 'Enabled!', 'public-post-preview' ),
+					'disabled' => __( 'Disabled!', 'public-post-preview' ),
+				)
+			);
+		}
 	}
 
 	/**
