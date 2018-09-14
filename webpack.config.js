@@ -12,6 +12,7 @@ const wpDependencies = [
 	'data',
 	'plugins',
 	'edit-post',
+	'compose',
 ];
 
 /**
