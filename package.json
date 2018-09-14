@@ -1,0 +1,40 @@
+{
+  "name": "public-post-preview",
+  "version": "1.0.0",
+  "description": "WordPress plugin to enable you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.",
+  "author": "Dominik Schilling",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ocean90/public-post-preview.git"
+  },
+  "homepage": "https://wordpress.org/plugins/public-post-preview/",
+  "bugs": {
+    "url": "https://github.com/ocean90/public-post-preview/issues"
+  },
+  "engines": {
+    "node": ">=8"
+  },
+  "devDependencies": {
+    "@wordpress/babel-plugin-makepot": "^2.1.0",
+    "@wordpress/babel-preset-default": "^1.1.2",
+    "@wordpress/i18n": "^2.0.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-emotion": "^9.2.8",
+    "babel-preset-env": "^1.6.1",
+    "cross-env": "^5.1.4",
+    "emotion": "^9.2.8",
+    "webpack": "^4.4.1",
+    "webpack-cli": "^3.1.0"
+  },
+  "scripts": {
+    "build": "cross-env BABEL_ENV=production NODE_ENV=production webpack",
+    "dev": "cross-env BABEL_ENV=development webpack --watch",
+    "pot-to-php": "pot-to-php languages/public-post-preview.pot languages/public-post-preview.php public-post-preview",
+    "release": "npm run build && npm run pot-to-php"
+  }
+}
