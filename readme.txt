@@ -71,6 +71,10 @@ function my_nonce_life() {
 Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/public-post-preview-configurator/).
 
 == Change Log ==
+= 2.7.0 (2018-09-14): =
+* Initial support for Gutenberg.
+* Block robots for public post previews. Props [@westonruter](https://github.com/westonruter).
+
 = 2.6.0 (2017-04-27): =
 * Make `DS_Public_Post_Preview::get_preview_link()` public. Props [@rcstr](https://github.com/rcstr).
 * Send no-cache headers for public post previews.

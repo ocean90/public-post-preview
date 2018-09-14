@@ -8,11 +8,11 @@ msgid "Permalink copied"
 msgstr ""
 
 #: js/src/components/preview-toggle/index.js:100
-msgid "Copy the permalink"
+msgid "Copy the preview URL"
 msgstr ""
 
 #: js/src/components/preview-toggle/index.js:106
-msgid "Enable Public Preview"
+msgid "Enable public preview"
 msgstr ""
 
 #: js/src/components/preview-toggle/index.js:114

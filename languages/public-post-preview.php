@@ -5,10 +5,10 @@ $generated_i18n_strings = array(
 	__( 'Permalink copied', 'public-post-preview' ),
 
 	// Reference: js/src/components/preview-toggle/index.js:100
-	__( 'Copy the permalink', 'public-post-preview' ),
+	__( 'Copy the preview URL', 'public-post-preview' ),
 
 	// Reference: js/src/components/preview-toggle/index.js:106
-	__( 'Enable Public Preview', 'public-post-preview' ),
+	__( 'Enable public preview', 'public-post-preview' ),
 
 	// Reference: js/src/components/preview-toggle/index.js:114
 	__( 'Preview URL', 'public-post-preview' ),

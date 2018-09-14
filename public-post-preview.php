@@ -13,7 +13,7 @@
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *	Copyright (C) 2012-2017 Dominik Schilling
+ *	Copyright (C) 2012-2018 Dominik Schilling
  *
  *	This program is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License

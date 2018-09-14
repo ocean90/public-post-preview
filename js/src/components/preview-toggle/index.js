@@ -97,13 +97,13 @@ export class PreviewToggle extends Component {
 			hasCopied
 		} = this.state;
 
-		const ariaCopyLabel = hasCopied ? __( 'Permalink copied', 'public-post-preview' ) : __( 'Copy the permalink', 'public-post-preview' );
+		const ariaCopyLabel = hasCopied ? __( 'Permalink copied', 'public-post-preview' ) : __( 'Copy the preview URL', 'public-post-preview' );
 
 		return (
 			<Fragment>
 				<PluginPostStatusInfo>
 					<CheckboxControl
-						label={ __( 'Enable Public Preview', 'public-post-preview' ) }
+						label={ __( 'Enable public preview', 'public-post-preview' ) }
 						checked={ previewEnabled }
 						onChange={ this.onChange }
 					/>
