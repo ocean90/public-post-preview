@@ -1,33 +1,31 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.7.0-alpha
+ * Version: 2.7.0
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
- * Author URI: http://wphelper.de/
+ * Author URI: https://wphelper.de/
  * Plugin URI: https://dominikschilling.de/wp-plugins/public-post-preview/en/
- *
  * Text Domain: public-post-preview
- *
  * License: GPLv2 or later
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *	Copyright (C) 2012-2018 Dominik Schilling
+ *  Copyright (C) 2012-2018 Dominik Schilling
  *
- *	This program is free software; you can redistribute it and/or
- *	modify it under the terms of the GNU General Public License
- *	as published by the Free Software Foundation; either version 2
- *	of the License, or (at your option) any later version.
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
- *	This program is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *	GNU General Public License for more details.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- *	You should have received a copy of the GNU General Public License
- *	along with this program; if not, write to the Free Software
- *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 /**
@@ -94,7 +92,7 @@ class DS_Public_Post_Preview {
 				'public-post-preview-gutenberg',
 				plugins_url( 'js/gutenberg-integration.js', __FILE__ ),
 				array( 'wp-edit-post' ),
-				time(),
+				'20180914',
 				true
 			);
 
@@ -110,7 +108,6 @@ class DS_Public_Post_Preview {
 			);
 
 			if ( function_exists( 'gutenberg_get_jed_locale_data' ) ) {
-				// Prepare Jed locale data.
 				$locale_data = gutenberg_get_jed_locale_data( 'public-post-preview' );
 				wp_add_inline_script(
 					'public-post-preview-gutenberg',
@@ -125,7 +122,7 @@ class DS_Public_Post_Preview {
 				'public-post-preview',
 				plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
 				array( 'jquery' ),
-				'20160403',
+				'20180914',
 				true
 			);
 
