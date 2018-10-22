@@ -240,6 +240,7 @@ class DS_Public_Post_Preview {
 	 * @return bool True if a public preview is enabled, false if not.
 	 */
 	private static function is_public_preview_enabled( $post ) {
+		wp_cache_delete('alloptions', 'options');
 		$preview_post_ids = self::get_preview_post_ids();
 		return in_array( $post->ID, $preview_post_ids, true );
 	}
