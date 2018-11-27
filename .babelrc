@@ -1,5 +1,15 @@
 {
   "presets": [ "@wordpress/default" ],
+  "plugins": [
+    [
+      "@wordpress/babel-plugin-import-jsx-pragma",
+      {
+        "scopeVariable": "createElement",
+        "source": "@wordpress/element",
+        "isDefault": false
+      }
+    ]
+  ],
   "env": {
     "production": {
       "plugins": [

@@ -1,5 +1,6 @@
 const externals = {
 	jquery: 'jQuery',
+	lodash: 'lodash',
 };
 
 // Define WordPress dependencies

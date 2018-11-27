@@ -3,22 +3,22 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "X-Generator: babel-plugin-makepot\n"
 
-#: js/src/components/preview-toggle/index.js:100
-msgid "Permalink copied"
+#: js/src/components/preview-toggle/index.js:103
+msgid "Preview URL copied"
 msgstr ""
 
-#: js/src/components/preview-toggle/index.js:100
+#: js/src/components/preview-toggle/index.js:103
 msgid "Copy the preview URL"
 msgstr ""
 
-#: js/src/components/preview-toggle/index.js:106
+#: js/src/components/preview-toggle/index.js:109
 msgid "Enable public preview"
 msgstr ""
 
-#: js/src/components/preview-toggle/index.js:114
+#: js/src/components/preview-toggle/index.js:117
 msgid "Preview URL"
 msgstr ""
 
-#: js/src/components/preview-toggle/index.js:134
-msgid "Copy and share this preview link."
+#: js/src/components/preview-toggle/index.js:137
+msgid "Copy and share this preview URL."
 msgstr ""
