@@ -87,12 +87,23 @@ class DS_Public_Post_Preview {
 			return;
 		}
 
-		if ( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() ) {
+		if (
+			( method_exists( get_current_screen(), 'is_block_editor' ) && get_current_screen()->is_block_editor() ) ||
+			( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() )
+		) {
 			wp_enqueue_script(
 				'public-post-preview-gutenberg',
 				plugins_url( 'js/gutenberg-integration.js', __FILE__ ),
-				array( 'wp-edit-post' ),
-				'20180914',
+				array(
+					'lodash',
+					'wp-compose',
+					'wp-components',
+					'wp-data',
+					'wp-edit-post',
+					'wp-element',
+					'wp-i18n',
+				),
+				'20181127',
 				true
 			);
 
