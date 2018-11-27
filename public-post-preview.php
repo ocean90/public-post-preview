@@ -236,7 +236,7 @@ class DS_Public_Post_Preview {
 		<div id="public-post-preview-link" style="margin-top:6px"<?php echo $enabled ? '' : ' class="hidden"'; ?>>
 			<label>
 				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post ) ); ?>" style="width:99%" readonly />
-				<span class="description"><?php _e( '(Copy and share this link.)', 'public-post-preview' ); ?></span>
+				<span class="description"><?php _e( '(Copy and share this URL.)', 'public-post-preview' ); ?></span>
 			</label>
 		</div>
 		<?php
@@ -502,7 +502,7 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( ! in_array( $post_id, self::get_preview_post_ids() ) ) {
-			wp_die( __( 'No Public Preview available!', 'public-post-preview' ) );
+			wp_die( __( 'No public preview available!', 'public-post-preview' ) );
 		}
 
 		return true;

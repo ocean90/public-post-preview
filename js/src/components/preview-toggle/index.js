@@ -100,7 +100,7 @@ class PreviewToggle extends Component {
 			hasCopied
 		} = this.state;
 
-		const ariaCopyLabel = hasCopied ? __( 'Permalink copied', 'public-post-preview' ) : __( 'Copy the preview URL', 'public-post-preview' );
+		const ariaCopyLabel = hasCopied ? __( 'Preview URL copied', 'public-post-preview' ) : __( 'Copy the preview URL', 'public-post-preview' );
 
 		return (
 			<Fragment>
@@ -134,7 +134,7 @@ class PreviewToggle extends Component {
 							/>
 						</p>
 						<p className={ pluginPostStatusInfoPreviewDescription }>
-							{ __( 'Copy and share this preview link.', 'public-post-preview' ) }
+							{ __( 'Copy and share this preview URL.', 'public-post-preview' ) }
 						</p>
 					</PluginPostStatusInfo>
 				}
