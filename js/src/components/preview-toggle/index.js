@@ -13,6 +13,7 @@ import {
 } from '@wordpress/components';
 import {
 	Component,
+	createRef,
 	Fragment,
 } from '@wordpress/element';
 import { withSelect } from '@wordpress/data';
@@ -48,7 +49,7 @@ const pluginPostStatusInfoPreviewUrlInputWrapper = css`
 	margin: 0;
 `
 
-export class PreviewToggle extends Component {
+class PreviewToggle extends Component {
 
 	constructor( props ) {
 		super( props )
@@ -59,7 +60,7 @@ export class PreviewToggle extends Component {
 			hasCopied: false,
 		}
 
-		this.previewUrlInput = React.createRef();
+		this.previewUrlInput = createRef();
 
 		this.onChange = this.onChange.bind( this );
 		this.onPreviewUrlInputFocus = this.onPreviewUrlInputFocus.bind( this );
