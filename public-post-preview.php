@@ -498,7 +498,7 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) ) {
-			wp_die( __( 'The link has been expired!', 'public-post-preview' ) );
+			wp_die( __( 'This link has expired!', 'public-post-preview' ) );
 		}
 
 		if ( ! in_array( $post_id, self::get_preview_post_ids() ) ) {
