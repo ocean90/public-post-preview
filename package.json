@@ -26,10 +26,12 @@
     "babel-plugin-emotion": "^10.0.14",
     "cross-env": "^5.2.0",
     "emotion": "^10.0.14",
+    "terser": "^4.1.2",
     "webpack": "^4.35.3",
     "webpack-cli": "^3.3.5"
   },
   "scripts": {
+    "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c -m",
     "build": "cross-env BABEL_ENV=production NODE_ENV=production webpack",
     "dev": "cross-env BABEL_ENV=development webpack --watch"
   }
