@@ -534,7 +534,7 @@ class DS_Public_Post_Preview {
 		remove_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10 );
 
 		if ( empty( $posts ) ) {
-			return;
+			return $posts;
 		}
 
 		$post_id = $posts[0]->ID;
