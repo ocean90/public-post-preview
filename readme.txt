@@ -73,6 +73,13 @@ Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/publ
 
 == Change Log ==
 
+=  2.9.0 (Unreleased): =
+* Requires WordPress 5.0
+* Requires PHP 5.6
+* Fixes incorrect status message in classic editor.
+* Removes i18n compatibility layer from Gutenberg plugin for translations.
+* Improves internal checks to be more strict. Props [@PatelUtkarsh](https://github.com/PatelUtkarsh).
+
 = 2.8.0 (2018-11-27): =
 * Add support for WordPress 5.0 and the new block editor.
 

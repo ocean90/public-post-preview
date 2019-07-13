@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.9.0 (Unreleased):
+* Requires WordPress 5.0
+* Requires PHP 5.6
+* Fixes incorrect status message in classic editor.
+* Removes i18n compatibility layer from Gutenberg plugin for translations.
+* Improves internal checks to be more strict. Props [@PatelUtkarsh](https://github.com/PatelUtkarsh).
+
 ## 2.8.0 (2018-11-27):
 * Add support for WordPress 5.0 and the new block editor.
 
@@ -31,7 +38,7 @@
 * Adds the query var `_ppp` to WordPress SEO by Yoast whitelist.
 
 ## 2.2 (2013-03-15):
-* Based on user feedback: Removed the extra metabox and added preview link to the main Publish metabox.
+* Based on user feedback: Removed the extra meta box and added preview link to the main Publish meta box.
 * Only show the checkbox if the post status/post type is good.
 * Requires WordPress 3.5
 

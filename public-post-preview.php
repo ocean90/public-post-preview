@@ -156,7 +156,7 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Adds the checkbox to the submit metabox.
+	 * Adds the checkbox to the submit meta box.
 	 *
 	 * @since 2.2.0
 	 */
