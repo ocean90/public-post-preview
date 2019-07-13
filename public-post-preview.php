@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.8.0
+ * Version: 2.9.0-alpha
  * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
  * Author: Dominik Schilling
  * Author URI: https://wphelper.de/
