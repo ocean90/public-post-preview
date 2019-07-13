@@ -11,7 +11,7 @@
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *  Copyright (C) 2012-2018 Dominik Schilling
+ *  Copyright (C) 2012-2019 Dominik Schilling
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -83,14 +83,11 @@ class DS_Public_Post_Preview {
 	 * @param string $hook_suffix Unique page identifier.
 	 */
 	public static function enqueue_script( $hook_suffix ) {
-		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) ) {
+		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
 			return;
 		}
 
-		if (
-			( method_exists( get_current_screen(), 'is_block_editor' ) && get_current_screen()->is_block_editor() ) ||
-			( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() )
-		) {
+		if ( get_current_screen()->is_block_editor() ) {
 			wp_enqueue_script(
 				'public-post-preview-gutenberg',
 				plugins_url( 'js/gutenberg-integration.js', __FILE__ ),
@@ -107,6 +104,8 @@ class DS_Public_Post_Preview {
 				true
 			);
 
+			wp_set_script_translations( 'public-post-preview-gutenberg', 'public-post-preview' );
+
 			$post = get_post();
 			wp_localize_script(
 				'public-post-preview-gutenberg',
@@ -117,15 +116,6 @@ class DS_Public_Post_Preview {
 					'nonce'          => wp_create_nonce( 'public-post-preview_' . $post->ID ),
 				)
 			);
-
-			if ( function_exists( 'gutenberg_get_jed_locale_data' ) ) {
-				$locale_data = gutenberg_get_jed_locale_data( 'public-post-preview' );
-				wp_add_inline_script(
-					'public-post-preview-gutenberg',
-					'wp.i18n.setLocaleData( ' . wp_json_encode( $locale_data ) . ', "public-post-preview" );',
-					'before'
-				);
-			}
 		} else {
 			$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
@@ -179,7 +169,7 @@ class DS_Public_Post_Preview {
 
 		$post = get_post();
 
-		if ( ! in_array( $post->post_type, $post_types ) ) {
+		if ( ! in_array( $post->post_type, $post_types, true ) ) {
 			return false;
 		}
 
@@ -189,7 +179,7 @@ class DS_Public_Post_Preview {
 		}
 
 		// Post is already published.
-		if ( in_array( $post->post_status, self::get_published_statuses() ) ) {
+		if ( in_array( $post->post_status, self::get_published_statuses(), true ) ) {
 			return false;
 		}
 
@@ -269,11 +259,11 @@ class DS_Public_Post_Preview {
 	 * @return string The generated public preview link.
 	 */
 	public static function get_preview_link( $post ) {
-		if ( 'page' == $post->post_type ) {
+		if ( 'page' === $post->post_type ) {
 			$args = array(
 				'page_id' => $post->ID,
 			);
-		} elseif ( 'post' == $post->post_type ) {
+		} elseif ( 'post' === $post->post_type ) {
 			$args = array(
 				'p' => $post->ID,
 			);
@@ -324,8 +314,8 @@ class DS_Public_Post_Preview {
 		} elseif (
 			! empty( $_POST['public_post_preview'] ) &&
 			! empty( $_POST['original_post_status'] ) &&
-			! in_array( $_POST['original_post_status'], self::get_published_statuses() ) &&
-			in_array( $post->post_status, self::get_published_statuses() )
+			! in_array( $_POST['original_post_status'], self::get_published_statuses(), true ) &&
+			in_array( $post->post_status, self::get_published_statuses(), true )
 		) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
 		} elseif ( ! empty( $_POST['public_post_preview'] ) && ! in_array( $preview_post_id, $preview_post_ids ) ) {
@@ -352,7 +342,7 @@ class DS_Public_Post_Preview {
 		$disallowed_status   = self::get_published_statuses();
 		$disallowed_status[] = 'trash';
 
-		if ( in_array( $new_status, $disallowed_status ) ) {
+		if ( in_array( $new_status, $disallowed_status, true ) ) {
 			return self::unregister_public_preview( $post->ID );
 		}
 
@@ -372,7 +362,7 @@ class DS_Public_Post_Preview {
 		$disallowed_status   = self::get_published_statuses();
 		$disallowed_status[] = 'trash';
 
-		if ( in_array( $post->post_status, $disallowed_status ) ) {
+		if ( in_array( $post->post_status, $disallowed_status, true ) ) {
 			return self::unregister_public_preview( $post_id );
 		}
 
@@ -417,7 +407,7 @@ class DS_Public_Post_Preview {
 			wp_send_json_error( 'cannot_edit' );
 		}
 
-		if ( in_array( $post->post_status, self::get_published_statuses() ) ) {
+		if ( in_array( $post->post_status, self::get_published_statuses(), true ) ) {
 			wp_send_json_error( 'invalid_post_status' );
 		}
 
@@ -574,7 +564,7 @@ class DS_Public_Post_Preview {
 	 * @return false False of post status is not a published status.
 	 */
 	private static function maybe_redirect_to_published_post( $post_id ) {
-		if ( ! in_array( get_post_status( $post_id ), self::get_published_statuses() ) ) {
+		if ( ! in_array( get_post_status( $post_id ), self::get_published_statuses(), true ) ) {
 			return false;
 		}
 
@@ -628,12 +618,12 @@ class DS_Public_Post_Preview {
 		$i = self::nonce_tick();
 
 		// Nonce generated 0-12 hours ago.
-		if ( substr( wp_hash( $i . $action, 'nonce' ), -12, 10 ) == $nonce ) {
+		if ( substr( wp_hash( $i . $action, 'nonce' ), -12, 10 ) === $nonce ) {
 			return 1;
 		}
 
 		// Nonce generated 12-24 hours ago.
-		if ( substr( wp_hash( ( $i - 1 ) . $action, 'nonce' ), -12, 10 ) == $nonce ) {
+		if ( substr( wp_hash( ( $i - 1 ) . $action, 'nonce' ), -12, 10 ) === $nonce ) {
 			return 2;
 		}
 
