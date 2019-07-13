@@ -145,7 +145,7 @@ class DS_Public_Post_Preview {
 	 *
 	 * @param array   $post_states An array of post display states.
 	 * @param WP_Post $post        The current post object.
-	 * @return Filtered array of post display states.
+	 * @return array Filtered array of post display states.
 	 */
 	public static function display_preview_state( $post_states, $post ) {
 		if ( in_array( (int) $post->ID, self::get_preview_post_ids(), true ) ) {
