@@ -1,0 +1,25 @@
+{
+	"name": "ocean90/public-post-preview",
+	"description": "WordPress plugin to allow anonymous users to preview a post before it is published.",
+	"homepage": "https://wordpress.org/plugins/public-post-preview/",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Dominik Schilling",
+			"homepage": "https://dominikschilling.de/"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/ocean90/public-post-preview/issues",
+		"forum": "https://wordpress.org/support/plugin/public-post-preview",
+		"source": "https://github.com/ocean90/public-post-preview"
+	},
+	"config": {
+		"sort-packages": true,
+		"preferred-install": "dist"
+	},
+	"require": {
+		"php": ">=5.6"
+	}
+}

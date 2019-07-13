@@ -1,7 +1,6 @@
 {
   "name": "public-post-preview",
-  "version": "1.0.0",
-  "description": "WordPress plugin to enable you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.",
+  "description": "WordPress plugin to allow anonymous users to preview a post before it is published.",
   "author": "Dominik Schilling",
   "license": "GPL-2.0-or-later",
   "keywords": [
@@ -19,23 +18,21 @@
     "node": ">=8"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.6",
-    "@babel/preset-env": "^7.1.6",
-    "@wordpress/babel-plugin-import-jsx-pragma": "^1.1.2",
-    "@wordpress/babel-plugin-makepot": "^2.1.2",
-    "@wordpress/babel-preset-default": "^3.0.1",
-    "@wordpress/i18n": "^3.1.0",
-    "babel-loader": "^8.0.4",
-    "babel-plugin-emotion": "^9.2.11",
+    "@babel/core": "^7.5.4",
+    "@babel/preset-env": "^7.5.4",
+    "@wordpress/babel-preset-default": "^4.3.0",
+    "@wordpress/i18n": "^3.5.0",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-emotion": "^10.0.14",
     "cross-env": "^5.2.0",
-    "emotion": "^9.2.12",
-    "webpack": "^4.26.1",
-    "webpack-cli": "^3.1.2"
+    "emotion": "^10.0.14",
+    "terser": "^4.1.2",
+    "webpack": "^4.35.3",
+    "webpack-cli": "^3.3.5"
   },
   "scripts": {
+    "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c -m",
     "build": "cross-env BABEL_ENV=production NODE_ENV=production webpack",
-    "dev": "cross-env BABEL_ENV=development webpack --watch",
-    "pot-to-php": "pot-to-php languages/public-post-preview.pot languages/public-post-preview.php public-post-preview",
-    "release": "npm run build && npm run pot-to-php"
+    "dev": "cross-env BABEL_ENV=development webpack --watch"
   }
 }

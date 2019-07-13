@@ -1,15 +1,5 @@
 {
   "presets": [ "@wordpress/default" ],
-  "plugins": [
-    [
-      "@wordpress/babel-plugin-import-jsx-pragma",
-      {
-        "scopeVariable": "createElement",
-        "source": "@wordpress/element",
-        "isDefault": false
-      }
-    ]
-  ],
   "env": {
     "production": {
       "plugins": [
@@ -17,12 +7,6 @@
           "emotion",
           {
             "hoist": true
-          }
-        ],
-        [
-          "@wordpress/babel-plugin-makepot",
-          {
-            "output": "languages/public-post-preview.pot"
           }
         ]
       ]

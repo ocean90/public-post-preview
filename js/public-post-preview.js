@@ -47,9 +47,8 @@
 					post_ID : $( '#post_ID' ).val()
 				},
 				function( data ) {
-					// data is '1' if it's a successful request
-					if ( data ) {
-						if ( checked ) {
+					if ( data.success ) {
+						if ( 'true' === checked ) {
 							t.status.text( DSPublicPostPreviewL10n.enabled );
 							t._pulsate( t.status, 'green' );
 						} else {

@@ -1,17 +1,17 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 2.8.0
- * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
+ * Version: 2.9.0-alpha
+ * Description: Allow anonymous users to preview a post before it is published.
  * Author: Dominik Schilling
- * Author URI: https://wphelper.de/
+ * Author URI: https://dominikschilling.de/
  * Plugin URI: https://dominikschilling.de/wp-plugins/public-post-preview/en/
  * Text Domain: public-post-preview
  * License: GPLv2 or later
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *  Copyright (C) 2012-2018 Dominik Schilling
+ *  Copyright (C) 2012-2019 Dominik Schilling
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -87,10 +87,7 @@ class DS_Public_Post_Preview {
 			return;
 		}
 
-		if (
-			( method_exists( get_current_screen(), 'is_block_editor' ) && get_current_screen()->is_block_editor() ) ||
-			( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() )
-		) {
+		if ( get_current_screen()->is_block_editor() ) {
 			wp_enqueue_script(
 				'public-post-preview-gutenberg',
 				plugins_url( 'js/gutenberg-integration.js', __FILE__ ),
@@ -103,9 +100,11 @@ class DS_Public_Post_Preview {
 					'wp-element',
 					'wp-i18n',
 				),
-				'20181127',
+				'20190713',
 				true
 			);
+
+			wp_set_script_translations( 'public-post-preview-gutenberg', 'public-post-preview' );
 
 			$post = get_post();
 			wp_localize_script(
@@ -117,15 +116,6 @@ class DS_Public_Post_Preview {
 					'nonce'          => wp_create_nonce( 'public-post-preview_' . $post->ID ),
 				)
 			);
-
-			if ( function_exists( 'gutenberg_get_jed_locale_data' ) ) {
-				$locale_data = gutenberg_get_jed_locale_data( 'public-post-preview' );
-				wp_add_inline_script(
-					'public-post-preview-gutenberg',
-					'wp.i18n.setLocaleData( ' . wp_json_encode( $locale_data ) . ', "public-post-preview" );',
-					'before'
-				);
-			}
 		} else {
 			$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
@@ -133,7 +123,7 @@ class DS_Public_Post_Preview {
 				'public-post-preview',
 				plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
 				array( 'jquery' ),
-				'20180914',
+				'20190713',
 				true
 			);
 
@@ -158,7 +148,7 @@ class DS_Public_Post_Preview {
 	 * @return array Filtered array of post display states.
 	 */
 	public static function display_preview_state( $post_states, $post ) {
-		if ( in_array( $post->ID, self::get_preview_post_ids(), true ) ) {
+		if ( in_array( (int) $post->ID, self::get_preview_post_ids(), true ) ) {
 			$post_states['ppp_enabled'] = __( 'Public Preview', 'public-post-preview' );
 		}
 
@@ -317,7 +307,7 @@ class DS_Public_Post_Preview {
 		}
 
 		$preview_post_ids = self::get_preview_post_ids();
-		$preview_post_id  = $post->ID;
+		$preview_post_id  = (int) $post->ID;
 
 		if ( empty( $_POST['public_post_preview'] ) && in_array( $preview_post_id, $preview_post_ids, true ) ) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
@@ -373,7 +363,7 @@ class DS_Public_Post_Preview {
 		$disallowed_status[] = 'trash';
 
 		if ( in_array( $post->post_status, $disallowed_status, true ) ) {
-			return self::unregister_public_preview( (int) $post_id );
+			return self::unregister_public_preview( $post_id );
 		}
 
 		return false;
@@ -388,6 +378,7 @@ class DS_Public_Post_Preview {
 	 * @return bool Returns false on a failure, true on a success.
 	 */
 	private static function unregister_public_preview( $post_id ) {
+		$post_id          = (int) $post_id;
 		$preview_post_ids = self::get_preview_post_ids();
 
 		if ( ! in_array( $post_id, $preview_post_ids, true ) ) {
@@ -401,8 +392,6 @@ class DS_Public_Post_Preview {
 
 	/**
 	 * (Un)Registers a post for a public preview for an AJAX request.
-	 *
-	 * Returns '0' on a failure, '1' on success.
 	 *
 	 * @since 2.0.0
 	 */
@@ -498,11 +487,11 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) ) {
-			wp_die( esc_html__( 'The link has been expired!', 'public-post-preview' ) );
+			wp_die( __( 'This link has expired!', 'public-post-preview' ) );
 		}
 
-		if ( ! in_array( (int) $post_id, self::get_preview_post_ids(), true ) ) {
-			wp_die( esc_html__( 'No public preview available!', 'public-post-preview' ) );
+		if ( ! in_array( $post_id, self::get_preview_post_ids(), true ) ) {
+			wp_die( __( 'No public preview available!', 'public-post-preview' ) );
 		}
 
 		return true;
@@ -544,10 +533,10 @@ class DS_Public_Post_Preview {
 		remove_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10 );
 
 		if ( empty( $posts ) ) {
-			return array();
+			return $posts;
 		}
 
-		$post_id = $posts[0]->ID;
+		$post_id = (int) $posts[0]->ID;
 
 		// If the post has gone live, redirect to it's proper permalink.
 		self::maybe_redirect_to_published_post( $post_id );
@@ -642,26 +631,33 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Returns the post ids which are registered for a public preview.
+	 * Returns the post IDs which are registered for a public preview.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @return array The post ids. (Empty array if no ids are registered.)
+	 * @return array The post IDs. (Empty array if no IDs are registered.)
 	 */
 	private static function get_preview_post_ids() {
-		return array_map( 'intval', get_option( 'public_post_preview', array() ) );
+		$post_ids = get_option( 'public_post_preview', array() );
+		$post_ids = array_map( 'absint', $post_ids );
+
+		return $post_ids;
 	}
 
 	/**
-	 * Saves the post ids which are registered for a public preview.
+	 * Saves the post IDs which are registered for a public preview.
 	 *
 	 * @since 2.0.0
 	 *
 	 * @param array $post_ids List of post IDs that have a preview.
-	 * @return bool False if value was not updated and true if value was updated.
+	 * @return array The post IDs. (Empty array if no IDs are registered.)
 	 */
 	private static function set_preview_post_ids( $post_ids = array() ) {
-		return update_option( 'public_post_preview', array_map( 'absint', $post_ids ) );
+		$post_ids = array_map( 'absint', $post_ids );
+		$post_ids = array_filter( $post_ids );
+		$post_ids = array_unique( $post_ids );
+
+		return update_option( 'public_post_preview', $post_ids );
 	}
 
 	/**
