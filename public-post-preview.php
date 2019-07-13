@@ -2,9 +2,9 @@
 /**
  * Plugin Name: Public Post Preview
  * Version: 2.9.0-alpha
- * Description: Enables you to give a link to anonymous users for public preview of any post type before it is published.
+ * Description: Allow anonymous users to preview a post before it is published.
  * Author: Dominik Schilling
- * Author URI: https://wphelper.de/
+ * Author URI: https://dominikschilling.de/
  * Plugin URI: https://dominikschilling.de/wp-plugins/public-post-preview/en/
  * Text Domain: public-post-preview
  * License: GPLv2 or later
@@ -100,7 +100,7 @@ class DS_Public_Post_Preview {
 					'wp-element',
 					'wp-i18n',
 				),
-				'20181127',
+				'20190713',
 				true
 			);
 
@@ -123,7 +123,7 @@ class DS_Public_Post_Preview {
 				'public-post-preview',
 				plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
 				array( 'jquery' ),
-				'20180914',
+				'20190713',
 				true
 			);
 

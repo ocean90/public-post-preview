@@ -1,6 +1,6 @@
 {
   "name": "public-post-preview",
-  "description": "WordPress plugin to enable you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.",
+  "description": "WordPress plugin to allow anonymous users to preview a post before it is published.",
   "author": "Dominik Schilling",
   "license": "GPL-2.0-or-later",
   "keywords": [
