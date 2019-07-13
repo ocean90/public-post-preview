@@ -148,7 +148,7 @@ class DS_Public_Post_Preview {
 	 * @return Filtered array of post display states.
 	 */
 	public static function display_preview_state( $post_states, $post ) {
-		if ( in_array( $post->ID, self::get_preview_post_ids() ) ) {
+		if ( in_array( (int) $post->ID, self::get_preview_post_ids(), true ) ) {
 			$post_states['ppp_enabled'] = __( 'Public Preview', 'public-post-preview' );
 		}
 
@@ -307,9 +307,9 @@ class DS_Public_Post_Preview {
 		}
 
 		$preview_post_ids = self::get_preview_post_ids();
-		$preview_post_id  = $post->ID;
+		$preview_post_id  = (int) $post->ID;
 
-		if ( empty( $_POST['public_post_preview'] ) && in_array( $preview_post_id, $preview_post_ids ) ) {
+		if ( empty( $_POST['public_post_preview'] ) && in_array( $preview_post_id, $preview_post_ids, true ) ) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
 		} elseif (
 			! empty( $_POST['public_post_preview'] ) &&
@@ -318,7 +318,7 @@ class DS_Public_Post_Preview {
 			in_array( $post->post_status, self::get_published_statuses(), true )
 		) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
-		} elseif ( ! empty( $_POST['public_post_preview'] ) && ! in_array( $preview_post_id, $preview_post_ids ) ) {
+		} elseif ( ! empty( $_POST['public_post_preview'] ) && ! in_array( $preview_post_id, $preview_post_ids, true ) ) {
 			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
 		} else {
 			return false; // Nothing has changed.
@@ -378,9 +378,10 @@ class DS_Public_Post_Preview {
 	 * @return bool Returns false on a failure, true on a success.
 	 */
 	private static function unregister_public_preview( $post_id ) {
+		$post_id          = (int) $post_id;
 		$preview_post_ids = self::get_preview_post_ids();
 
-		if ( ! in_array( $post_id, $preview_post_ids ) ) {
+		if ( ! in_array( $post_id, $preview_post_ids, true ) ) {
 			return false;
 		}
 
@@ -391,8 +392,6 @@ class DS_Public_Post_Preview {
 
 	/**
 	 * (Un)Registers a post for a public preview for an AJAX request.
-	 *
-	 * Returns '0' on a failure, '1' on success.
 	 *
 	 * @since 2.0.0
 	 */
@@ -413,9 +412,9 @@ class DS_Public_Post_Preview {
 
 		$preview_post_ids = self::get_preview_post_ids();
 
-		if ( 'false' === $_POST['checked'] && in_array( $preview_post_id, $preview_post_ids ) ) {
+		if ( 'false' === $_POST['checked'] && in_array( $preview_post_id, $preview_post_ids, true ) ) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
-		} elseif ( 'true' === $_POST['checked'] && ! in_array( $preview_post_id, $preview_post_ids ) ) {
+		} elseif ( 'true' === $_POST['checked'] && ! in_array( $preview_post_id, $preview_post_ids, true ) ) {
 			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
 		} else {
 			wp_send_json_error( 'unknown_status' );
@@ -491,7 +490,7 @@ class DS_Public_Post_Preview {
 			wp_die( __( 'This link has expired!', 'public-post-preview' ) );
 		}
 
-		if ( ! in_array( $post_id, self::get_preview_post_ids() ) ) {
+		if ( ! in_array( $post_id, self::get_preview_post_ids(), true ) ) {
 			wp_die( __( 'No public preview available!', 'public-post-preview' ) );
 		}
 
@@ -537,7 +536,7 @@ class DS_Public_Post_Preview {
 			return $posts;
 		}
 
-		$post_id = $posts[0]->ID;
+		$post_id = (int) $posts[0]->ID;
 
 		// If the post has gone live, redirect to it's proper permalink.
 		self::maybe_redirect_to_published_post( $post_id );
@@ -632,25 +631,32 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
-	 * Returns the post ids which are registered for a public preview.
+	 * Returns the post IDs which are registered for a public preview.
 	 *
 	 * @since 2.0.0
 	 *
-	 * @return array The post ids. (Empty array if no ids are registered.)
+	 * @return array The post IDs. (Empty array if no IDs are registered.)
 	 */
 	private static function get_preview_post_ids() {
-		return get_option( 'public_post_preview', array() );
+		$post_ids = get_option( 'public_post_preview', array() );
+		$post_ids = array_map( 'absint', $post_ids );
+
+		return $post_ids;
 	}
 
 	/**
-	 * Saves the post ids which are registered for a public preview.
+	 * Saves the post IDs which are registered for a public preview.
 	 *
 	 * @since 2.0.0
 	 *
 	 * @param array $post_ids List of post IDs that have a preview.
-	 * @return array The post ids. (Empty array if no ids are registered.)
+	 * @return array The post IDs. (Empty array if no IDs are registered.)
 	 */
 	private static function set_preview_post_ids( $post_ids = array() ) {
+		$post_ids = array_map( 'absint', $post_ids );
+		$post_ids = array_filter( $post_ids );
+		$post_ids = array_unique( $post_ids );
+
 		return update_option( 'public_post_preview', $post_ids );
 	}
 
