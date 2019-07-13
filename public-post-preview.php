@@ -639,7 +639,7 @@ class DS_Public_Post_Preview {
 	 */
 	private static function get_preview_post_ids() {
 		$post_ids = get_option( 'public_post_preview', array() );
-		$post_ids = array_map( 'absint', $post_ids );
+		$post_ids = array_map( 'intval', $post_ids );
 
 		return $post_ids;
 	}
