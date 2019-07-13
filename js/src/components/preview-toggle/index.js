@@ -15,7 +15,7 @@ import {
 	Component,
 	createRef,
 } from '@wordpress/element';
-import { withSelect } from '@wordpress/data';
+import { withSelect, withDispatch } from '@wordpress/data';
 import { PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ifCondition, compose } from '@wordpress/compose';
 
@@ -72,7 +72,18 @@ class PreviewToggle extends Component {
 			checked,
 			post_ID: this.props.postId
 		}, () => {
-			this.setState( { previewEnabled: ! this.state.previewEnabled } );
+			const previewEnabled = ! this.state.previewEnabled;
+			this.setState( { previewEnabled: previewEnabled } );
+
+			this.props.createNotice(
+				'info',
+				previewEnabled ? __( 'Public preview enabled.', 'public-post-preview' ) : __( 'Public preview disabled.', 'public-post-preview' ),
+				{
+					id: 'public-post-preview',
+					isDismissible: true,
+					type: 'snackbar'
+				}
+			);
 		} )
 	}
 
@@ -168,5 +179,10 @@ export default compose( [
 			'publish',
 			'private',
 		].indexOf( status ) === -1;
+	} ),
+	withDispatch( ( dispatch ) => {
+		return {
+			createNotice: dispatch( 'core/notices' ).createNotice
+		};
 	} ),
 ] )( PreviewToggle );
