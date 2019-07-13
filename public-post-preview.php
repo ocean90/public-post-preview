@@ -567,7 +567,7 @@ class DS_Public_Post_Preview {
 			return false;
 		}
 
-		wp_redirect( get_permalink( $post_id ), 301 );
+		wp_safe_redirect( get_permalink( $post_id ), 301 );
 		exit;
 	}
 
