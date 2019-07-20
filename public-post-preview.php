@@ -48,7 +48,6 @@ class DS_Public_Post_Preview {
 	 * @since 1.0.0
 	 */
 	public static function init() {
-		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 		add_action( 'transition_post_status', array( __CLASS__, 'unregister_public_preview_on_status_change' ), 20, 3 );
 		add_action( 'post_updated', array( __CLASS__, 'unregister_public_preview_on_edit' ), 20, 2 );
 
@@ -64,15 +63,6 @@ class DS_Public_Post_Preview {
 			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_script' ) );
 			add_filter( 'display_post_states', array( __CLASS__, 'display_preview_state' ), 20, 2 );
 		}
-	}
-
-	/**
-	 * Registers the textdomain.
-	 *
-	 * @since 2.0.0
-	 */
-	public static function load_textdomain() {
-		return load_plugin_textdomain( 'public-post-preview' );
 	}
 
 	/**
