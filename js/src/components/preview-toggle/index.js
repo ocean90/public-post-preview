@@ -68,23 +68,48 @@ class PreviewToggle extends Component {
 	}
 
 	onChange( checked ) {
-		this.request( {
-			checked,
-			post_ID: this.props.postId
-		}, () => {
-			const previewEnabled = ! this.state.previewEnabled;
-			this.setState( { previewEnabled: previewEnabled } );
+		const data = new window.FormData();
+		data.append( 'checked', checked );
+		data.append( 'post_ID', this.props.postId );
 
-			this.props.createNotice(
-				'info',
-				previewEnabled ? __( 'Public preview enabled.', 'public-post-preview' ) : __( 'Public preview disabled.', 'public-post-preview' ),
-				{
-					id: 'public-post-preview',
-					isDismissible: true,
-					type: 'snackbar'
+		this.sendRequest( data)
+			.then( ( response ) => {
+				if ( response.status >= 200 && response.status < 300 ) {
+					return response;
 				}
-			);
-		} )
+
+				throw response;
+			} )
+			.then( ( response ) => response.json() )
+			.then( ( response ) => {
+				if ( ! response.success ) {
+					throw response;
+				}
+
+				const previewEnabled = ! this.state.previewEnabled;
+				this.setState( { previewEnabled: previewEnabled } );
+
+				this.props.createNotice(
+					'info',
+					previewEnabled ? __( 'Public preview enabled.', 'public-post-preview' ) : __( 'Public preview disabled.', 'public-post-preview' ),
+					{
+						id: 'public-post-preview',
+						isDismissible: true,
+						type: 'snackbar'
+					}
+				);
+			} )
+			.catch( () => {
+				this.props.createNotice(
+					'error',
+					__( 'Error while changing the public preview status.', 'public-post-preview' ),
+					{
+						id: 'public-post-preview',
+						isDismissible: true,
+						type: 'snackbar'
+					}
+				);
+			} );
 	}
 
 	onPreviewUrlInputFocus() {
@@ -92,16 +117,12 @@ class PreviewToggle extends Component {
 		this.previewUrlInput.current.select();
 	}
 
-	request( data, callback ) {
-		jQuery.ajax( {
-			type: 'POST',
-			url: ajaxurl,
-			data: {
-				action: 'public-post-preview',
-				_ajax_nonce: DSPublicPostPreviewData.nonce,
-				...data
-			},
-			success: callback,
+	sendRequest( data ) {
+		data.append( 'action', 'public-post-preview' );
+		data.append( '_ajax_nonce', DSPublicPostPreviewData.nonce );
+		return window.fetch( ajaxurl, {
+			method: 'POST',
+			body: data,
 		} );
 	}
 
