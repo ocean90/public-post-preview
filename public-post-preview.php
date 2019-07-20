@@ -88,19 +88,13 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( get_current_screen()->is_block_editor() ) {
+			$script_dependencies_path = plugin_dir_path( __FILE__ ) . 'js/gutenberg-integration.deps.json';
+			$script_dependencies      = file_exists( $script_dependencies_path ) ? json_decode( file_get_contents( $script_dependencies_path ) ) : array();
 			wp_enqueue_script(
 				'public-post-preview-gutenberg',
 				plugins_url( 'js/gutenberg-integration.js', __FILE__ ),
-				array(
-					'lodash',
-					'wp-compose',
-					'wp-components',
-					'wp-data',
-					'wp-edit-post',
-					'wp-element',
-					'wp-i18n',
-				),
-				'20190713',
+				$script_dependencies,
+				'20190720',
 				true
 			);
 
