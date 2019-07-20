@@ -1,20 +1,20 @@
 === Public Post Preview ===
 Contributors: ocean90
-Tags: public, post, preview, posts, custom post types, draft
+Tags: public, preview, posts, anonymous, drafts
 Requires at least: 5.0
 Tested up to: 5.2
 Requires PHP: 5.6
-Stable tag: 2.8.0
+Stable tag: 2.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Enables you to give a link to anonymous users for public preview of a post before it is published.
+Allow anonymous users to preview a draft of a post before it is published.
 
 == Description ==
 
-Enables you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.
+Share a link to anonymous users to preview a draft of a post (or any other public post type) before it is published.
 
-Have you ever been writing a post with the help of someone who does not have access to your blog and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating an URL with an expiring nonce that can be given out for public preview.
+Have you ever been writing a post with the help of someone who does not have access to your site and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating an URL with an expiring nonce that can be given out for public preview.
 
 *Previously this plugin was maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/). Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
 
@@ -73,13 +73,14 @@ Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/publ
 
 == Change Log ==
 
-=  2.9.0 (Unreleased): =
+=  2.9.0 (2019-07-20): =
 * Requires WordPress 5.0
 * Requires PHP 5.6
 * Adds notice (as Snackbar if supported) when changing preview status in block editor.
 * Fixes incorrect status message in classic editor.
+* Fixes grammar in expired link notice. Props [@garrett-eclipse](https://github.com/garrett-eclipse).
 * Improves internal checks to be more strict. Props [@PatelUtkarsh](https://github.com/PatelUtkarsh).
-* Removes i18n compatibility layer from Gutenberg plugin for translations.
+* Removes deprecated i18n compatibility layer from Gutenberg plugin.
 
 = 2.8.0 (2018-11-27): =
 * Add support for WordPress 5.0 and the new block editor.

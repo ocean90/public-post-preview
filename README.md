@@ -1,6 +1,6 @@
 # Public Post Preview
 
-WordPress plugin to enable you to give a link to anonymous users for public preview of a post (or any other public post type) before it is published.
+WordPress plugin to share a link to anonymous users to preview a draft of a post (or any other public post type) before it is published.
 
 Have you ever been writing a post with the help of someone who does not have access to your blog and needed to give them the ability to preview it before publishing? This plugin takes care of that by generating an URL with an expiring nonce that can be given out for public preview.
 
@@ -32,9 +32,9 @@ To upload the plugin through WordPress, instead of FTP:
 1. Upload the downloaded zip file on the 'Add New' plugins screen (see the 'Upload' tab) in your WordPress admin area and activate.
 
 ## Usage
-* To enable a public post preview check the box below the edit post box.
-* The link will be displayed if the checkbox is checked, just copy and share the link with your friends.
-* To disable a preview just uncheck the box.
+* To enable a public post preview check the box in the "Status & Visibility" section of the document settings. In the classic editor it's in the "Publish" meta box.
+* The link will be displayed if the checkbox is checked, you can copy and share the link with your friends.
+* To disable a preview uncheck the box again.
 
 ## Frequently Asked Questions
 
