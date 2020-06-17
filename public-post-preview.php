@@ -447,6 +447,7 @@ class DS_Public_Post_Preview {
 		) {
 			if ( ! headers_sent() ) {
 				nocache_headers();
+				header( 'X-Robots-Tag: noindex' );
 			}
 			add_action( 'wp_head', 'wp_no_robots' );
 
