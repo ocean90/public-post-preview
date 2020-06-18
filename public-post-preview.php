@@ -78,13 +78,18 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( get_current_screen()->is_block_editor() ) {
-			$script_dependencies_path = plugin_dir_path( __FILE__ ) . 'js/gutenberg-integration.deps.json';
-			$script_dependencies      = file_exists( $script_dependencies_path ) ? json_decode( file_get_contents( $script_dependencies_path ) ) : array();
+			$script_assets_path = plugin_dir_path( __FILE__ ) . 'js/dist/gutenberg-integration.asset.php';
+			$script_assets      = file_exists( $script_assets_path ) ?
+				require $script_assets_path :
+				array(
+					'dependencies' => array(),
+					'version'      => '',
+				);
 			wp_enqueue_script(
 				'public-post-preview-gutenberg',
-				plugins_url( 'js/gutenberg-integration.js', __FILE__ ),
-				$script_dependencies,
-				'20190720',
+				plugins_url( 'js/dist/gutenberg-integration.js', __FILE__ ),
+				$script_assets['dependencies'],
+				$script_assets['version'],
 				true
 			);
 
@@ -472,11 +477,11 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) ) {
-			wp_die( __( 'This link has expired!', 'public-post-preview' ) );
+			wp_die( __( 'This link has expired!', 'public-post-preview' ), 403 );
 		}
 
 		if ( ! in_array( $post_id, self::get_preview_post_ids(), true ) ) {
-			wp_die( __( 'No public preview available!', 'public-post-preview' ) );
+			wp_die( __( 'No public preview available!', 'public-post-preview' ), 400 );
 		}
 
 		return true;

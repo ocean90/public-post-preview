@@ -14,23 +14,18 @@
   "bugs": {
     "url": "https://github.com/ocean90/public-post-preview/issues"
   },
-  "engines": {
-    "node": ">=8"
-  },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@wordpress/babel-preset-default": "^4.3.0",
-    "@wordpress/scripts": "^3.3.0",
-    "babel-plugin-emotion": "^10.0.14",
-    "emotion": "^10.0.14",
-    "terser": "^4.1.2",
-    "webpack": "^4.36.1",
-    "webpack-cli": "^3.3.6"
+    "@wordpress/babel-preset-default": "^4.15.0",
+    "@wordpress/scripts": "^11.0.0",
+    "babel-plugin-emotion": "^10.0.33",
+    "clean-webpack-plugin": "^3.0.0",
+    "emotion": "^10.0.27",
+    "terser": "^4.8.0"
   },
   "scripts": {
     "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c -m",
-    "build": "BABEL_ENV=production wp-scripts build",
-    "start": "WP_DEVTOOL=eval BABEL_ENV=development wp-scripts start"
+    "build": "NODE_ENV=production wp-scripts build",
+    "start": "wp-scripts start",
+    "lint-js": "wp-scripts lint-js"
   }
 }

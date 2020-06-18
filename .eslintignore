@@ -1,0 +1,5 @@
+/**/node_modules/*
+js/*
+!js/public-post-preview.js
+!js/src
+!.*.js

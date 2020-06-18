@@ -1,6 +1,8 @@
 .gitignore export-ignore
 .gitattributes export-ignore
-.babelrc export-ignore
+babel.config.js export-ignore
 webpack.config.js export-ignore
 package.json export-ignore
 package-lock.json export-ignore
+.eslintignore export-ignore
+.eslintrc.js export-ignore
