@@ -4,7 +4,7 @@ Tags: public, preview, posts, anonymous, drafts
 Requires at least: 5.0
 Tested up to: 5.4
 Requires PHP: 5.6
-Stable tag: 2.9.0
+Stable tag: 2.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -73,7 +73,10 @@ Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/publ
 
 == Change Log ==
 
-=  2.9.0 (2019-07-20): =
+= 2.9.1 (2020-07-25): =
+* Improve HTTP status codes for expired/invalid preview links.
+
+= 2.9.0 (2019-07-20): =
 * Requires WordPress 5.0
 * Requires PHP 5.6
 * Adds notice (as Snackbar if supported) when changing preview status in block editor.
