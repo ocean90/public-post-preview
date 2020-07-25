@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@wordpress/babel-preset-default": "^4.17.0",
+    "@wordpress/env": "^1.6.0",
     "@wordpress/scripts": "^12.1.1",
     "babel-plugin-emotion": "^10.0.33",
     "emotion": "^10.0.27",
@@ -25,6 +26,7 @@
     "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c -m",
     "build": "NODE_ENV=production wp-scripts build",
     "start": "wp-scripts start",
-    "lint-js": "wp-scripts lint-js"
+    "lint-js": "wp-scripts lint-js",
+    "env": "wp-env"
   }
 }
