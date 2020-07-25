@@ -4,7 +4,7 @@
 .eslintrc.js export-ignore
 .gitattributes export-ignore
 .gitignore export-ignore
-.wp-env.json
+.wp-env.json export-ignore
 babel.config.js export-ignore
 package.json export-ignore
 package-lock.json export-ignore
