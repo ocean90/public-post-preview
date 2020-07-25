@@ -481,7 +481,7 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( ! in_array( $post_id, self::get_preview_post_ids(), true ) ) {
-			wp_die( __( 'No public preview available!', 'public-post-preview' ), 400 );
+			wp_die( __( 'No public preview available!', 'public-post-preview' ), 404 );
 		}
 
 		return true;
