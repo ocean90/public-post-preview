@@ -17,7 +17,7 @@
   "devDependencies": {
     "@wordpress/babel-preset-default": "^4.17.0",
     "@wordpress/env": "^1.6.0",
-    "@wordpress/scripts": "^12.1.1",
+    "@wordpress/scripts": "^12.2.0",
     "babel-plugin-emotion": "^10.0.33",
     "emotion": "^10.0.27",
     "terser": "^5.3.1"
