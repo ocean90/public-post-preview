@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2.9.2 (2020-10-03):
-* Fixes saving of preview status without a previous Ajax requests.
+* Fixes saving of preview status without a previous Ajax request.
 
 ## 2.9.1 (2020-07-25):
 * Improve HTTP status codes for expired/invalid preview links.
