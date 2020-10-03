@@ -1,4 +1,5 @@
 .github export-ignore
+.wordpress-org export-ignore
 .editorconfig export-ignore
 .eslintignore export-ignore
 .eslintrc.js export-ignore
