@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 3.0.0-alpha
+ * Version: 2.9.2
  * Description: Allow anonymous users to preview a post before it is published.
  * Author: Dominik Schilling
  * Author URI: https://dominikschilling.de/
