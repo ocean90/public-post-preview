@@ -1,0 +1,16 @@
+/.git
+/.github
+/.wordpress-org
+.distignore
+.editorconfig
+.eslintignore
+.eslintrc.js
+.gitattributes
+.gitignore
+.wp-env.json
+babel.config.js
+composer.json
+package.json
+package-lock.json
+README.md
+webpack.config.js
