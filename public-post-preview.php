@@ -274,13 +274,13 @@ class DS_Public_Post_Preview {
 	/**
 	 * (Un)Registers a post for a public preview.
 	 *
-	 * Don't runs on an autosave and ignores post revisions.
+	 * Runs when a post is saved, ignores revisions and autosaves.
 	 *
 	 * @since 2.0.0
 	 *
 	 * @param int    $post_id The post id.
 	 * @param object $post    The post object.
-	 * @return bool Returns false on a failure, true on a success.
+	 * @return bool Returns true on a success, false on a failure.
 	 */
 	public static function register_public_preview( $post_id, $post ) {
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -291,7 +291,11 @@ class DS_Public_Post_Preview {
 			return false;
 		}
 
-		if ( empty( $_POST['public_post_preview_wpnonce'] ) || ! wp_verify_nonce( $_POST['public_post_preview_wpnonce'], 'public_post_preview' ) ) {
+		if ( empty( $_POST['public_post_preview_wpnonce'] ) || ! wp_verify_nonce( $_POST['public_post_preview_wpnonce'], 'public-post-preview_' . $post_id ) ) {
+			return false;
+		}
+
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return false;
 		}
 
@@ -325,7 +329,7 @@ class DS_Public_Post_Preview {
 	 * @param string  $new_status New post status.
 	 * @param string  $old_status Old post status.
 	 * @param WP_Post $post       Post object.
-	 * @return bool Returns false on a failure, true on a success.
+	 * @return bool Returns true on a success, false on a failure.
 	 */
 	public static function unregister_public_preview_on_status_change( $new_status, $old_status, $post ) {
 		$disallowed_status   = self::get_published_statuses();
@@ -345,7 +349,7 @@ class DS_Public_Post_Preview {
 	 *
 	 * @param int     $post_id Post ID.
 	 * @param WP_Post $post    Post object.
-	 * @return bool Returns false on a failure, true on a success.
+	 * @return bool Returns true on a success, false on a failure.
 	 */
 	public static function unregister_public_preview_on_edit( $post_id, $post ) {
 		$disallowed_status   = self::get_published_statuses();
@@ -364,7 +368,7 @@ class DS_Public_Post_Preview {
 	 * @since 2.5.0
 	 *
 	 * @param int $post_id Post ID.
-	 * @return bool Returns false on a failure, true on a success.
+	 * @return bool Returns true on a success, false on a failure.
 	 */
 	private static function unregister_public_preview( $post_id ) {
 		$post_id          = (int) $post_id;
@@ -640,7 +644,7 @@ class DS_Public_Post_Preview {
 	 * @since 2.0.0
 	 *
 	 * @param array $post_ids List of post IDs that have a preview.
-	 * @return array The post IDs. (Empty array if no IDs are registered.)
+	 * @return bool Returns true on a success, false on a failure.
 	 */
 	private static function set_preview_post_ids( $post_ids = array() ) {
 		$post_ids = array_map( 'absint', $post_ids );
