@@ -7,6 +7,8 @@
  * Author URI: https://dominikschilling.de/
  * Plugin URI: https://dominikschilling.de/wp-plugins/public-post-preview/en/
  * Text Domain: public-post-preview
+ * Requires at least: 5.0
+ * Requires PHP: 5.6
  * License: GPLv2 or later
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
