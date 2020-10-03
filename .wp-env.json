@@ -1,8 +1,23 @@
 {
-	"core": "WordPress/WordPress#master",
-	"port": 49200,
-	"testsPort": 49201,
-	"plugins": [
-		"."
-	]
+  "core": "WordPress/WordPress#master",
+  "port": 49200,
+  "plugins": [
+    "."
+  ],
+  "env": {
+    "development": {
+      "config": {
+        "WP_DEBUG_LOG": true
+      },
+      "plugins": [
+        ".",
+        "https://downloads.wordpress.org/plugin/gutenberg.9.1.0.zip",
+        "https://downloads.wordpress.org/plugin/query-monitor.3.6.4.zip",
+        "https://downloads.wordpress.org/plugin/classic-editor.1.6.zip"
+      ]
+    },
+    "tests": {
+        "port": 49201
+    }
+  }
 }
