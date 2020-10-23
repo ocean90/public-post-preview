@@ -20,7 +20,7 @@
     "@wordpress/scripts": "^12.2.1",
     "babel-plugin-emotion": "^10.0.33",
     "emotion": "^10.0.27",
-    "terser": "^5.3.5"
+    "terser": "^5.3.8"
   },
   "scripts": {
     "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c -m",
