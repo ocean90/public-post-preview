@@ -391,6 +391,10 @@ class DS_Public_Post_Preview {
 	 * @since 2.0.0
 	 */
 	public static function ajax_register_public_preview() {
+		if ( empty( $_POST['post_ID'] ) {
+			return false;
+		}
+
 		$preview_post_id = (int) $_POST['post_ID'];
 
 		check_ajax_referer( 'public-post-preview_' . $preview_post_id );
@@ -407,9 +411,9 @@ class DS_Public_Post_Preview {
 
 		$preview_post_ids = self::get_preview_post_ids();
 
-		if ( 'false' === $_POST['checked'] && in_array( $preview_post_id, $preview_post_ids, true ) ) {
+		if ( ! empty( $_POST['checked'] ) && 'false' === $_POST['checked'] && in_array( $preview_post_id, $preview_post_ids, true ) ) {
 			$preview_post_ids = array_diff( $preview_post_ids, (array) $preview_post_id );
-		} elseif ( 'true' === $_POST['checked'] && ! in_array( $preview_post_id, $preview_post_ids, true ) ) {
+		} elseif ( ! empty( $_POST['checked'] ) && 'true' === $_POST['checked'] && ! in_array( $preview_post_id, $preview_post_ids, true ) ) {
 			$preview_post_ids = array_merge( $preview_post_ids, (array) $preview_post_id );
 		} else {
 			wp_send_json_error( 'unknown_status' );
