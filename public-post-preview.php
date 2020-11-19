@@ -392,6 +392,9 @@ class DS_Public_Post_Preview {
 	 */
 	public static function ajax_register_public_preview() {
 		$preview_post_id = (int) filter_input( INPUT_POST, 'post_ID');
+		if ( ! $preview_post_id ) {
+			return false;
+		}
 
 		check_ajax_referer( 'public-post-preview_' . $preview_post_id );
 
