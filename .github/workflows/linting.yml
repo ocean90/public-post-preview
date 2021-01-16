@@ -1,18 +1,18 @@
-name: Build
+name: Linting
 
 on:
   pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
-  build:
+  linters:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
-        with:
-          # Custom token to allow commits trigger other workflows.
-          token: ${{ secrets.REPO_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -33,15 +33,8 @@ jobs:
       - name: Install Node.js dependencies
         run: npm ci
 
-      - name: Run build command
-        run: |
-          npm run build:legacy
-          npm run build
-
-      - name: Commit updated assets files
-        uses: EndBug/add-and-commit@v6
+      - name: Run linters
+        uses: wearerequired/lint-action@v1
         with:
-          author_name: github-actions[bot]
-          author_email: github-actions[bot]@users.noreply.github.com
-          message: "[auto] Update assets"
-          add: "js"
+          github_token: ${{ secrets.github_token }}
+          eslint: true
