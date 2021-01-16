@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+        with:
+          # Custom token to allow commits trigger other workflows.
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install Node.js dependencies
+        run: npm i
+
+      - name: Run build command
+        run: |
+          npm run build:legacy
+          npm run build
+
+      - name: Commit updated assets files
+        uses: EndBug/add-and-commit@v6
+        with:
+          author_name: github-actions[bot]
+          author_email: github-actions[bot]@users.noreply.github.com
+          message: "[auto] Update assets"
+          add: "js"
