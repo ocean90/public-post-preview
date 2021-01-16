@@ -9,6 +9,7 @@ module.exports = {
 	},
 
 	output: {
+		...defaultConfig.output,
 		path: path.resolve( __dirname, 'js/dist' ),
 		filename: '[name].js',
 	},
