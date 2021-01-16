@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { get } from 'lodash';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 
 /**
  * WordPress dependencies
