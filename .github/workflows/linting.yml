@@ -31,7 +31,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install Node.js dependencies
-        run: npm i
+        run: npm ci
 
       - name: Run linters
         uses: wearerequired/lint-action@v1
