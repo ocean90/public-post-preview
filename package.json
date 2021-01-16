@@ -22,7 +22,7 @@
     "@wordpress/babel-preset-default": "4.20.0",
     "@wordpress/env": "3.0.0",
     "@wordpress/scripts": "12.6.1",
-    "babel-plugin-emotion": "10.0.33",
+    "babel-plugin-emotion": "11.0.0",
     "emotion": "10.0.27",
     "terser": "5.5.1"
   },
