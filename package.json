@@ -23,7 +23,7 @@
     "@wordpress/env": "3.0.0",
     "@wordpress/scripts": "12.6.1",
     "babel-plugin-emotion": "10.0.33",
-    "emotion": "10.0.27",
+    "emotion": "11.0.0",
     "terser": "5.3.8"
   },
   "scripts": {
