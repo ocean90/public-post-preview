@@ -98,13 +98,14 @@ class DS_Public_Post_Preview {
 
 			wp_set_script_translations( 'public-post-preview-gutenberg', 'public-post-preview' );
 
-			$post = get_post();
+			$post            = get_post();
+			$preview_enabled = self::is_public_preview_enabled( $post );
 			wp_localize_script(
 				'public-post-preview-gutenberg',
 				'DSPublicPostPreviewData',
 				array(
-					'previewEnabled' => self::is_public_preview_enabled( $post ),
-					'previewUrl'     => self::get_preview_link( $post ),
+					'previewEnabled' => $preview_enabled,
+					'previewUrl'     => $preview_enabled ? self::get_preview_link( $post ) : '',
 					'nonce'          => wp_create_nonce( 'public-post-preview_' . $post->ID ),
 				)
 			);
@@ -217,7 +218,7 @@ class DS_Public_Post_Preview {
 
 		<div id="public-post-preview-link" style="margin-top:6px"<?php echo $enabled ? '' : ' class="hidden"'; ?>>
 			<label>
-				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( self::get_preview_link( $post ) ); ?>" style="width:99%" readonly />
+				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( $enabled ? self::get_preview_link( $post ) : '' ); ?>" style="width:99%" readonly />
 				<span class="description"><?php _e( 'Copy and share this preview URL.', 'public-post-preview' ); ?></span>
 			</label>
 		</div>
@@ -427,7 +428,12 @@ class DS_Public_Post_Preview {
 			wp_send_json_error( 'not_saved' );
 		}
 
-		wp_send_json_success();
+		$data = null;
+		if ( 'true' === $checked ) {
+			$data = array( 'preview_url' => self::get_preview_link( $post ) );
+		}
+
+		wp_send_json_success( $data );
 	}
 
 	/**

@@ -95,7 +95,10 @@ class PreviewToggle extends Component {
 				}
 
 				const previewEnabled = ! this.state.previewEnabled;
-				this.setState( { previewEnabled } );
+				this.setState( {
+					previewEnabled,
+					previewUrl: response?.data?.preview_url || '',
+				} );
 
 				this.props.createNotice(
 					'info',

@@ -11,6 +11,7 @@
 
 			t.checkbox = $( '#public-post-preview' );
 			t.link = $( '#public-post-preview-link' );
+			t.linkInput = t.link.find( 'input' );
 			t.nonce = $( '#public_post_preview_wpnonce' );
 			t.status = $( '#public-post-preview-ajax' );
 
@@ -20,7 +21,7 @@
 				t.change();
 			} );
 
-			t.link.find( 'input' ).on( 'focus', function () {
+			t.linkInput.on( 'focus', function () {
 				$( this ).select();
 			} );
 		},
@@ -34,9 +35,6 @@
 			var t = this,
 				checked = t.checkbox.prop( 'checked' ) ? 'true' : 'false';
 
-			// Toggle visibility of the link
-			t.link.toggle();
-
 			// Disable the checkbox, to prevent double AJAX requests
 			t.checkbox.prop( 'disabled', 'disabled' );
 
@@ -46,8 +44,8 @@
 					checked: checked,
 					post_ID: $( '#post_ID' ).val(),
 				},
-				function ( data ) {
-					if ( data.success ) {
+				function ( response ) {
+					if ( response.success ) {
 						if ( 'true' === checked ) {
 							t.status.text( l10n.enabled );
 							t._pulsate( t.status, 'green' );
@@ -55,6 +53,16 @@
 							t.status.text( l10n.disabled );
 							t._pulsate( t.status, 'red' );
 						}
+
+						// Add preview link
+						if ( response.data && response.data.preview_url ) {
+							t.linkInput.val( response.data.preview_url );
+						} else {
+							t.linkInput.val( '' );
+						}
+
+						// Toggle visibility of the link
+						t.link.toggle();
 					}
 
 					// Enable the checkbox again
