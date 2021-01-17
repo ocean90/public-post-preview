@@ -27,7 +27,7 @@
     "terser": "5.5.1"
   },
   "scripts": {
-    "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c -m",
+    "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c passes=2 -m",
     "build": "NODE_ENV=production wp-scripts build",
     "start": "wp-scripts start",
     "lint-js": "wp-scripts lint-js",
