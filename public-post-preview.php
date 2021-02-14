@@ -55,7 +55,7 @@ class DS_Public_Post_Preview {
 		add_action( 'post_updated', array( __CLASS__, 'unregister_public_preview_on_edit' ), 20, 2 );
 
 		if ( ! is_admin() ) {
-			add_filter( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
+			add_action( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
 			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
 			// Add the query var to WordPress SEO by Yoast whitelist.
 			add_filter( 'wpseo_whitelist_permalink_vars', array( __CLASS__, 'add_query_var' ) );
@@ -459,7 +459,6 @@ class DS_Public_Post_Preview {
 	 * @since 2.0.0
 	 *
 	 * @param object $query The WP_Query object.
-	 * @return object The WP_Query object, unchanged.
 	 */
 	public static function show_public_preview( $query ) {
 		if (
@@ -476,8 +475,6 @@ class DS_Public_Post_Preview {
 
 			add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
 		}
-
-		return $query;
 	}
 
 	/**
