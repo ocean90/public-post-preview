@@ -39,7 +39,7 @@ jobs:
           npm run build
 
       - name: Commit updated assets files
-        uses: EndBug/add-and-commit@v6
+        uses: EndBug/add-and-commit@v7
         with:
           author_name: github-actions[bot]
           author_email: github-actions[bot]@users.noreply.github.com
