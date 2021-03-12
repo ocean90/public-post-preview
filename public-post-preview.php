@@ -471,7 +471,11 @@ class DS_Public_Post_Preview {
 				nocache_headers();
 				header( 'X-Robots-Tag: noindex' );
 			}
-			add_action( 'wp_head', 'wp_no_robots' );
+			if ( function_exists( 'wp_robots_no_robots' ) ) { // WordPress 5.7+
+				add_filter( 'wp_robots', 'wp_robots_no_robots' );
+			} else {
+				add_action( 'wp_head', 'wp_no_robots' );
+			}
 
 			add_filter( 'posts_results', array( __CLASS__, 'set_post_to_publish' ), 10, 2 );
 		}
