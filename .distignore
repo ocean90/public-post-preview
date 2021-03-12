@@ -7,6 +7,8 @@
 .eslintrc.js
 .gitattributes
 .gitignore
+.npmrc
+.nvmrc
 .wp-env.json
 babel.config.js
 composer.json
