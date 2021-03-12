@@ -1,7 +1,12 @@
 # Changelog
 
+## 2.9.3 (2021-03-12)
+* Compatibility with WordPress 5.7.
+* Create a fresh preview URL when enabling public preview.
+* Add check for possibly undefined PHP "superglobals". Props [@waviaei](https://github.com/waviaei).
+
 ## 2.9.2 (2020-10-03):
-* Fixes saving of preview status without a previous Ajax request.
+* Fix saving of preview status without a previous Ajax request.
 
 ## 2.9.1 (2020-07-25):
 * Improve HTTP status codes for expired/invalid preview links.

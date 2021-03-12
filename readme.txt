@@ -73,26 +73,15 @@ Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/publ
 
 == Change Log ==
 
+= 2.9.3 (2021-03-12): =
+* Compatibility with WordPress 5.7.
+* Create a fresh preview URL when enabling public preview.
+* Add check for possibly undefined PHP "superglobals". Props [@waviaei](https://github.com/waviaei).
+
 = 2.9.2 (2020-10-03): =
-* Fixes saving of preview status without a previous Ajax request.
+* Fix saving of preview status without a previous Ajax request.
 
 = 2.9.1 (2020-07-25): =
 * Improve HTTP status codes for expired/invalid preview links.
-
-= 2.9.0 (2019-07-20): =
-* Requires WordPress 5.0
-* Requires PHP 5.6
-* Adds notice (as Snackbar if supported) when changing preview status in block editor.
-* Fixes incorrect status message in classic editor.
-* Fixes grammar in expired link notice. Props [@garrett-eclipse](https://github.com/garrett-eclipse).
-* Improves internal checks to be more strict. Props [@PatelUtkarsh](https://github.com/PatelUtkarsh).
-* Removes deprecated i18n compatibility layer from Gutenberg plugin.
-
-= 2.8.0 (2018-11-27): =
-* Add support for WordPress 5.0 and the new block editor.
-
-= 2.7.0 (2018-09-14): =
-* Initial support for Gutenberg.
-* Block robots for public post previews. Props [@westonruter](https://github.com/westonruter).
 
 For more see [CHANGELOG.md](https://github.com/ocean90/public-post-preview/blob/master/CHANGELOG.md).
