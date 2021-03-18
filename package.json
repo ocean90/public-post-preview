@@ -24,7 +24,7 @@
     "@wordpress/babel-preset-default": "5.0.1",
     "@wordpress/env": "3.0.2",
     "@wordpress/scripts": "13.0.3",
-    "terser": "5.5.1"
+    "terser": "5.6.1"
   },
   "scripts": {
     "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c passes=2 -m",
