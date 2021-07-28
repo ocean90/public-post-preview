@@ -2,7 +2,7 @@
 Contributors: ocean90
 Tags: public, preview, posts, anonymous, drafts
 Requires at least: 5.0
-Tested up to: 5.7
+Tested up to: 5.8
 Requires PHP: 5.6
 Stable tag: 2.9.3
 License: GPLv2 or later
