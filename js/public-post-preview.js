@@ -76,8 +76,8 @@
 		 *
 		 * @since  2.0.0
 		 *
-		 * @param  {Object}  data     The data to send.
-		 * @param  {Object}  callback Callback function for a successful request.
+		 * @param {Object} data     The data to send.
+		 * @param {Object} callback Callback function for a successful request.
 		 */
 		request: function ( data, callback ) {
 			$.ajax( {
@@ -95,8 +95,8 @@
 		 *
 		 * @since  2.0.0
 		 *
-		 * @param  {Object} e     The element.
-		 * @param  {string} color The text color of the element.
+		 * @param {Object} e     The element.
+		 * @param {string} color The text color of the element.
 		 */
 		_pulsate: function ( e, color ) {
 			e.css( 'color', color )

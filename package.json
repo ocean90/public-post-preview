@@ -19,12 +19,14 @@
     "npm": ">=6.9.0"
   },
   "devDependencies": {
-    "@emotion/babel-plugin": "11.2.0",
-    "@emotion/css": "11.1.3",
-    "@wordpress/babel-preset-default": "5.0.1",
-    "@wordpress/env": "3.0.2",
-    "@wordpress/scripts": "13.0.3",
-    "terser": "5.5.1"
+    "@emotion/babel-plugin": "11.9.2",
+    "@emotion/css": "11.9.0",
+    "@wearerequired/browserslist-config": "0.3.0",
+    "@wearerequired/eslint-config": "3.0.0",
+    "@wordpress/babel-preset-default": "6.12.0",
+    "@wordpress/env": "4.8.0",
+    "@wordpress/scripts": "23.2.0",
+    "terser": "5.14.1"
   },
   "scripts": {
     "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c passes=2 -m",
@@ -32,5 +34,23 @@
     "start": "wp-scripts start",
     "lint-js": "wp-scripts lint-js",
     "env": "wp-env"
-  }
+  },
+  "eslintConfig": {
+    "extends": [
+      "@wearerequired/eslint-config"
+    ],
+    "rules": {
+      "@wordpress/i18n-text-domain": [
+        "error",
+        {
+          "allowedTextDomain": [
+            "public-post-preview"
+          ]
+        }
+      ]
+    }
+  },
+  "browserslist": [
+    "extends @wearerequired/browserslist-config/modern"
+  ]
 }
