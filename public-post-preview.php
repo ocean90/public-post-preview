@@ -677,8 +677,17 @@ class DS_Public_Post_Preview {
 	public static function uninstall() {
 		delete_option( 'public_post_preview' );
 	}
+
+	/**
+	 * Performs actions on plugin activation.
+	 *
+	 * @since 2.9.4
+	 */
+	public static function activate() {
+		register_uninstall_hook( __FILE__, array( 'DS_Public_Post_Preview', 'uninstall' ) );
+	}
 }
 
 add_action( 'plugins_loaded', array( 'DS_Public_Post_Preview', 'init' ) );
 
-register_uninstall_hook( __FILE__, array( 'DS_Public_Post_Preview', 'uninstall' ) );
+register_activation_hook( __FILE__, array( 'DS_Public_Post_Preview', 'activate' ) );
