@@ -13,13 +13,13 @@
       },
       "plugins": [
         ".",
-        "https://downloads.wordpress.org/plugin/gutenberg.10.1.1.zip",
-        "https://downloads.wordpress.org/plugin/query-monitor.3.6.7.zip",
-        "https://downloads.wordpress.org/plugin/classic-editor.1.6.zip"
+        "https://downloads.wordpress.org/plugin/gutenberg.13.4.0.zip",
+        "https://downloads.wordpress.org/plugin/query-monitor.3.9.0.zip",
+        "https://downloads.wordpress.org/plugin/classic-editor.1.6.2.zip"
       ]
     },
     "tests": {
-        "port": 49201
+      "port": 49201
     }
   }
 }
