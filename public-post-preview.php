@@ -116,7 +116,7 @@ class DS_Public_Post_Preview {
 				'public-post-preview',
 				plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
 				array( 'jquery' ),
-				'20190713',
+				'20221611',
 				true
 			);
 
