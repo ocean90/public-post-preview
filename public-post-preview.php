@@ -59,6 +59,7 @@ class DS_Public_Post_Preview {
 			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
 			// Add the query var to WordPress SEO by Yoast whitelist.
 			add_filter( 'wpseo_whitelist_permalink_vars', array( __CLASS__, 'add_query_var' ) );
+			add_filter( 'user_switching_redirect_to', array( __CLASS__, 'user_switching_redirect_to' ), 10, 4 );
 		} else {
 			add_action( 'post_submitbox_misc_actions', array( __CLASS__, 'post_submitbox_misc_actions' ) );
 			add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
@@ -146,6 +147,43 @@ class DS_Public_Post_Preview {
 		}
 
 		return $post_states;
+	}
+
+	/**
+	 * Filters the redirect location after a user switches to another account or switches off with the User Switching plugin.
+	 *
+	 * This is used to direct the user to the public preview of a post when they switch off from the post editing screen.
+	 *
+	 * @since x.y.z
+	 *
+	 * @param string       $redirect_to   The target redirect location, or an empty string if none is specified.
+	 * @param string|null  $redirect_type The redirect type, see the `user_switching::REDIRECT_*` constants.
+	 * @param WP_User|null $new_user      The user being switched to, or null if there is none.
+	 * @param WP_User|null $old_user      The user being switched from, or null if there is none.
+	 * @return string The target redirect location.
+	 */
+	public static function user_switching_redirect_to( $redirect_to, $redirect_type, $new_user, $old_user ) {
+		$post_id = intval( $_GET['redirect_to_post'] ?? 0 );
+
+		if ( ! $post_id ) {
+			return $redirect_to;
+		}
+
+		$post = get_post( $post_id );
+
+		if ( ! $post ) {
+			return $redirect_to;
+		}
+
+		if ( ! $old_user || ! user_can( $old_user, 'edit_post', $post->ID ) ) {
+			return $redirect_to;
+		}
+
+		if ( ! self::is_public_preview_enabled( $post ) ) {
+			return $redirect_to;
+		}
+
+		return self::get_preview_link( $post );
 	}
 
 	/**
