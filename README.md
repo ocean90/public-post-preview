@@ -55,7 +55,7 @@ Yes, of course. You can use the filter `ppp_nonce_life`. Example for 5 days:
 ```
 add_filter( 'ppp_nonce_life', 'my_nonce_life' );
 function my_nonce_life() {
-	return DAY_IN_SECONDS * 5;
+	return 5 * DAY_IN_SECONDS;
 }
 ```
 
