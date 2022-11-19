@@ -2,33 +2,27 @@ name: Build
 
 on:
   pull_request:
+    branches:
+      - master
 
 jobs:
   build:
+    name: Build and commit updated assets
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v3
         with:
           # Custom token to allow commits trigger other workflows.
           token: ${{ secrets.REPO_TOKEN }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
-
-      - name: Get npm cache directory
-        id: npm-cache
-        run: |
-          echo "::set-output name=dir::$(npm config get cache)"
-      - uses: actions/cache@v2
-        with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install Node.js dependencies
         run: npm ci
@@ -39,9 +33,7 @@ jobs:
           npm run build
 
       - name: Commit updated assets files
-        uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@v9
         with:
-          author_name: github-actions[bot]
-          author_email: github-actions[bot]@users.noreply.github.com
           message: "[auto] Update assets"
           add: "js"
