@@ -154,7 +154,7 @@ class DS_Public_Post_Preview {
 	 *
 	 * This is used to direct the user to the public preview of a post when they switch off from the post editing screen.
 	 *
-	 * @since x.y.z
+	 * @since 2.10.0
 	 *
 	 * @param string       $redirect_to   The target redirect location, or an empty string if none is specified.
 	 * @param string|null  $redirect_type The redirect type, see the `user_switching::REDIRECT_*` constants.
