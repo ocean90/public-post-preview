@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.10.0 (2022-11-19)
+* Compatibility with WordPress 6.1.
+* Integrate with [User Switching](https://wordpress.org/plugins/user-switching/): Direct the user to the public preview of a post when they switch off from the post editing screen. Props [@johnbillion](https://github.com/johnbillion).
+
 ## 2.9.3 (2021-03-12)
 * Compatibility with WordPress 5.7.
 * Create a fresh preview URL when enabling public preview.
