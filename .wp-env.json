@@ -1,6 +1,6 @@
 {
   "core": "WordPress/WordPress#master",
-  "port": 49200,
+  "port": 48200,
   "phpVersion": "8.1",
   "plugins": [
     "."
@@ -14,13 +14,14 @@
       },
       "plugins": [
         ".",
-        "https://downloads.wordpress.org/plugin/gutenberg.13.4.0.zip",
-        "https://downloads.wordpress.org/plugin/query-monitor.3.9.0.zip",
-        "https://downloads.wordpress.org/plugin/classic-editor.1.6.2.zip"
+        "https://downloads.wordpress.org/plugin/gutenberg.14.5.4.zip",
+        "https://downloads.wordpress.org/plugin/query-monitor.3.10.1.zip",
+        "https://downloads.wordpress.org/plugin/classic-editor.1.6.2.zip",
+        "https://downloads.wordpress.org/plugin/user-switching.1.7.0.zip"
       ]
     },
     "tests": {
-      "port": 49201
+      "port": 48201
     }
   }
 }
