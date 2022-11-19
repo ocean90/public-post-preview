@@ -163,7 +163,7 @@ class DS_Public_Post_Preview {
 	 * @return string The target redirect location.
 	 */
 	public static function user_switching_redirect_to( $redirect_to, $redirect_type, $new_user, $old_user ) {
-		$post_id = intval( $_GET['redirect_to_post'] ?? 0 );
+		$post_id = isset( $_GET['redirect_to_post'] ) ? (int) $_GET['redirect_to_post'] : 0;
 
 		if ( ! $post_id ) {
 			return $redirect_to;
