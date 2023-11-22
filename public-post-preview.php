@@ -8,13 +8,13 @@
  * Plugin URI: https://github.com/ocean90/public-post-preview
  * Text Domain: public-post-preview
  * Requires at least: 5.0
- * Tested up to: 6.1
+ * Tested up to: 6.4
  * Requires PHP: 5.6
  * License: GPLv2 or later
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *  Copyright (C) 2012-2022 Dominik Schilling
+ *  Copyright (C) 2012-2023 Dominik Schilling
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
