@@ -64,6 +64,8 @@ class DS_Public_Post_Preview {
 			add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
 			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_script' ) );
 			add_filter( 'display_post_states', array( __CLASS__, 'display_preview_state' ), 20, 2 );
+			add_filter('views_edit-post', array( __CLASS__, 'add_public_preview_view' ) );
+			add_filter('pre_get_posts', array( __CLASS__, 'filter_post_list_for_public_preview' ) );
 		}
 	}
 
@@ -145,6 +147,51 @@ class DS_Public_Post_Preview {
 		}
 
 		return $post_states;
+	}
+
+	/**
+	 * Adds a "Public Preview" view to the post list table.
+	 *
+	 * @since 2.11.0
+	 *
+	 * @param string[] $views An array of available list table views.
+	 * @return string[] Filtered array of available list table views.
+	 */
+	public static function add_public_preview_view( $views ) {
+		$public_preview_posts_count = count( self::get_preview_post_ids() );
+		if( $public_preview_posts_count === 0 ) {
+			return $views;
+		}
+
+		$views['public_preview'] = sprintf(
+			'<a href="%s"%s>%s <span class="count">(%d)</span></a>',
+			admin_url( 'edit.php?post_status=public_preview' ),
+			isset( $_GET['post_status'] ) && 'public_preview' === $_GET['post_status'] ? ' class="current"' : '',
+			__( 'Public Preview', 'public-post-preview' ),
+			$public_preview_posts_count
+		);
+
+		return $views;
+	}
+
+	/**
+	 * Filters the post list to show only posts with public preview status.
+	 *
+	 * @since 2.11.0
+	 *
+	 * @param WP_Query $query
+	 * @return void
+	 */
+	public static function filter_post_list_for_public_preview( $query ) {
+		$screen = get_current_screen();
+
+		if ( ! $query->is_main_query() || $screen->id !== 'edit-post') {
+			return;
+		}
+
+		if ( isset( $_GET['post_status'] ) && 'public_preview' === $_GET['post_status'] ) {
+			$query->set( 'post__in', self::get_preview_post_ids() );
+		}
 	}
 
 	/**
