@@ -16,10 +16,16 @@ import { ifCondition, compose } from '@wordpress/compose';
 
 const { ajaxurl, DSPublicPostPreviewData } = window;
 
+const pluginPostStatusInfoRow = css`
+	flex-direction: column;
+	align-items: flex-start;
+`;
+
 const pluginPostStatusInfoPreviewUrl = css`
 	flex-direction: column;
 	align-items: stretch;
 	margin-top: 10px;
+	width: 100%;
 `;
 
 const pluginPostStatusInfoPreviewUrlInput = css`
@@ -38,6 +44,12 @@ const pluginPostStatusInfoPreviewUrlInputWrapper = css`
 	justify-content: flex-start;
 	align-items: center;
 	margin: 0;
+`;
+
+const pluginPostStatusInfoPreviewCheckbox = css`
+	label {
+		max-width: 100%;
+	}
 `;
 
 const ClipboardIcon = (
@@ -138,42 +150,46 @@ class PreviewToggle extends Component {
 
 		return (
 			<>
-				<PluginPostStatusInfo>
+				<PluginPostStatusInfo className={ pluginPostStatusInfoRow }>
 					<CheckboxControl
 						label={ __( 'Enable public preview', 'public-post-preview' ) }
 						checked={ previewEnabled }
 						onChange={ this.onChange }
+						className={ pluginPostStatusInfoPreviewCheckbox }
 					/>
+					{ previewEnabled && (
+						<div className={ pluginPostStatusInfoPreviewUrl }>
+							<p className={ pluginPostStatusInfoPreviewUrlInputWrapper }>
+								<label
+									htmlFor="public-post-preview-url"
+									className="screen-reader-text"
+								>
+									{ __( 'Preview URL', 'public-post-preview' ) }
+								</label>
+								<input
+									ref={ this.previewUrlInput }
+									type="text"
+									id="public-post-preview-url"
+									className={ pluginPostStatusInfoPreviewUrlInput }
+									value={ previewUrl }
+									readOnly
+									onFocus={ this.onPreviewUrlInputFocus }
+								/>
+								<ClipboardButton
+									text={ previewUrl }
+									label={ ariaCopyLabel }
+									onCopy={ () => this.setState( { hasCopied: true } ) }
+									onFinishCopy={ () => this.setState( { hasCopied: false } ) }
+									aria-disabled={ hasCopied }
+									icon={ ClipboardIcon }
+								/>
+							</p>
+							<p className={ pluginPostStatusInfoPreviewDescription }>
+								{ __( 'Copy and share this preview URL.', 'public-post-preview' ) }
+							</p>
+						</div>
+					) }
 				</PluginPostStatusInfo>
-				{ previewEnabled && (
-					<PluginPostStatusInfo className={ pluginPostStatusInfoPreviewUrl }>
-						<p className={ pluginPostStatusInfoPreviewUrlInputWrapper }>
-							<label htmlFor="public-post-preview-url" className="screen-reader-text">
-								{ __( 'Preview URL', 'public-post-preview' ) }
-							</label>
-							<input
-								ref={ this.previewUrlInput }
-								type="text"
-								id="public-post-preview-url"
-								className={ pluginPostStatusInfoPreviewUrlInput }
-								value={ previewUrl }
-								readOnly
-								onFocus={ this.onPreviewUrlInputFocus }
-							/>
-							<ClipboardButton
-								text={ previewUrl }
-								label={ ariaCopyLabel }
-								onCopy={ () => this.setState( { hasCopied: true } ) }
-								onFinishCopy={ () => this.setState( { hasCopied: false } ) }
-								aria-disabled={ hasCopied }
-								icon={ ClipboardIcon }
-							/>
-						</p>
-						<p className={ pluginPostStatusInfoPreviewDescription }>
-							{ __( 'Copy and share this preview URL.', 'public-post-preview' ) }
-						</p>
-					</PluginPostStatusInfo>
-				) }
 			</>
 		);
 	}
