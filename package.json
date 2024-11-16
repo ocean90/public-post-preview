@@ -23,7 +23,7 @@
     "@wearerequired/eslint-config": "6.0.0",
     "@wordpress/babel-preset-default": "8.11.0",
     "@wordpress/env": "10.11.0",
-    "@wordpress/scripts": "27.9.0",
+    "@wordpress/scripts": "30.4.0",
     "prettier": "npm:wp-prettier@3.0.3",
     "terser": "5.36.0"
   },
