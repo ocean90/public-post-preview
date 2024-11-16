@@ -1,33 +1,39 @@
 {
   "landingPage": "/wp-admin/edit.php",
   "preferredVersions": {
-      "php": "8.1",
-      "wp": "latest"
+    "php": "8.1",
+    "wp": "latest"
   },
   "phpExtensionBundles": [
-      "kitchen-sink"
+    "kitchen-sink"
   ],
   "steps": [
-      {
-          "step": "login",
-          "username": "admin",
-          "password": "password"
+    {
+      "step": "login",
+      "username": "admin",
+      "password": "password"
+    },
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "wordpress.org/plugins",
+        "slug": "public-post-preview"
       },
-      {
-        "step": "installPlugin",
-        "pluginZipFile": {
-          "resource": "wordpress.org\/plugins",
-          "slug": "public-post-preview"
-        },
-        "options": {
-          "activate": true
-        }
-      },
-      {
-        "step": "setSiteOptions",
-        "options": {
-            "public_post_preview": [ 1, 2 ]
-        }
+      "options": {
+        "activate": true
       }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require_once 'wordpress/wp-load.php'; wp_update_post( [ 'ID' => 1, 'post_status' => 'draft' ] ); ?>"
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "public_post_preview": [
+          1
+        ]
+      }
+    }
   ]
 }
