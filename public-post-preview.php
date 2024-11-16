@@ -51,6 +51,8 @@ class DS_Public_Post_Preview {
 	 * @since 1.0.0
 	 */
 	public static function init() {
+		add_action( 'init', array( __CLASS__, 'register_settings' ) );
+
 		add_action( 'transition_post_status', array( __CLASS__, 'unregister_public_preview_on_status_change' ), 20, 3 );
 		add_action( 'post_updated', array( __CLASS__, 'unregister_public_preview_on_edit' ), 20, 2 );
 
@@ -64,7 +66,62 @@ class DS_Public_Post_Preview {
 			add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
 			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_script' ) );
 			add_filter( 'display_post_states', array( __CLASS__, 'display_preview_state' ), 20, 2 );
+
+			add_action( 'admin_init', array( __CLASS__, 'register_settings_ui' ) );
 		}
+	}
+
+	/**
+	 * Registers the settings used by the plugin.
+	 *
+	 * @since 3.0.0
+	 */
+	static function register_settings() {
+		register_setting(
+			'reading',
+			'public_post_preview_expiration_time',
+			array(
+				'show_in_rest' => true,
+				'type'         => 'integer',
+				'description'  => __( 'Default expiration time in seconds.', 'public-post-preview' ),
+				'default'      => 48,
+			)
+		);
+	}
+
+	/**
+	 * Registers the settings UI.
+	 *
+	 * @since 3.0.0
+	 */
+	static function register_settings_ui() {
+		if ( has_filter( 'ppp_nonce_life' ) ) {
+			return;
+		}
+
+		add_settings_section(
+			'public_post_preview',
+			__( 'Public Post Preview', 'public-post-preview' ),
+			'__return_false',
+			'reading'
+		);
+
+		add_settings_field(
+			'public_post_preview_expiration_time',
+			__( 'Expiration Time', 'public-post-preview' ),
+			static function() {
+				$value = get_option( 'public_post_preview_expiration_time' );
+				?>
+				<input type="number" id="public-post-preview-expiration-time" name="public_post_preview_expiration_time" value="<?php echo esc_attr( $value ); ?>" class="small-text" step="1" min="1" /> <?php _e( 'hours', 'public-post-preview' ); ?>
+				<p class="description"><?php _e( 'Default expiration time of a preview link in hours.', 'public-post-preview' ); ?></p>
+				<?php
+			},
+			'reading',
+			'public_post_preview',
+			array(
+				'label_for' => 'public-post-preview-expiration-time',
+			)
+		);
 	}
 
 	/**
@@ -634,7 +691,7 @@ class DS_Public_Post_Preview {
 	 * @return int The time-dependent variable.
 	 */
 	private static function nonce_tick() {
-		$nonce_life = apply_filters( 'ppp_nonce_life', 2 * DAY_IN_SECONDS ); // 2 days.
+		$nonce_life = apply_filters( 'ppp_nonce_life', get_option( 'public_post_preview_expiration_time' ) ?: 48 );
 
 		return ceil( time() / ( $nonce_life / 2 ) );
 	}
