@@ -17,15 +17,15 @@
     "url": "https://github.com/ocean90/public-post-preview/issues"
   },
   "devDependencies": {
-    "@emotion/babel-plugin": "11.10.5",
-    "@emotion/css": "11.10.5",
+    "@emotion/babel-plugin": "11.12.0",
+    "@emotion/css": "11.13.4",
     "@wearerequired/browserslist-config": "0.3.0",
-    "@wearerequired/eslint-config": "3.0.0",
-    "@wordpress/babel-preset-default": "7.6.0",
-    "@wordpress/env": "5.7.0",
-    "@wordpress/scripts": "24.6.0",
-    "prettier": "npm:wp-prettier@2.6.2",
-    "terser": "5.15.1"
+    "@wearerequired/eslint-config": "6.0.0",
+    "@wordpress/babel-preset-default": "8.11.0",
+    "@wordpress/env": "10.11.0",
+    "@wordpress/scripts": "27.9.0",
+    "prettier": "npm:wp-prettier@3.0.3",
+    "terser": "5.36.0"
   },
   "scripts": {
     "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c passes=2 -m",
