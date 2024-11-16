@@ -59,14 +59,13 @@ The plugin generates an URL with an expiring nonce. By default a link "lives" 48
 
 **48 hours are not enough to me. Can I extend the nonce time?**
 
-Yes, of course. You can use the filter `ppp_nonce_life`. Example for 5 days:
+Yes, of course. Go to Settings > Reading > Public Post Preview and increase the
+Expiration Time setting. You can also use the filter `ppp_nonce_life`. Example for 5 days:
 
 `add_filter( 'ppp_nonce_life', 'my_nonce_life' );
 function my_nonce_life() {
 	return 5 * DAY_IN_SECONDS;
 }`
-
-Or use the [Public Post Preview Configurator](https://wordpress.org/plugins/public-post-preview-configurator/).
 
 == Changelog ==
 
