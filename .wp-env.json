@@ -14,10 +14,10 @@
       },
       "plugins": [
         ".",
-        "https://downloads.wordpress.org/plugin/gutenberg.14.5.4.zip",
-        "https://downloads.wordpress.org/plugin/query-monitor.3.10.1.zip",
-        "https://downloads.wordpress.org/plugin/classic-editor.1.6.2.zip",
-        "https://downloads.wordpress.org/plugin/user-switching.1.7.0.zip"
+        "https://downloads.wordpress.org/plugin/gutenberg.19.6.2.zip",
+        "https://downloads.wordpress.org/plugin/query-monitor.3.16.4.zip",
+        "https://downloads.wordpress.org/plugin/classic-editor.1.6.5.zip",
+        "https://downloads.wordpress.org/plugin/user-switching.1.8.0.zip"
       ]
     },
     "tests": {
