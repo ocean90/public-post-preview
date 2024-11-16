@@ -8,8 +8,8 @@ import { css } from '@emotion/css';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, ClipboardButton, Path, SVG } from '@wordpress/components';
-import { Component, createRef } from '@wordpress/element';
+import { CheckboxControl, ClipboardButton, ExternalLink, Path, SVG } from '@wordpress/components';
+import { Component, createRef, createInterpolateElement } from '@wordpress/element';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ifCondition, compose } from '@wordpress/compose';
@@ -30,7 +30,7 @@ const pluginPostStatusInfoPreviewUrl = css`
 
 const pluginPostStatusInfoPreviewUrlInput = css`
 	width: 100%;
-	margin-right: 12px;
+	margin-right: 0.2em;
 `;
 
 const pluginPostStatusInfoPreviewDescription = css`
@@ -185,7 +185,15 @@ class PreviewToggle extends Component {
 								/>
 							</p>
 							<p className={ pluginPostStatusInfoPreviewDescription }>
-								{ __( 'Copy and share this preview URL.', 'public-post-preview' ) }
+								{ createInterpolateElement(
+									__(
+										'Copy and share <a>the preview URL</a>.',
+										'public-post-preview'
+									),
+									{
+										a: <ExternalLink href={ previewUrl } />,
+									}
+								) }
 							</p>
 						</div>
 					) }

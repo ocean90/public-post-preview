@@ -147,6 +147,7 @@ class DS_Public_Post_Preview {
 				esc_url( self::get_preview_link( $post ) ),
 				esc_attr(
 					sprintf(
+						/* translators: %s: Post title */
 						__( 'Open public preview of &#8220;%s&#8221;', 'public-post-preview' ), _draft_or_post_title( $post )
 					)
 				)
