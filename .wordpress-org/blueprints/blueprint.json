@@ -1,0 +1,33 @@
+{
+  "landingPage": "/wp-admin/edit.php",
+  "preferredVersions": {
+      "php": "8.1",
+      "wp": "latest"
+  },
+  "phpExtensionBundles": [
+      "kitchen-sink"
+  ],
+  "steps": [
+      {
+          "step": "login",
+          "username": "admin",
+          "password": "password"
+      },
+      {
+        "step": "installPlugin",
+        "pluginZipFile": {
+          "resource": "wordpress.org\/plugins",
+          "slug": "public-post-preview"
+        },
+        "options": {
+          "activate": true
+        }
+      },
+      {
+        "step": "setSiteOptions",
+        "options": {
+            "public_post_preview": [ 1, 2 ]
+        }
+      }
+  ]
+}
