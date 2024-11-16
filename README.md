@@ -7,16 +7,14 @@ Have you ever been writing a post with the help of someone who does not have acc
 [<kbd> <br> Preview in WordPress Playground <br> </kbd>](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/ocean90/public-post-preview/refs/heads/master/.wordpress-org/blueprints/blueprint.json)
 
 <p align="center">
-<img src="https://ps.w.org/public-post-preview/assets/screenshot-1.png?rev=1981242" alt="" width="400">
+<img src="https://ps.w.org/public-post-preview/assets/screenshot-1.png?rev=3190293" alt="" width="400">
 </p>
 
 *This plugin was previously maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/). Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
 
 ## Installation
 
-Note: There will be NO settings page.
-
-For an automatic installation through WordPress:
+For an installation through WordPress:
 
 1. Go to the 'Add New' plugins screen in your WordPress admin area
 1. Search for 'Public Post Preview'
@@ -34,7 +32,7 @@ To upload the plugin through WordPress, instead of FTP:
 1. Upload the downloaded zip file on the 'Add New' plugins screen (see the 'Upload' tab) in your WordPress admin area and activate.
 
 ## Usage
-* To enable a public post preview check the box in the "Status & Visibility" section of the document settings. In the classic editor it's in the "Publish" meta box.
+* To enable a public post preview check the box in the document settings. In the classic editor it's in the "Publish" meta box.
 * The link will be displayed if the checkbox is checked, you can copy and share the link with your friends.
 * To disable a preview uncheck the box again.
 

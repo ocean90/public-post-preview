@@ -17,9 +17,7 @@ Have you ever been writing a post with the help of someone who does not have acc
 
 == Installation ==
 
-Note: There will be NO settings page.
-
-For an automatic installation through WordPress:
+For an installation through WordPress:
 
 1. Go to the 'Add New' plugins screen in your WordPress admin area
 1. Search for 'Public Post Preview'
@@ -38,12 +36,13 @@ To upload the plugin through WordPress, instead of FTP:
 
 == Screenshots ==
 
-1. Edit Posts Page
+1. Block Editor
+2. Classic Editor
 
 == Usage ==
-* To enable a public post preview check the box below the edit post box.
-* The link will be displayed if the checkbox is checked, just copy and share the link with your friends.
-* To disable a preview just uncheck the box.
+* To enable a public post preview check the box in the document settings. In the classic editor it's in the "Publish" meta box.
+* The link will be displayed if the checkbox is checked, you can copy and share the link with your friends.
+* To disable a preview uncheck the box again.
 
 == Frequently Asked Questions ==
 
