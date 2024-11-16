@@ -190,15 +190,18 @@ class DS_Public_Post_Preview {
 	 * @since 2.2.0
 	 */
 	public static function post_submitbox_misc_actions() {
-		$post_types = get_post_types(
-			array(
-				'public' => true,
-			)
-		);
+		$viewable_post_types = array();
+		$post_types          = get_post_types( [], 'objects' );
+		foreach ( $post_types as $post_type ) {
+			if ( is_post_type_viewable( $post_type ) ) {
+				$viewable_post_types[] = $post_type->name;
+			}
+		}
 
 		$post = get_post();
 
-		if ( ! in_array( $post->post_type, $post_types, true ) ) {
+		// Ignore non-viewable post types.
+		if ( ! in_array( $post->post_type, $viewable_post_types, true ) ) {
 			return false;
 		}
 
