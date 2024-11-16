@@ -141,7 +141,16 @@ class DS_Public_Post_Preview {
 	 */
 	public static function display_preview_state( $post_states, $post ) {
 		if ( in_array( (int) $post->ID, self::get_preview_post_ids(), true ) ) {
-			$post_states['ppp_enabled'] = __( 'Public Preview', 'public-post-preview' );
+			$post_states['ppp_enabled'] = sprintf(
+				' %s&nbsp;<a href="%s" target="_blank" aria-label="%s"><span class="dashicons dashicons-format-links" aria-hidden="true"></span></a>',
+				__( 'Public Preview', 'public-post-preview' ),
+				esc_url( self::get_preview_link( $post ) ),
+				esc_attr(
+					sprintf(
+						__( 'Open public preview of &#8220;%s&#8221;', 'public-post-preview' ), _draft_or_post_title( $post )
+					)
+				)
+			);
 		}
 
 		return $post_states;
