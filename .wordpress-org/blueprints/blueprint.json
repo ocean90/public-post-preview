@@ -29,6 +29,7 @@
     {
       "step": "setSiteOptions",
       "options": {
+        "blogname": "Public Post Preview Demo",
         "public_post_preview": [
           1
         ]
