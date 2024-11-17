@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+* Requires WordPress 6.5.
+* Requires PHP 8.0.
+* Add setting to increase the default expiration time (Settings > Reading > Public Post Preview).
+* Show icon for preview link in list tables next to the state.
+* Change interface in block editor to match latest editor design.
+* Update sidebar description to include the preview link.
+* Extend Preview dropdown for public preview in WordPress 6.7+.
+
 ## 2.10.0 (2022-11-19)
 * Compatibility with WordPress 6.1.
 * Integrate with [User Switching](https://wordpress.org/plugins/user-switching/): Direct the user to the public preview of a post when they switch off from the post editing screen. Props [@johnbillion](https://github.com/johnbillion).

@@ -1,53 +1,111 @@
 /**
  * External dependencies
  */
-import { get } from 'lodash';
 import { css } from '@emotion/css';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, ClipboardButton, Path, SVG } from '@wordpress/components';
-import { Component, createRef } from '@wordpress/element';
-import { withSelect, withDispatch } from '@wordpress/data';
+import {
+	CheckboxControl,
+	Button,
+	ExternalLink,
+	TextControl,
+	VisuallyHidden,
+} from '@wordpress/components';
+import { Component, createRef, createInterpolateElement } from '@wordpress/element';
+import { withSelect, withDispatch, useDispatch } from '@wordpress/data';
 import { PluginPostStatusInfo } from '@wordpress/edit-post';
-import { ifCondition, compose } from '@wordpress/compose';
+import { ifCondition, compose, useCopyToClipboard } from '@wordpress/compose';
+import { store as noticesStore } from '@wordpress/notices';
+import { store as editorStore, PluginPreviewMenuItem } from '@wordpress/editor';
+import { copySmall, seen } from '@wordpress/icons';
+import { store as coreStore } from '@wordpress/core-data';
 
 const { ajaxurl, DSPublicPostPreviewData } = window;
 
-const pluginPostStatusInfoPreviewUrl = css`
+const pluginPostStatusInfoRow = css`
 	flex-direction: column;
-	align-items: stretch;
-	margin-top: 10px;
+	align-items: flex-start;
 `;
 
-const pluginPostStatusInfoPreviewUrlInput = css`
+const pluginPostStatusInfoPreviewUrl = css`
+	margin-top: 8px;
 	width: 100%;
-	margin-right: 12px;
 `;
 
 const pluginPostStatusInfoPreviewDescription = css`
-	font-style: italic;
-	color: #666;
-	margin: 0.2em 0 0 !important;
+	color: #757575;
+	margin: 8px 0 0 !important;
 `;
 
 const pluginPostStatusInfoPreviewUrlInputWrapper = css`
+	position: relative;
 	display: flex;
 	justify-content: flex-start;
 	align-items: center;
-	margin: 0;
+
+	.components-base-control {
+		width: 100%;
+	}
 `;
 
-const ClipboardIcon = (
-	<SVG width="20" height="20" viewBox="0 0 14 16" xmlns="http://www.w3.org/2000/svg">
-		<Path
-			fillRule="evenodd"
-			d="M2 13h4v1H2v-1zm5-6H2v1h5V7zm2 3V8l-3 3 3 3v-2h5v-2H9zM4.5 9H2v1h2.5V9zM2 12h2.5v-1H2v1zm9 1h1v2c-.02.28-.11.52-.3.7-.19.18-.42.28-.7.3H1c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h3c0-1.11.89-2 2-2 1.11 0 2 .89 2 2h3c.55 0 1 .45 1 1v5h-1V6H1v9h10v-2zM2 5h8c0-.55-.45-1-1-1H8c-.55 0-1-.45-1-1s-.45-1-1-1-1 .45-1 1-.45 1-1 1H3c-.55 0-1 .45-1 1z"
+const pluginPostStatusInfoPreviewUrlInput = css`
+	.components-text-control__input {
+		background-color: #fff;
+		padding-right: 30px !important;
+	}
+`;
+
+const pluginPostStatusInfoPreviewCheckbox = css`
+	label {
+		max-width: 100%;
+	}
+`;
+
+const copyButton = css`
+	position: absolute;
+	right: 5px;
+	top; 0;
+`;
+
+function CopyButton( { text } ) {
+	const { createNotice } = useDispatch( noticesStore );
+	const ref = useCopyToClipboard( text, () => {
+		createNotice( 'info', __( 'Preview link copied to clipboard.', 'public-post-preview' ), {
+			isDismissible: true,
+			type: 'snackbar',
+		} );
+	} );
+	return (
+		<Button
+			icon={ copySmall }
+			ref={ ref }
+			label={ __( 'Copy the preview URL', 'public-post-preview' ) }
+			className={ copyButton }
+			size="small"
 		/>
-	</SVG>
-);
+	);
+}
+
+function PreviewMenuItem( { previewUrl } ) {
+	if ( 'function' !== typeof PluginPreviewMenuItem || ! previewUrl ) {
+		return null;
+	}
+
+	return (
+		<PluginPreviewMenuItem icon={ seen } href={ previewUrl } target="_blank">
+			{ __( 'Open public preview', 'public-post-preview' ) }
+			<VisuallyHidden as="span">
+				{
+					/* translators: accessibility text */
+					__( '(opens in a new tab)', 'public-post-preview' )
+				}
+			</VisuallyHidden>
+		</PluginPreviewMenuItem>
+	);
+}
 
 class PreviewToggle extends Component {
 	constructor( props ) {
@@ -56,7 +114,6 @@ class PreviewToggle extends Component {
 		this.state = {
 			previewEnabled: DSPublicPostPreviewData.previewEnabled,
 			previewUrl: DSPublicPostPreviewData.previewUrl,
-			hasCopied: false,
 		};
 
 		this.previewUrlInput = createRef();
@@ -130,50 +187,49 @@ class PreviewToggle extends Component {
 	}
 
 	render() {
-		const { previewEnabled, previewUrl, hasCopied } = this.state;
-
-		const ariaCopyLabel = hasCopied
-			? __( 'Preview URL copied', 'public-post-preview' )
-			: __( 'Copy the preview URL', 'public-post-preview' );
+		const { previewEnabled, previewUrl } = this.state;
 
 		return (
 			<>
-				<PluginPostStatusInfo>
+				<PreviewMenuItem previewUrl={ previewEnabled && previewUrl ? previewUrl : null } />
+				<PluginPostStatusInfo className={ pluginPostStatusInfoRow }>
 					<CheckboxControl
 						label={ __( 'Enable public preview', 'public-post-preview' ) }
 						checked={ previewEnabled }
 						onChange={ this.onChange }
+						className={ pluginPostStatusInfoPreviewCheckbox }
+						__nextHasNoMarginBottom
 					/>
+					{ previewEnabled && (
+						<div className={ pluginPostStatusInfoPreviewUrl }>
+							<div className={ pluginPostStatusInfoPreviewUrlInputWrapper }>
+								<TextControl
+									ref={ this.previewUrlInput }
+									hideLabelFromVision
+									label={ __( 'Preview URL', 'public-post-preview' ) }
+									value={ previewUrl }
+									readOnly
+									onFocus={ this.onPreviewUrlInputFocus }
+									className={ pluginPostStatusInfoPreviewUrlInput }
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+								/>
+								<CopyButton text={ previewUrl } />
+							</div>
+							<p className={ pluginPostStatusInfoPreviewDescription }>
+								{ createInterpolateElement(
+									__(
+										'Copy and share <a>the preview URL</a>.',
+										'public-post-preview'
+									),
+									{
+										a: <ExternalLink href={ previewUrl } />,
+									}
+								) }
+							</p>
+						</div>
+					) }
 				</PluginPostStatusInfo>
-				{ previewEnabled && (
-					<PluginPostStatusInfo className={ pluginPostStatusInfoPreviewUrl }>
-						<p className={ pluginPostStatusInfoPreviewUrlInputWrapper }>
-							<label htmlFor="public-post-preview-url" className="screen-reader-text">
-								{ __( 'Preview URL', 'public-post-preview' ) }
-							</label>
-							<input
-								ref={ this.previewUrlInput }
-								type="text"
-								id="public-post-preview-url"
-								className={ pluginPostStatusInfoPreviewUrlInput }
-								value={ previewUrl }
-								readOnly
-								onFocus={ this.onPreviewUrlInputFocus }
-							/>
-							<ClipboardButton
-								text={ previewUrl }
-								label={ ariaCopyLabel }
-								onCopy={ () => this.setState( { hasCopied: true } ) }
-								onFinishCopy={ () => this.setState( { hasCopied: false } ) }
-								aria-disabled={ hasCopied }
-								icon={ ClipboardIcon }
-							/>
-						</p>
-						<p className={ pluginPostStatusInfoPreviewDescription }>
-							{ __( 'Copy and share this preview URL.', 'public-post-preview' ) }
-						</p>
-					</PluginPostStatusInfo>
-				) }
 			</>
 		);
 	}
@@ -181,14 +237,14 @@ class PreviewToggle extends Component {
 
 export default compose( [
 	withSelect( ( select ) => {
-		const { getPostType } = select( 'core' );
-		const { getCurrentPostId, getEditedPostAttribute } = select( 'core/editor' );
+		const { getPostType } = select( coreStore );
+		const { getCurrentPostId, getEditedPostAttribute } = select( editorStore );
 		const postType = getPostType( getEditedPostAttribute( 'type' ) );
 
 		return {
 			postId: getCurrentPostId(),
 			status: getEditedPostAttribute( 'status' ),
-			isViewable: get( postType, [ 'viewable' ], false ),
+			isViewable: postType?.viewable || false,
 		};
 	} ),
 	ifCondition( ( { isViewable } ) => isViewable ),
@@ -197,7 +253,7 @@ export default compose( [
 	} ),
 	withDispatch( ( dispatch ) => {
 		return {
-			createNotice: dispatch( 'core/notices' ).createNotice,
+			createNotice: dispatch( noticesStore ).createNotice,
 		};
 	} ),
 ] )( PreviewToggle );

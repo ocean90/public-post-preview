@@ -12,3 +12,10 @@ babel.config.js export-ignore
 package.json export-ignore
 package-lock.json export-ignore
 webpack.config.js export-ignore
+
+# Treat build files as binary to ignore them from diffs.
+js/dist/* -diff
+js/public-post-preview.min.js -diff
+# Exclude build files from GitHub stats.
+js/dist/* linguist-generated
+js/public-post-preview.min.js linguist-generated
