@@ -8,7 +8,7 @@
 * Change interface in block editor to match latest editor design.
 * Update sidebar description to include the preview link.
 * Extend Preview dropdown for public preview in WordPress 6.7+.
-* Add Public Preview post list view.
+* Add Public Preview post list view. Props [@rafaucau](https://github.com/rafaucau).
 
 ## 2.10.0 (2022-11-19)
 * Compatibility with WordPress 6.1.
