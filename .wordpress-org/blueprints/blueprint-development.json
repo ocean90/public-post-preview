@@ -18,7 +18,7 @@
         "resource": "git:directory",
         "url": "https://github.com/ocean90/public-post-preview.git",
         "ref": "HEAD",
-        "path": "wp-content/plugins/public-post-preview"
+        "path": "/"
       },
       "options": {
         "activate": true
