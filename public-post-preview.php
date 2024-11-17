@@ -66,9 +66,12 @@ class DS_Public_Post_Preview {
 			add_action( 'wp_ajax_public-post-preview', array( __CLASS__, 'ajax_register_public_preview' ) );
 			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_script' ) );
 			add_filter( 'display_post_states', array( __CLASS__, 'display_preview_state' ), 20, 2 );
-			add_filter('views_edit-post', array( __CLASS__, 'add_public_preview_view' ) );
-			add_filter('pre_get_posts', array( __CLASS__, 'filter_post_list_for_public_preview' ) );
 			add_action( 'admin_init', array( __CLASS__, 'register_settings_ui' ) );
+
+			foreach( self::get_post_types() as $post_type ) {
+				add_filter( "views_edit-$post_type", array( __CLASS__, 'add_list_table_view' ) );
+			}
+			add_filter( 'pre_get_posts', array( __CLASS__, 'filter_post_list_for_public_preview' ) );
 		}
 	}
 
@@ -218,23 +221,42 @@ class DS_Public_Post_Preview {
 	/**
 	 * Adds a "Public Preview" view to the post list table.
 	 *
-	 * @since 2.11.0
+	 * @since 3.0.0
 	 *
 	 * @param string[] $views An array of available list table views.
 	 * @return string[] Filtered array of available list table views.
 	 */
-	public static function add_public_preview_view( $views ) {
-		$public_preview_posts_count = count( self::get_preview_post_ids() );
-		if( $public_preview_posts_count === 0 ) {
+	public static function add_list_table_view( $views ) {
+		$count = count( self::get_preview_post_ids() );
+		if( ! $count ) {
+			return $views;
+		}
+
+		$screen    = get_current_screen();
+		$post_type = $screen->post_type;
+
+		// Get the count of posts for this post type with public preview status.
+		$query = new WP_Query(
+			array(
+				'post_type'      => $post_type,
+				'post__in'       => self::get_preview_post_ids(),
+				'post_status'    => 'draft',
+				'posts_per_page' => -1,
+				'no_found_rows'  => true,
+				'fields'         => 'ids',
+			)
+		);
+
+		if ( ! $query->post_count ) {
 			return $views;
 		}
 
 		$views['public_preview'] = sprintf(
-			'<a href="%s"%s>%s <span class="count">(%d)</span></a>',
-			admin_url( 'edit.php?post_status=public_preview' ),
-			isset( $_GET['post_status'] ) && 'public_preview' === $_GET['post_status'] ? ' class="current"' : '',
+			'<a href="%s"%s>%s <span class="count">(%s)</span></a>',
+			esc_url( add_query_arg( array( 'post_type' => $post_type, 'public_preview' => 1 ), 'edit.php' ) ),
+			isset( $_GET['public_preview'] ) && '1' === $_GET['public_preview'] ? ' class="current"  aria-current="page"' : '',
 			__( 'Public Preview', 'public-post-preview' ),
-			$public_preview_posts_count
+			number_format_i18n( $query->post_count )
 		);
 
 		return $views;
@@ -243,19 +265,16 @@ class DS_Public_Post_Preview {
 	/**
 	 * Filters the post list to show only posts with public preview status.
 	 *
-	 * @since 2.11.0
+	 * @since 3.0.0
 	 *
-	 * @param WP_Query $query
-	 * @return void
+	 * @param WP_Query $query The WP_Query instance.
 	 */
 	public static function filter_post_list_for_public_preview( $query ) {
-		$screen = get_current_screen();
-
-		if ( ! $query->is_main_query() || $screen->id !== 'edit-post') {
+		if ( ! $query->is_admin || ! $query->is_main_query()) {
 			return;
 		}
 
-		if ( isset( $_GET['post_status'] ) && 'public_preview' === $_GET['post_status'] ) {
+		if ( isset( $_GET['public_preview'] ) && '1' === $_GET['public_preview'] ) {
 			$query->set( 'post__in', self::get_preview_post_ids() );
 		}
 	}
@@ -303,18 +322,10 @@ class DS_Public_Post_Preview {
 	 * @since 2.2.0
 	 */
 	public static function post_submitbox_misc_actions() {
-		$viewable_post_types = array();
-		$post_types          = get_post_types( [], 'objects' );
-		foreach ( $post_types as $post_type ) {
-			if ( is_post_type_viewable( $post_type ) ) {
-				$viewable_post_types[] = $post_type->name;
-			}
-		}
-
 		$post = get_post();
 
 		// Ignore non-viewable post types.
-		if ( ! in_array( $post->post_type, $viewable_post_types, true ) ) {
+		if ( ! in_array( $post->post_type, self::get_post_types(), true ) ) {
 			return false;
 		}
 
@@ -334,6 +345,25 @@ class DS_Public_Post_Preview {
 		</div>
 		<?php
 
+	}
+
+	/**
+	 * Returns the viewable post types.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return string[] List with post types.
+	 */
+	private static function get_post_types() {
+		$viewable_post_types = array();
+		$post_types          = get_post_types( [], 'objects' );
+		foreach ( $post_types as $post_type ) {
+			if ( is_post_type_viewable( $post_type ) ) {
+				$viewable_post_types[] = $post_type->name;
+			}
+		}
+
+		return apply_filters( 'ppp_post_types', $viewable_post_types );
 	}
 
 	/**
