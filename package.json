@@ -51,5 +51,8 @@
   },
   "browserslist": [
     "extends @wearerequired/browserslist-config/modern"
-  ]
+  ],
+  "dependencies": {
+    "@wordpress/icons": "10.12.0"
+  }
 }
