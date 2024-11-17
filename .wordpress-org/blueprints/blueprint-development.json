@@ -18,7 +18,7 @@
         "resource": "git:directory",
         "url": "https://github.com/ocean90/public-post-preview.git",
         "ref": "HEAD",
-        "path": "/"
+        "path": "/public-post-preview"
       },
       "options": {
         "activate": true
