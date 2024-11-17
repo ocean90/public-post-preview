@@ -7,14 +7,20 @@ import { css } from '@emotion/css';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, Button, ExternalLink, TextControl } from '@wordpress/components';
+import {
+	CheckboxControl,
+	Button,
+	ExternalLink,
+	TextControl,
+	VisuallyHidden,
+} from '@wordpress/components';
 import { Component, createRef, createInterpolateElement } from '@wordpress/element';
 import { withSelect, withDispatch, useDispatch } from '@wordpress/data';
 import { PluginPostStatusInfo } from '@wordpress/edit-post';
 import { ifCondition, compose, useCopyToClipboard } from '@wordpress/compose';
 import { store as noticesStore } from '@wordpress/notices';
-import { store as editorStore } from '@wordpress/editor';
-import { copySmall } from '@wordpress/icons';
+import { store as editorStore, PluginPreviewMenuItem } from '@wordpress/editor';
+import { copySmall, seen } from '@wordpress/icons';
 import { store as coreStore } from '@wordpress/core-data';
 
 const { ajaxurl, DSPublicPostPreviewData } = window;
@@ -80,6 +86,24 @@ function CopyButton( { text } ) {
 			className={ copyButton }
 			size="small"
 		/>
+	);
+}
+
+function PreviewMenuItem( { previewUrl } ) {
+	if ( 'function' !== typeof PluginPreviewMenuItem || ! previewUrl ) {
+		return null;
+	}
+
+	return (
+		<PluginPreviewMenuItem icon={ seen } href={ previewUrl } target="_blank">
+			{ __( 'Open public preview', 'public-post-preview' ) }
+			<VisuallyHidden as="span">
+				{
+					/* translators: accessibility text */
+					__( '(opens in a new tab)', 'public-post-preview' )
+				}
+			</VisuallyHidden>
+		</PluginPreviewMenuItem>
 	);
 }
 
@@ -167,6 +191,7 @@ class PreviewToggle extends Component {
 
 		return (
 			<>
+				<PreviewMenuItem previewUrl={ previewEnabled && previewUrl ? previewUrl : null } />
 				<PluginPostStatusInfo className={ pluginPostStatusInfoRow }>
 					<CheckboxControl
 						label={ __( 'Enable public preview', 'public-post-preview' ) }
@@ -187,6 +212,7 @@ class PreviewToggle extends Component {
 									onFocus={ this.onPreviewUrlInputFocus }
 									className={ pluginPostStatusInfoPreviewUrlInput }
 									__next40pxDefaultSize
+									__nextHasNoMarginBottom
 								/>
 								<CopyButton text={ previewUrl } />
 							</div>
