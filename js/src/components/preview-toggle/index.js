@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { get } from 'lodash';
 import { css } from '@emotion/css';
 
 /**
@@ -212,7 +211,7 @@ export default compose( [
 		return {
 			postId: getCurrentPostId(),
 			status: getEditedPostAttribute( 'status' ),
-			isViewable: get( postType, [ 'viewable' ], false ),
+			isViewable: postType?.viewable || false,
 		};
 	} ),
 	ifCondition( ( { isViewable } ) => isViewable ),
