@@ -7,10 +7,10 @@ Have you ever been writing a post with the help of someone who does not have acc
 [<kbd> <br> Preview in WordPress Playground <br> </kbd>](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/ocean90/public-post-preview/refs/heads/master/.wordpress-org/blueprints/blueprint.json)
 
 <p align="center">
-<img src="https://ps.w.org/public-post-preview/assets/screenshot-1.png?rev=3190293" alt="" width="400">
+<img src=".wordpress-org/screenshot-1.png" alt="" width="400">
 </p>
 
-*This plugin was previously maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/). Thanks to Hans Dinkelberg for his [photo](http://www.flickr.com/photos/uitdragerij/7516234430/).*
+*This plugin was previously maintained by [Matt Martz](http://profiles.wordpress.org/sivel/) and was an idea of [Jonathan Dingman](http://profiles.wordpress.org/jdingman/).*
 
 ## Installation
 
