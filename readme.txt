@@ -66,6 +66,8 @@ function my_nonce_life() {
 	return 5 * DAY_IN_SECONDS;
 }`
 
+**Note:** The setting UI is not visible if the filter is used.
+
 == Changelog ==
 
 =  3.0 (2024-12-21): =
