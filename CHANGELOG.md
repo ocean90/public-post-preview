@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.0 (2024-12-21)
 * Requires WordPress 6.5.
 * Requires PHP 8.0.
 * Add setting to increase the default expiration time (Settings > Reading > Public Post Preview).

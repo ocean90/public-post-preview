@@ -1,7 +1,7 @@
 === Public Post Preview ===
 Contributors: ocean90
 Tags: public, preview, posts, anonymous, drafts
-Stable tag: 2.10.0
+Stable tag: 3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,13 +68,14 @@ function my_nonce_life() {
 
 == Changelog ==
 
-=  2.10.0 (2022-11-19): =
-* Compatibility with WordPress 6.1.
-* Integrate with [User Switching](https://wordpress.org/plugins/user-switching/): Direct the user to the public preview of a post when they switch off from the post editing screen. Props [@johnbillion](https://github.com/johnbillion).
-
-= 2.9.3 (2021-03-12): =
-* Compatibility with WordPress 5.7.
-* Create a fresh preview URL when enabling public preview.
-* Add check for possibly undefined PHP "superglobals". Props [@waviaei](https://github.com/waviaei).
+=  3.0 (2024-12-21): =
+* Requires WordPress 6.5.
+* Requires PHP 8.0.
+* Add setting to increase the default expiration time (Settings > Reading > Public Post Preview).
+* Show icon for preview link in list tables next to the state.
+* Change interface in block editor to match latest editor design.
+* Update sidebar description to include the preview link.
+* Extend Preview dropdown for public preview in WordPress 6.7+.
+* Add Public Preview post list view. Props [@rafaucau](https://github.com/rafaucau).
 
 For more see [CHANGELOG.md](https://github.com/ocean90/public-post-preview/blob/master/CHANGELOG.md).
