@@ -767,7 +767,8 @@ class DS_Public_Post_Preview {
 	 * @return int The time-dependent variable.
 	 */
 	private static function nonce_tick() {
-		$nonce_life = apply_filters( 'ppp_nonce_life', get_option( 'public_post_preview_expiration_time' ) ?: 48 );
+		$expiration = get_option( 'public_post_preview_expiration_time' ) ?: 48;
+		$nonce_life = apply_filters( 'ppp_nonce_life', $expiration * HOUR_IN_SECONDS );
 
 		return ceil( time() / ( $nonce_life / 2 ) );
 	}
