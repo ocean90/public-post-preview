@@ -1,7 +1,7 @@
 === Public Post Preview ===
 Contributors: ocean90
 Tags: public, preview, posts, anonymous, drafts
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,7 +70,10 @@ function my_nonce_life() {
 
 == Changelog ==
 
-=  3.0 (2024-12-21): =
+= 3.0.1 (2024-12-23): =
+* Fix calculation of expiration time for preview nonce.
+
+= 3.0.0 (2024-12-21): =
 * Requires WordPress 6.5.
 * Requires PHP 8.0.
 * Add setting to increase the default expiration time (Settings > Reading > Public Post Preview).
