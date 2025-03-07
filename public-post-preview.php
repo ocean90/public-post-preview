@@ -735,6 +735,9 @@ class DS_Public_Post_Preview {
 			add_filter( 'comments_open', '__return_false' );
 			add_filter( 'pings_open', '__return_false' );
 			add_filter( 'wp_link_pages_link', array( __CLASS__, 'filter_wp_link_pages_link' ), 10, 2 );
+
+			// Allow this plugin to work with Restricted Site Access https://wordpress.org/plugins/restricted-site-access/
+			add_action( 'restricted_site_access_is_restricted', '__return_true', 10, 2 );
 		}
 
 		return $posts;
