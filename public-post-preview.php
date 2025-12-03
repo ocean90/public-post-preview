@@ -737,7 +737,7 @@ class DS_Public_Post_Preview {
 			add_filter( 'wp_link_pages_link', array( __CLASS__, 'filter_wp_link_pages_link' ), 10, 2 );
 
 			// Allow this plugin to work with Restricted Site Access https://wordpress.org/plugins/restricted-site-access/
-			add_action( 'restricted_site_access_is_restricted', '__return_true', 10, 2 );
+			add_filter( 'restricted_site_access_is_restricted', '__return_false' );
 		}
 
 		return $posts;
