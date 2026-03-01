@@ -1,20 +1,20 @@
 <?php
 /**
  * Plugin Name: Public Post Preview
- * Version: 3.0.1
+ * Version: 3.1.0
  * Description: Allow anonymous users to preview a post before it is published.
  * Author: Dominik Schilling
  * Author URI: https://dominikschilling.de/
  * Plugin URI: https://github.com/ocean90/public-post-preview
  * Text Domain: public-post-preview
- * Requires at least: 6.5
- * Tested up to: 6.7
+ * Requires at least: 6.6
+ * Tested up to: 7.0
  * Requires PHP: 8.0
  * License: GPLv2 or later
  *
  * Previously (2009-2011) maintained by Jonathan Dingman and Matt Martz.
  *
- *  Copyright (C) 2012-2024 Dominik Schilling
+ *  Copyright (C) 2012-2026 Dominik Schilling
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
