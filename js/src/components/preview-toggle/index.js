@@ -6,22 +6,21 @@ import { css } from '@emotion/css';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
 import {
-	CheckboxControl,
 	Button,
+	CheckboxControl,
 	ExternalLink,
 	TextControl,
 	VisuallyHidden,
 } from '@wordpress/components';
-import { Component, createRef, createInterpolateElement } from '@wordpress/element';
-import { withSelect, withDispatch, useDispatch } from '@wordpress/data';
-import { PluginPostStatusInfo } from '@wordpress/edit-post';
-import { ifCondition, compose, useCopyToClipboard } from '@wordpress/compose';
-import { store as noticesStore } from '@wordpress/notices';
-import { store as editorStore, PluginPreviewMenuItem } from '@wordpress/editor';
-import { copySmall, seen } from '@wordpress/icons';
+import { compose, ifCondition, useCopyToClipboard } from '@wordpress/compose';
 import { store as coreStore } from '@wordpress/core-data';
+import { useDispatch, withDispatch, withSelect } from '@wordpress/data';
+import { store as editorStore, PluginPostStatusInfo, PluginPreviewMenuItem } from '@wordpress/editor';
+import { Component, createInterpolateElement, createRef } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+import { copySmall, seen } from '@wordpress/icons';
+import { store as noticesStore } from '@wordpress/notices';
 
 const { ajaxurl, DSPublicPostPreviewData } = window;
 
