@@ -16,7 +16,11 @@ import {
 import { compose, ifCondition, useCopyToClipboard } from '@wordpress/compose';
 import { store as coreStore } from '@wordpress/core-data';
 import { useDispatch, withDispatch, withSelect } from '@wordpress/data';
-import { store as editorStore, PluginPostStatusInfo, PluginPreviewMenuItem } from '@wordpress/editor';
+import {
+	store as editorStore,
+	PluginPostStatusInfo,
+	PluginPreviewMenuItem,
+} from '@wordpress/editor';
 import { Component, createInterpolateElement, createRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { copySmall, seen } from '@wordpress/icons';
