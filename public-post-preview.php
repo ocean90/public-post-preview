@@ -735,6 +735,8 @@ class DS_Public_Post_Preview {
 			add_filter( 'comments_open', '__return_false' );
 			add_filter( 'pings_open', '__return_false' );
 			add_filter( 'wp_link_pages_link', array( __CLASS__, 'filter_wp_link_pages_link' ), 10, 2 );
+
+			do_action( 'ppp_show_public_preview', $post_id );
 		}
 
 		return $posts;
