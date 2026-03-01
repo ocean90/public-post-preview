@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.0 (2026-03-01)
+* Requires WordPress 6.6.
+* Compatibility with WordPress 7.0.
+* Add `ppp_show_public_preview` action for plugin extenders.
+
 ## 3.0.1 (2024-12-23)
 * Fix calculation of expiration time for preview nonce.
 
