@@ -46,15 +46,6 @@ if ( ! class_exists( 'WP' ) ) {
 class DS_Public_Post_Preview {
 
 	/**
-	 * The post ID currently being previewed, used to scope the map_meta_cap filter.
-	 *
-	 * @since 2.11.0
-	 *
-	 * @var int
-	 */
-	private static int $preview_post_id = 0;
-
-	/**
 	 * Registers actions and filters.
 	 *
 	 * @since 1.0.0
@@ -739,10 +730,23 @@ class DS_Public_Post_Preview {
 		if ( self::is_public_preview_available( $post_id ) ) {
 			// Set post status to publish so that it's visible.
 			$posts[0]->post_status = 'publish';
-			self::$preview_post_id = $post_id;
 
 			// Allow Block Bindings sources to resolve for this post.
-			add_filter( 'map_meta_cap', array( __CLASS__, 'grant_read_post_for_preview' ), 10, 4 );
+			add_filter(
+				'map_meta_cap',
+				static function( $caps, $cap, $user_id, $args ) use ( $post_id ) {
+					if (
+						'read_post' === $cap &&
+						isset( $args[0] ) &&
+						(int) $args[0] === $post_id
+					) {
+						return [];
+					}
+					return $caps;
+				},
+				10,
+				4
+			);
 
 			// Disable comments and pings for this post.
 			add_filter( 'comments_open', '__return_false' );
@@ -753,29 +757,6 @@ class DS_Public_Post_Preview {
 		}
 
 		return $posts;
-	}
-
-	/**
-	 * Grants the read_post capability for the previewed post so that Block Bindings
-	 * sources (core/post-meta, core/post-data) can resolve for anonymous users.
-	 *
-	 * @since 2.11.0
-	 *
-	 * @param string[] $caps    Primitive capabilities required of the user.
-	 * @param string   $cap     Capability being checked.
-	 * @param int      $user_id ID of the user being checked.
-	 * @param array    $args    Additional arguments, typically the object ID.
-	 * @return string[] Filtered primitive capabilities.
-	 */
-	public static function grant_read_post_for_preview( $caps, $cap, $user_id, $args ) {
-		if (
-			'read_post' === $cap &&
-			isset( $args[0] ) &&
-			(int) $args[0] === self::$preview_post_id ) {
-			return [];
-		}
-
-		return $caps;
 	}
 
 	/**
