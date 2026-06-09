@@ -740,7 +740,7 @@ class DS_Public_Post_Preview {
 						isset( $args[0] ) &&
 						(int) $args[0] === $post_id
 					) {
-						return [];
+						return [ 'exist' ];
 					}
 					return $caps;
 				},
