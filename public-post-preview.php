@@ -731,6 +731,23 @@ class DS_Public_Post_Preview {
 			// Set post status to publish so that it's visible.
 			$posts[0]->post_status = 'publish';
 
+			// Allow Block Bindings sources to resolve for this post.
+			add_filter(
+				'map_meta_cap',
+				static function( $caps, $cap, $user_id, $args ) use ( $post_id ) {
+					if (
+						'read_post' === $cap &&
+						isset( $args[0] ) &&
+						(int) $args[0] === $post_id
+					) {
+						return [ 'exist' ];
+					}
+					return $caps;
+				},
+				10,
+				4
+			);
+
 			// Disable comments and pings for this post.
 			add_filter( 'comments_open', '__return_false' );
 			add_filter( 'pings_open', '__return_false' );
