@@ -9,5 +9,5 @@ import { registerPlugin } from '@wordpress/plugins';
 import PreviewToggle from './components/preview-toggle';
 
 registerPlugin( 'public-post-preview', {
-	render: PreviewToggle,
+	render: () => <PreviewToggle />,
 } );
