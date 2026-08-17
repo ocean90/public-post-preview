@@ -200,19 +200,11 @@ class DS_Public_Post_Preview {
 
 		$post = get_post( (int) $request['id'] );
 
-		if ( ! $post ) {
+		if ( ! $post || ! current_user_can( 'edit_post', $post->ID ) ) {
 			return new WP_Error(
 				'rest_post_invalid_id',
 				__( 'Invalid post ID.', 'public-post-preview' ),
 				array( 'status' => 404 )
-			);
-		}
-
-		if ( ! current_user_can( 'edit_post', $post->ID ) ) {
-			return new WP_Error(
-				'rest_cannot_edit',
-				__( 'Sorry, you are not allowed to edit this post.', 'public-post-preview' ),
-				array( 'status' => rest_authorization_required_code() )
 			);
 		}
 
@@ -316,7 +308,11 @@ class DS_Public_Post_Preview {
 			);
 		}
 
-		if ( 'auto-draft' === $post->post_status || in_array( $post->post_status, self::get_published_statuses(), true ) ) {
+		$disallowed_statuses   = self::get_published_statuses();
+		$disallowed_statuses[] = 'auto-draft';
+		$disallowed_statuses[] = 'trash';
+
+		if ( in_array( $post->post_status, $disallowed_statuses, true ) ) {
 			return new WP_Error(
 				'rest_public_preview_invalid_status',
 				__( 'Public previews are not supported for this post status.', 'public-post-preview' ),
