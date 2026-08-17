@@ -44,6 +44,11 @@ To upload the plugin through WordPress, instead of FTP:
 * The link will be displayed if the checkbox is checked, you can copy and share the link with your friends.
 * To disable a preview uncheck the box again.
 
+Authenticated clients can manage public previews through the
+`/wp-json/public-post-preview/v1/posts/<id>` REST API route. Use GET to read the current state,
+POST with `{ "enabled": true }` or `{ "enabled": false }` to update it, and DELETE to disable it.
+The current user must be able to edit the post.
+
 == Frequently Asked Questions ==
 
 **I can't find the option for preview links. Where is it?**

@@ -53,6 +53,7 @@ class DS_Public_Post_Preview {
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_settings' ) );
+		add_action( 'rest_api_init', array( __CLASS__, 'register_rest_routes' ) );
 
 		add_action( 'transition_post_status', array( __CLASS__, 'unregister_public_preview_on_status_change' ), 20, 3 );
 		add_action( 'post_updated', array( __CLASS__, 'unregister_public_preview_on_edit' ), 20, 2 );
@@ -127,6 +128,245 @@ class DS_Public_Post_Preview {
 				'label_for' => 'public-post-preview-expiration-time',
 			)
 		);
+	}
+
+	/**
+	 * Registers REST API routes for managing public previews.
+	 *
+	 * @since 3.2.0
+	 */
+	public static function register_rest_routes() {
+		$post_id_args = array(
+			'id' => array(
+				'description'       => __( 'Unique identifier for the post.', 'public-post-preview' ),
+				'type'              => 'integer',
+				'minimum'           => 1,
+				'required'          => true,
+				'sanitize_callback' => 'absint',
+			),
+		);
+
+		register_rest_route(
+			'public-post-preview/v1',
+			'/posts/(?P<id>[\d]+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'rest_get_public_preview' ),
+					'permission_callback' => array( __CLASS__, 'rest_permissions_check' ),
+					'args'                => $post_id_args,
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'rest_update_public_preview' ),
+					'permission_callback' => array( __CLASS__, 'rest_permissions_check' ),
+					'args'                => array_merge(
+						$post_id_args,
+						array(
+							'enabled' => array(
+								'description' => __( 'Whether the public preview is enabled.', 'public-post-preview' ),
+								'type'        => 'boolean',
+								'required'    => true,
+							),
+						)
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( __CLASS__, 'rest_delete_public_preview' ),
+					'permission_callback' => array( __CLASS__, 'rest_permissions_check' ),
+					'args'                => $post_id_args,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Checks whether the current user can manage a post's public preview.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return true|WP_Error True when allowed, otherwise a REST error.
+	 */
+	public static function rest_permissions_check( $request ) {
+		if ( ! is_user_logged_in() ) {
+			return new WP_Error(
+				'rest_cannot_edit',
+				__( 'Sorry, you are not allowed to edit this post.', 'public-post-preview' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		$post = get_post( (int) $request['id'] );
+
+		if ( ! $post || ! current_user_can( 'edit_post', $post->ID ) ) {
+			return new WP_Error(
+				'rest_post_invalid_id',
+				__( 'Invalid post ID.', 'public-post-preview' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns the current public preview state for a post.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error REST response or validation error.
+	 */
+	public static function rest_get_public_preview( $request ) {
+		$post = self::get_rest_post( $request );
+
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+
+		return self::prepare_rest_response( $post );
+	}
+
+	/**
+	 * Enables or disables the public preview for a post.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error REST response or validation error.
+	 */
+	public static function rest_update_public_preview( $request ) {
+		$post = self::get_rest_post( $request );
+
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+
+		if ( ! self::set_public_preview_enabled( $post, (bool) $request['enabled'] ) ) {
+			return new WP_Error(
+				'rest_public_preview_not_saved',
+				__( 'The public preview state could not be saved.', 'public-post-preview' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		return self::prepare_rest_response( $post );
+	}
+
+	/**
+	 * Disables the public preview for a post.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error REST response or validation error.
+	 */
+	public static function rest_delete_public_preview( $request ) {
+		$post = self::get_rest_post( $request );
+
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+
+		if ( ! self::set_public_preview_enabled( $post, false ) ) {
+			return new WP_Error(
+				'rest_public_preview_not_saved',
+				__( 'The public preview state could not be saved.', 'public-post-preview' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		return self::prepare_rest_response( $post );
+	}
+
+	/**
+	 * Returns and validates the post targeted by a REST request.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_Post|WP_Error Post object or validation error.
+	 */
+	private static function get_rest_post( $request ) {
+		$post = get_post( (int) $request['id'] );
+
+		if ( ! $post ) {
+			return new WP_Error(
+				'rest_post_invalid_id',
+				__( 'Invalid post ID.', 'public-post-preview' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( ! in_array( $post->post_type, self::get_post_types(), true ) ) {
+			return new WP_Error(
+				'rest_public_preview_invalid_post_type',
+				__( 'Public previews are not supported for this post type.', 'public-post-preview' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$disallowed_statuses   = self::get_published_statuses();
+		$disallowed_statuses[] = 'auto-draft';
+		$disallowed_statuses[] = 'trash';
+
+		if ( in_array( $post->post_status, $disallowed_statuses, true ) ) {
+			return new WP_Error(
+				'rest_public_preview_invalid_status',
+				__( 'Public previews are not supported for this post status.', 'public-post-preview' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return $post;
+	}
+
+	/**
+	 * Prepares a public preview REST response.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param WP_Post $post Post object.
+	 * @return WP_REST_Response REST response.
+	 */
+	private static function prepare_rest_response( $post ) {
+		$enabled = self::is_public_preview_enabled( $post );
+
+		return rest_ensure_response(
+			array(
+				'post_id'     => (int) $post->ID,
+				'enabled'     => $enabled,
+				'preview_url' => $enabled ? self::get_preview_link( $post ) : null,
+			)
+		);
+	}
+
+	/**
+	 * Updates the public preview state for a post.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param WP_Post $post    Post object.
+	 * @param bool    $enabled Whether the public preview should be enabled.
+	 * @return bool True when the requested state is stored.
+	 */
+	private static function set_public_preview_enabled( $post, $enabled ) {
+		$preview_post_ids = self::get_preview_post_ids();
+		$is_enabled       = in_array( (int) $post->ID, $preview_post_ids, true );
+
+		if ( $enabled === $is_enabled ) {
+			return true;
+		}
+
+		if ( $enabled ) {
+			$preview_post_ids[] = (int) $post->ID;
+		} else {
+			$preview_post_ids = array_diff( $preview_post_ids, array( (int) $post->ID ) );
+		}
+
+		return self::set_preview_post_ids( $preview_post_ids );
 	}
 
 	/**
