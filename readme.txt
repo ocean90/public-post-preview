@@ -75,9 +75,6 @@ function my_nonce_life() {
 
 == Changelog ==
 
-= Unreleased: =
-* Add an authenticated REST API for reading, enabling, and disabling public previews.
-
 = 3.1.1 / 3.1.2 (2026-06-16): =
 * Fix hidden dynamic content added through the Block Bindings API. Props [@krokodok](https://profiles.wordpress.org/krokodok/).
 
