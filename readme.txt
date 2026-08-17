@@ -44,6 +44,11 @@ To upload the plugin through WordPress, instead of FTP:
 * The link will be displayed if the checkbox is checked, you can copy and share the link with your friends.
 * To disable a preview uncheck the box again.
 
+Authenticated clients can manage public previews through the
+`/wp-json/public-post-preview/v1/posts/<id>` REST API route. Use GET to read the current state,
+POST with `{ "enabled": true }` or `{ "enabled": false }` to update it, and DELETE to disable it.
+The current user must be able to edit the post.
+
 == Frequently Asked Questions ==
 
 **I can't find the option for preview links. Where is it?**
@@ -69,6 +74,9 @@ function my_nonce_life() {
 **Note:** The setting UI is not visible if the filter is used.
 
 == Changelog ==
+
+= Unreleased: =
+* Add an authenticated REST API for reading, enabling, and disabling public previews.
 
 = 3.1.1 / 3.1.2 (2026-06-16): =
 * Fix hidden dynamic content added through the Block Bindings API. Props [@krokodok](https://profiles.wordpress.org/krokodok/).
