@@ -20,38 +20,22 @@
     "@emotion/babel-plugin": "11.13.5",
     "@emotion/css": "11.13.5",
     "@wearerequired/browserslist-config": "0.3.0",
-    "@wearerequired/eslint-config": "6.0.0",
-    "@wordpress/babel-preset-default": "8.40.0",
-    "@wordpress/scripts": "31.5.0",
-    "prettier": "npm:wp-prettier@3.0.3",
-    "terser": "5.46.0"
+    "@wearerequired/eslint-config": "7.0.0",
+    "@wordpress/babel-preset-default": "9.0.0",
+    "@wordpress/eslint-plugin": "25.10.0",
+    "@wordpress/scripts": "36.1.0",
+    "prettier": "npm:wp-prettier@3.9.6"
   },
   "scripts": {
-    "build:legacy": "terser js/public-post-preview.js -o js/public-post-preview.min.js -c passes=2 -m",
-    "build": "NODE_ENV=production wp-scripts build",
+    "build": "wp-scripts build",
     "start": "wp-scripts start",
     "lint-js": "wp-scripts lint-js",
     "env": "wp-env"
-  },
-  "eslintConfig": {
-    "extends": [
-      "@wearerequired/eslint-config"
-    ],
-    "rules": {
-      "@wordpress/i18n-text-domain": [
-        "error",
-        {
-          "allowedTextDomain": [
-            "public-post-preview"
-          ]
-        }
-      ]
-    }
   },
   "browserslist": [
     "extends @wearerequired/browserslist-config/modern"
   ],
   "dependencies": {
-    "@wordpress/icons": "11.7.0"
+    "@wordpress/icons": "18.0.0"
   }
 }
