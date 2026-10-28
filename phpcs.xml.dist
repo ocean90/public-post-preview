@@ -16,4 +16,9 @@
 
 	<rule ref="WordPress-VIP-Go"/>
 	<rule ref="PHPCompatibilityWP"/>
+
+	<!-- The test library location is only known at runtime. Tests are not shipped. -->
+	<rule ref="WordPressVIPMinimum.Files.IncludingFile.UsingVariable">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
 </ruleset>

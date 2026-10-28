@@ -1,0 +1,70 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  phpunit:
+    name: PHPUnit (WP ${{ matrix.wp }}, PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Latest WordPress release with the newest PHP version.
+          - wp: latest
+            core: ''
+            php: '8.4'
+          # Lowest supported WordPress and PHP versions.
+          - wp: '6.8'
+            core: WordPress/WordPress#6.8-branch
+            php: '8.0'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      # Only runs Composer. The tests run on the PHP version of the wp-env container,
+      # and the Composer platform setting keeps the lock file installable on PHP 8.0.
+      - name: Set up PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-progress --no-ansi --no-interaction
+
+      - name: Start test environment
+        env:
+          # An empty value falls back to wp-env's default, the latest release.
+          WP_ENV_CORE: ${{ matrix.core }}
+          WP_ENV_PHP_VERSION: ${{ matrix.php }}
+        run: npm run test:env
+
+      - name: Run PHPUnit
+        run: npm run test:php

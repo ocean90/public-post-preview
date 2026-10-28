@@ -19,3 +19,7 @@ webpack.config.js
 /vendor
 composer.lock
 phpcs.xml.dist
+/tests
+phpunit.xml.dist
+.wp-env.test.json
+/.phpunit.result.cache
