@@ -39,6 +39,11 @@ if ( ! class_exists( 'WP' ) ) {
 	die();
 }
 
+require_once __DIR__ . '/inc/class-clock.php';
+require_once __DIR__ . '/inc/class-token.php';
+require_once __DIR__ . '/inc/class-link.php';
+require_once __DIR__ . '/inc/link-store.php';
+
 /**
  * The class which controls the plugin.
  *
@@ -53,6 +58,7 @@ class DS_Public_Post_Preview {
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_settings' ) );
+		add_action( 'init', 'DS\\PublicPostPreview\\Link_Store\\register_meta' );
 
 		add_action( 'transition_post_status', array( __CLASS__, 'unregister_public_preview_on_status_change' ), 20, 3 );
 		add_action( 'post_updated', array( __CLASS__, 'unregister_public_preview_on_edit' ), 20, 2 );
@@ -1180,12 +1186,14 @@ CSS;
 	}
 
 	/**
-	 * Deletes the option 'public_post_preview' if the plugin will be uninstalled.
+	 * Deletes the plugin's data when the plugin is uninstalled.
 	 *
 	 * @since 2.0.0
 	 */
 	public static function uninstall() {
 		delete_option( 'public_post_preview' );
+		delete_post_meta_by_key( DS\PublicPostPreview\Link_Store\META_KEY );
+		delete_post_meta_by_key( DS\PublicPostPreview\Link_Store\EXPIRY_META_KEY );
 	}
 
 	/**
