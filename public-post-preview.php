@@ -49,6 +49,7 @@ require_once __DIR__ . '/inc/link-service.php';
 require_once __DIR__ . '/inc/class-rest-links-controller.php';
 require_once __DIR__ . '/inc/class-rest-preview-status-controller.php';
 require_once __DIR__ . '/inc/frontend.php';
+require_once __DIR__ . '/inc/assets.php';
 require_once __DIR__ . '/inc/admin.php';
 require_once __DIR__ . '/inc/abilities.php';
 

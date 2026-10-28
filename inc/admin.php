@@ -5,6 +5,7 @@
 
 namespace DS\PublicPostPreview\Admin;
 
+use DS\PublicPostPreview\Assets;
 use DS\PublicPostPreview\Clock;
 use DS\PublicPostPreview\Link_Store;
 use DS\PublicPostPreview\Preview_Policy;
@@ -32,40 +33,22 @@ function enqueue_block_editor_assets() {
 		return;
 	}
 
-	// Fixed paths instead of a variable, as required by the WordPress VIP code scanner.
-	$script_assets = file_exists( dirname( __DIR__ ) . '/js/dist/block-editor.asset.php' ) ?
-		require dirname( __DIR__ ) . '/js/dist/block-editor.asset.php' :
-		array(
-			'dependencies' => array(),
-			'version'      => '',
-		);
+	$version = Assets\enqueue_script( 'public-post-preview-block-editor', 'block-editor' );
+	Assets\add_settings( 'public-post-preview-block-editor', get_editor_settings() );
+	Assets\enqueue_style( 'public-post-preview-block-editor', 'block-editor', array( 'wp-components' ), $version );
+}
 
-	wp_enqueue_script(
-		'public-post-preview-block-editor',
-		plugins_url( 'js/dist/block-editor.js', __DIR__ ),
-		$script_assets['dependencies'],
-		$script_assets['version'],
-		true
-	);
-	wp_set_script_translations( 'public-post-preview-block-editor', 'public-post-preview' );
-	wp_add_inline_script(
-		'public-post-preview-block-editor',
-		'window.DSPublicPostPreview = ' . wp_json_encode(
-			array(
-				'defaultLifetimeLabel' => format_lifetime( Preview_Policy\get_default_lifetime() ),
-				'maxLifetime'          => Link_Store\get_max_lifetime(),
-				// Passed from here, so filters on the published statuses apply in the editor too.
-				'excludedStatuses'     => Preview_Policy\get_excluded_statuses(),
-			)
-		) . ';',
-		'before'
-	);
-
-	wp_enqueue_style(
-		'public-post-preview-block-editor',
-		plugins_url( 'js/dist/block-editor.css', __DIR__ ),
-		array( 'wp-components' ),
-		$script_assets['version']
+/**
+ * Returns the settings both editors need.
+ *
+ * @return array<string, mixed> Settings.
+ */
+function get_editor_settings(): array {
+	return array(
+		'defaultLifetimeLabel' => format_lifetime( Preview_Policy\get_default_lifetime() ),
+		'maxLifetime'          => Link_Store\get_max_lifetime(),
+		// Passed from here, so filters on the published statuses apply in the editor too.
+		'excludedStatuses'     => Preview_Policy\get_excluded_statuses(),
 	);
 }
 

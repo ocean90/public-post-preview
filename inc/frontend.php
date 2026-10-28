@@ -5,6 +5,7 @@
 
 namespace DS\PublicPostPreview\Frontend;
 
+use DS\PublicPostPreview\Assets;
 use DS\PublicPostPreview\Preview_Access;
 use DS\PublicPostPreview\Preview_Policy;
 use DS\PublicPostPreview\Token;
@@ -168,19 +169,7 @@ function enqueue_preview_updates_script() {
 		return;
 	}
 
-	$script_assets = file_exists( dirname( __DIR__ ) . '/js/dist/preview-updates.asset.php' ) ?
-		require dirname( __DIR__ ) . '/js/dist/preview-updates.asset.php' :
-		array(
-			'dependencies' => array(),
-			'version'      => '',
-		);
-	wp_enqueue_script(
-		'public-post-preview-updates',
-		plugins_url( 'js/dist/preview-updates.js', __DIR__ ),
-		$script_assets['dependencies'],
-		$script_assets['version'],
-		true
-	);
+	$version = Assets\enqueue_script( 'public-post-preview-updates', 'preview-updates' );
 
 	$config = array(
 		'endpoint' => add_query_arg(
@@ -200,7 +189,7 @@ function enqueue_preview_updates_script() {
 
 	wp_localize_script( 'public-post-preview-updates', 'DSPublicPostPreviewUpdates', $config );
 
-	wp_register_style( 'public-post-preview-updates', false, array(), $script_assets['version'] );
+	wp_register_style( 'public-post-preview-updates', false, array(), $version );
 	wp_enqueue_style( 'public-post-preview-updates' );
 	wp_add_inline_style( 'public-post-preview-updates', get_preview_updates_css() );
 }
