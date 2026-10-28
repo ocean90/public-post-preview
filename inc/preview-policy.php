@@ -64,6 +64,23 @@ function is_previewable( WP_Post $post ): bool {
 }
 
 /**
+ * Returns a post that went live for everyone.
+ *
+ * Private posts don't count, so their permalink isn't revealed to anonymous visitors.
+ *
+ * @param int $post_id Post ID.
+ * @return WP_Post|null The published post, or null.
+ */
+function get_live_post( int $post_id ): ?WP_Post {
+	$post = $post_id > 0 ? get_post( $post_id ) : null;
+	if ( $post && in_array( $post->post_status, get_published_statuses(), true ) && is_post_publicly_viewable( $post ) ) {
+		return $post;
+	}
+
+	return null;
+}
+
+/**
  * Returns how long a new link lives unless a date is chosen.
  *
  * @return int Seconds, never more than the maximum lifetime.

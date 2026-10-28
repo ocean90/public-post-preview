@@ -5,6 +5,7 @@
 
 namespace DS\PublicPostPreview\Tests;
 
+use DS\PublicPostPreview\Clock;
 use DS\PublicPostPreview\Link_Service;
 use RuntimeException;
 use WP_Error;
@@ -21,6 +22,11 @@ class RedirectException extends RuntimeException {}
  * Shared helpers that go through the plugin's own code paths instead of its storage.
  */
 abstract class TestCase extends WP_UnitTestCase {
+
+	/**
+	 * Time the clock is frozen at during a test.
+	 */
+	protected const NOW = 1793000000;
 
 	/**
 	 * ID of an editor who can edit all posts.
@@ -46,10 +52,11 @@ abstract class TestCase extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Turns redirects into exceptions.
+	 * Freezes the clock and turns redirects into exceptions.
 	 */
 	public function set_up() {
 		parent::set_up();
+		Clock::freeze( self::NOW );
 
 		add_filter(
 			'wp_redirect',
@@ -57,6 +64,14 @@ abstract class TestCase extends WP_UnitTestCase {
 				throw new RedirectException( $location );
 			}
 		);
+	}
+
+	/**
+	 * Lets the clock run again.
+	 */
+	public function tear_down() {
+		Clock::unfreeze();
+		parent::tear_down();
 	}
 
 	/**
@@ -155,6 +170,9 @@ abstract class TestCase extends WP_UnitTestCase {
 	/**
 	 * Asserts that an anonymous visitor gets no access through a preview link.
 	 *
+	 * A link that unlocks nothing leads to the theme's regular 404, the same as a post that
+	 * doesn't exist, so the response doesn't reveal whether a draft exists.
+	 *
 	 * @param string $link   Preview link.
 	 * @param int    $status Expected HTTP status: 404 for an unknown link, 403 for an expired one, 410 for an old one.
 	 */
@@ -162,10 +180,13 @@ abstract class TestCase extends WP_UnitTestCase {
 		try {
 			$this->visit_preview( $link );
 		} catch ( WPDieException $e ) {
+			$this->assertNotSame( 404, $status, 'An unknown link must lead to the regular 404, not an error page.' );
 			$this->assertSame( $status, $e->getCode(), 'Access was denied with an unexpected status.' );
 			return;
 		}
 
-		$this->fail( 'The preview was shown although access should have been denied.' );
+		$this->assertSame( 404, $status, 'The preview was shown although access should have been denied.' );
+		$this->assertTrue( is_404(), 'The preview was shown although access should have been denied.' );
+		$this->assertFalse( have_posts() );
 	}
 }

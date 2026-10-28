@@ -14,18 +14,6 @@ use WP_REST_Response;
  */
 class PreviewStatusEndpointTest extends TestCase {
 
-	private const NOW = 1793000000;
-
-	public function set_up() {
-		parent::set_up();
-		Clock::freeze( self::NOW );
-	}
-
-	public function tear_down() {
-		Clock::unfreeze();
-		parent::tear_down();
-	}
-
 	/**
 	 * Requests the status of a post as an anonymous visitor holding a token.
 	 *
@@ -127,5 +115,19 @@ class PreviewStatusEndpointTest extends TestCase {
 		add_filter( 'ppp_poll_for_updates', '__return_false' );
 
 		$this->assertSame( 404, $this->request_status( $post->ID, $this->get_token( $this->get_preview_link( $post ) ) )->get_status() );
+	}
+
+	public function test_response_tells_caches_not_to_store_it() {
+		$post    = $this->create_previewable_draft();
+		$request = new WP_REST_Request( 'GET', "/public-post-preview/v1/posts/{$post->ID}/preview-status" );
+		$request->set_param( '_ppp', 'invalid' );
+
+		$response = apply_filters( 'rest_post_dispatch', rest_do_request( $request ), rest_get_server(), $request );
+
+		$this->assertStringContainsString( 'no-store', $response->get_headers()['Cache-Control'] ?? '' );
+	}
+
+	public function test_post_id_zero_is_rejected() {
+		$this->assertSame( 400, $this->request_status( 0, 'invalid' )->get_status() );
 	}
 }

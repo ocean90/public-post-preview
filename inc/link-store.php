@@ -161,14 +161,10 @@ function find( int $post_id, string $link_id ): ?Link {
 /**
  * Changes fields of a link.
  *
- * Deleting the stored row and adding the changed one, instead of `update_metadata()`, makes
- * the write conditional: `update_metadata()` adds a fresh row when the post has none left,
- * which would bring back a link that was revoked in the meantime.
- *
  * @param int                  $post_id Post ID.
  * @param string               $link_id Link ID.
  * @param array<string, mixed> $changes Values for `label`, `expires_at`, `first_accessed_at`, `last_accessed_at`.
- * @return Link|WP_Error|null The changed link, an error for invalid values, or null if the link is gone.
+ * @return Link|WP_Error|null The changed link, an error for invalid values, or null if the link is gone or changed in between.
  */
 function update( int $post_id, string $link_id, array $changes ) {
 	$changes = array_intersect_key( $changes, array_flip( UPDATABLE_FIELDS ) );
@@ -184,13 +180,31 @@ function update( int $post_id, string $link_id, array $changes ) {
 	}
 
 	$row = find_row( $post_id, $link_id );
-	if ( ! $row || ! delete_post_meta( $post_id, META_KEY, wp_slash( $row['raw'] ) ) ) {
+	if ( ! $row ) {
 		return null;
 	}
 
 	$link = Link::from_array( array_merge( $row['link']->to_array(), $changes ) );
-	if ( ! add_post_meta( $post_id, META_KEY, wp_slash( $link->to_array() ) ) ) {
-		return new WP_Error( 'ppp_link_not_saved', __( 'The preview link could not be saved.', 'public-post-preview' ), array( 'status' => 500 ) );
+
+	/*
+	 * One conditional UPDATE instead of the meta API: `update_metadata()` adds a fresh row
+	 * when the post has none left, and delete plus add leaves a gap. Either could bring back
+	 * a link that was revoked at the same moment.
+	 */
+	global $wpdb;
+	$updated = $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Compare-and-swap of one row, the meta cache is cleared below.
+		$wpdb->postmeta,
+		array( 'meta_value' => maybe_serialize( $link->to_array() ) ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Written by row, not queried.
+		array(
+			'post_id'    => $post_id,
+			'meta_key'   => META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Written by row, not queried.
+			'meta_value' => maybe_serialize( $row['raw'] ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Matches the row as read.
+		)
+	);
+	wp_cache_delete( $post_id, 'post_meta' );
+
+	if ( ! $updated ) {
+		return null;
 	}
 
 	if ( $link->expires_at !== $row['link']->expires_at ) {
@@ -222,15 +236,18 @@ function delete( int $post_id, string $link_id ): ?Link {
  * Deletes all links of a post, internal links included.
  *
  * @param int $post_id Post ID.
- * @return int Number of deleted links.
+ * @return Link[] Deleted links.
  */
-function delete_all( int $post_id ): int {
-	$count = count( get_rows( $post_id ) );
+function delete_all( int $post_id ): array {
+	$links = array_column( get_rows( $post_id ), 'link' );
+	if ( ! $links ) {
+		return array();
+	}
 
 	delete_post_meta( $post_id, META_KEY );
 	delete_post_meta( $post_id, EXPIRY_META_KEY );
 
-	return $count;
+	return $links;
 }
 
 /**
@@ -334,9 +351,14 @@ function get_rows( int $post_id ): array {
  * @return array{raw: mixed, link: Link}|null The row, or null if the post has no such link.
  */
 function find_row( int $post_id, string $link_id ): ?array {
-	foreach ( get_rows( $post_id ) as $row ) {
-		if ( $row['link']->id === $link_id ) {
-			return $row;
+	foreach ( get_post_meta( $post_id, META_KEY, false ) as $raw ) {
+		if ( is_array( $raw ) && ( $raw['id'] ?? null ) === $link_id ) {
+			$link = Link::from_array( $raw );
+
+			return $link ? array(
+				'raw'  => $raw,
+				'link' => $link,
+			) : null;
 		}
 	}
 

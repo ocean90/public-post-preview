@@ -6,7 +6,6 @@
 namespace DS\PublicPostPreview;
 
 use WP_Error;
-use WP_Post;
 use WP_REST_Controller;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -41,6 +40,7 @@ final class REST_Preview_Status_Controller extends WP_REST_Controller {
 						'id'   => array(
 							'description' => __( 'ID of the previewed post.', 'public-post-preview' ),
 							'type'        => 'integer',
+							'minimum'     => 1,
 						),
 						'_ppp' => array(
 							'description' => __( 'Token from the preview link.', 'public-post-preview' ),
@@ -52,6 +52,24 @@ final class REST_Preview_Status_Controller extends WP_REST_Controller {
 				'schema' => array( $this, 'get_public_item_schema' ),
 			)
 		);
+	}
+
+	/**
+	 * Tells caches not to store any response of this route, errors included.
+	 *
+	 * `rest_send_nocache_headers` can't be used: it is read before the route runs.
+	 *
+	 * @param WP_REST_Response $response Response.
+	 * @param WP_REST_Server   $server   Server.
+	 * @param WP_REST_Request  $request  Request.
+	 * @return WP_REST_Response Response.
+	 */
+	public static function add_nocache_headers( $response, $server, $request ) {
+		if ( $response instanceof WP_REST_Response && preg_match( '#^/public-post-preview/v1/posts/\d+/preview-status$#', $request->get_route() ) ) {
+			$response->set_headers( array_merge( $response->get_headers(), wp_get_nocache_headers() ) );
+		}
+
+		return $response;
 	}
 
 	/**
@@ -68,14 +86,10 @@ final class REST_Preview_Status_Controller extends WP_REST_Controller {
 
 		/** This filter is documented in public-post-preview.php */
 		if ( ! apply_filters( 'ppp_poll_for_updates', true, $post_id ) ) {
-			return new WP_Error(
-				'ppp_preview_unavailable',
-				__( 'No public preview available!', 'public-post-preview' ),
-				array( 'status' => 404 )
-			);
+			return Preview_Access\unavailable();
 		}
 
-		if ( $this->get_published_post( $post_id ) ) {
+		if ( Preview_Policy\get_live_post( $post_id ) ) {
 			return true;
 		}
 
@@ -91,10 +105,8 @@ final class REST_Preview_Status_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response Response.
 	 */
 	public function get_item( $request ) {
-		add_filter( 'rest_send_nocache_headers', '__return_true' );
-
 		$post_id   = (int) $request['id'];
-		$published = $this->get_published_post( $post_id );
+		$published = Preview_Policy\get_live_post( $post_id );
 		if ( $published ) {
 			return rest_ensure_response(
 				array(
@@ -142,22 +154,5 @@ final class REST_Preview_Status_Controller extends WP_REST_Controller {
 				),
 			),
 		);
-	}
-
-	/**
-	 * Returns the post if it went live and anyone may see it.
-	 *
-	 * Private posts don't count, so their permalink isn't revealed to anonymous visitors.
-	 *
-	 * @param int $post_id Post ID.
-	 * @return WP_Post|null The published post, or null.
-	 */
-	private function get_published_post( int $post_id ): ?WP_Post {
-		$post = get_post( $post_id );
-		if ( $post && in_array( $post->post_status, Preview_Policy\get_published_statuses(), true ) && is_post_publicly_viewable( $post ) ) {
-			return $post;
-		}
-
-		return null;
 	}
 }

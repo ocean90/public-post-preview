@@ -9,7 +9,6 @@
 .npmrc
 .nvmrc
 .wp-env.json
-babel.config.js
 composer.json
 eslint.config.js
 package.json

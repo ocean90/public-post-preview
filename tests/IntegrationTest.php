@@ -14,15 +14,7 @@ use DS_Public_Post_Preview;
  */
 class IntegrationTest extends TestCase {
 
-	private const NOW = 1793000000;
-
-	public function set_up() {
-		parent::set_up();
-		Clock::freeze( self::NOW );
-	}
-
 	public function tear_down() {
-		Clock::unfreeze();
 		unset( $_GET['redirect_to_post'] );
 		parent::tear_down();
 	}
@@ -31,7 +23,7 @@ class IntegrationTest extends TestCase {
 		$post                      = self::factory()->post->create( array( 'post_status' => 'draft' ) );
 		$_GET['redirect_to_post'] = (string) $post;
 
-		$url = DS_Public_Post_Preview::user_switching_redirect_to( '', null, null, get_userdata( self::$editor_id ) );
+		$url = DS_Public_Post_Preview::user_switching_redirect_to( '', 'post', null, get_userdata( self::$editor_id ) );
 
 		$this->visit_preview( $url );
 		$this->assertSame( $post, get_queried_object_id() );
@@ -41,7 +33,7 @@ class IntegrationTest extends TestCase {
 		$post                      = self::factory()->post->create( array( 'post_status' => 'draft' ) );
 		$_GET['redirect_to_post'] = (string) $post;
 
-		DS_Public_Post_Preview::user_switching_redirect_to( '', null, null, get_userdata( self::$editor_id ) );
+		DS_Public_Post_Preview::user_switching_redirect_to( '', 'post', null, get_userdata( self::$editor_id ) );
 
 		$this->assertSame( array(), Link_Store\get_links( $post ) );
 		$this->assertSame( 0, Link_Store\get_latest_expiry( $post ) );
@@ -53,7 +45,16 @@ class IntegrationTest extends TestCase {
 		$_GET['redirect_to_post'] = (string) $post;
 		$subscriber                = get_userdata( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
 
-		$this->assertSame( 'https://example.org/', DS_Public_Post_Preview::user_switching_redirect_to( 'https://example.org/', null, null, $subscriber ) );
+		$this->assertSame( 'https://example.org/', DS_Public_Post_Preview::user_switching_redirect_to( 'https://example.org/', 'post', null, $subscriber ) );
+		$this->assertSame( array(), Link_Store\get_links( $post, true ) );
+	}
+
+	public function test_switching_to_another_user_creates_no_link() {
+		$post                      = self::factory()->post->create( array( 'post_status' => 'draft' ) );
+		$_GET['redirect_to_post'] = (string) $post;
+		$other                     = get_userdata( self::factory()->user->create( array( 'role' => 'author' ) ) );
+
+		$this->assertSame( '', DS_Public_Post_Preview::user_switching_redirect_to( '', 'post', $other, get_userdata( self::$editor_id ) ) );
 		$this->assertSame( array(), Link_Store\get_links( $post, true ) );
 	}
 
@@ -74,7 +75,7 @@ class IntegrationTest extends TestCase {
 		Link_Store\create( $post->ID, array( 'expires_at' => self::NOW + 900, 'internal' => true ) );
 
 		Clock::freeze( self::NOW + 60 );
-		$states = DS_Public_Post_Preview::display_preview_state( array(), $post );
+		$states = \DS\PublicPostPreview\Admin\display_preview_state( array(), $post );
 
 		$this->assertSame( 'Public Preview (1 link)', $states['ppp_enabled'] );
 	}
@@ -83,6 +84,6 @@ class IntegrationTest extends TestCase {
 		$post = self::factory()->post->create_and_get( array( 'post_status' => 'draft' ) );
 		Link_Store\create( $post->ID, array( 'expires_at' => self::NOW + 900, 'internal' => true ) );
 
-		$this->assertSame( array(), DS_Public_Post_Preview::display_preview_state( array(), $post ) );
+		$this->assertSame( array(), \DS\PublicPostPreview\Admin\display_preview_state( array(), $post ) );
 	}
 }

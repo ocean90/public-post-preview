@@ -16,8 +16,6 @@ use WP_REST_Response;
  */
 class RestLinksTest extends TestCase {
 
-	private const NOW = 1793000000;
-
 	/**
 	 * Draft by the editor.
 	 *
@@ -27,18 +25,12 @@ class RestLinksTest extends TestCase {
 
 	public function set_up() {
 		parent::set_up();
-		Clock::freeze( self::NOW );
 		$this->post_id = self::factory()->post->create(
 			array(
 				'post_status' => 'draft',
 				'post_author' => self::$editor_id,
 			)
 		);
-	}
-
-	public function tear_down() {
-		Clock::unfreeze();
-		parent::tear_down();
 	}
 
 	/**

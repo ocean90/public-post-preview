@@ -13,18 +13,6 @@ use DS\PublicPostPreview\Link_Store;
  */
 class PreviewAccessTest extends TestCase {
 
-	private const NOW = 1793000000;
-
-	public function set_up() {
-		parent::set_up();
-		Clock::freeze( self::NOW );
-	}
-
-	public function tear_down() {
-		Clock::unfreeze();
-		parent::tear_down();
-	}
-
 	public function test_valid_link_shows_the_draft() {
 		$post = $this->create_previewable_draft();
 
@@ -233,5 +221,63 @@ class PreviewAccessTest extends TestCase {
 		$this->visit_preview( $this->get_preview_link( $post ) );
 
 		$this->assertSame( 2, $calls );
+	}
+
+	public function test_link_of_a_private_post_does_not_reveal_its_permalink() {
+		$post = $this->create_previewable_draft();
+		$link = $this->get_preview_link( $post );
+
+		wp_update_post( array( 'ID' => $post->ID, 'post_status' => 'private' ) );
+
+		$this->assert_preview_denied( $link, 404 );
+	}
+
+	public function test_token_sent_as_array_is_rejected() {
+		$post = $this->create_previewable_draft();
+		$link = remove_query_arg( '_ppp', $this->get_preview_link( $post ) ) . '&_ppp[]=a';
+
+		$this->assert_preview_denied( $link, 404 );
+	}
+
+	public function test_old_nonce_gets_the_same_answer_for_existing_and_missing_posts() {
+		$post = $this->create_previewable_draft();
+
+		$this->assert_preview_denied( $this->with_token( $this->get_preview_link( $post ), '3f9a1c07be' ), 410 );
+		$this->assert_preview_denied( add_query_arg( array( 'p' => 999999, '_ppp' => '3f9a1c07be', 'preview' => '1' ), home_url( '/' ) ), 410 );
+	}
+
+	public function test_visit_through_an_internal_link_is_not_recorded() {
+		$post    = self::factory()->post->create( array( 'post_status' => 'draft' ) );
+		$created = Link_Store\create( $post, array( 'expires_at' => self::NOW + 900, 'internal' => true ) );
+		$calls   = 0;
+		add_action(
+			'ppp_preview_accessed',
+			static function () use ( &$calls ) {
+				++$calls;
+			}
+		);
+
+		$this->visit_preview( \DS\PublicPostPreview\Preview_Policy\get_preview_url( get_post( $post ), $created['token']->to_string() ) );
+
+		$this->assertSame( $post, get_queried_object_id() );
+		$this->assertSame( 0, $calls );
+		$this->assertNull( Link_Store\find( $post, $created['link']->id )->first_accessed_at );
+	}
+
+	public function test_publishing_revokes_the_links_visibly() {
+		$post    = $this->create_previewable_draft();
+		$revoked = array();
+		add_action(
+			'ppp_link_revoked',
+			static function ( $post_id, $link_id ) use ( &$revoked ) {
+				$revoked[] = $link_id;
+			},
+			10,
+			2
+		);
+
+		wp_publish_post( $post->ID );
+
+		$this->assertSame( array( explode( '.', $this->get_token( $this->get_preview_link( $post ) ) )[0] ), $revoked );
 	}
 }

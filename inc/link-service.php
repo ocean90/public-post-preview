@@ -187,8 +187,6 @@ function revoke_link( int $post_id, string $link_id ) {
 /**
  * Revokes all links of a post.
  *
- * Internal links are deleted too, without an action, as they never appear anywhere.
- *
  * @param int $post_id Post ID.
  * @return int|WP_Error Number of revoked visible links, or an error.
  */
@@ -198,15 +196,27 @@ function revoke_all( int $post_id ) {
 		return $post;
 	}
 
-	$links = Link_Store\get_links( $post->ID );
+	return remove_all_links( $post->ID );
+}
 
-	Link_Store\delete_all( $post->ID );
-
-	foreach ( $links as $link ) {
-		fire_revoked( $post->ID, $link->id );
+/**
+ * Deletes all links of a post without checking access, for publishing and trashing.
+ *
+ * Internal links are deleted too, without an action, as they never appear anywhere.
+ *
+ * @param int $post_id Post ID.
+ * @return int Number of deleted visible links.
+ */
+function remove_all_links( int $post_id ): int {
+	$count = 0;
+	foreach ( Link_Store\delete_all( $post_id ) as $link ) {
+		if ( ! $link->internal ) {
+			fire_revoked( $post_id, $link->id );
+			++$count;
+		}
 	}
 
-	return count( $links );
+	return $count;
 }
 
 /**

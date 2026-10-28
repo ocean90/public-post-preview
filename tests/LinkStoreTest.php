@@ -23,13 +23,7 @@ class LinkStoreTest extends TestCase {
 
 	public function set_up() {
 		parent::set_up();
-		Clock::freeze( 1793000000 );
 		$this->post_id = self::factory()->post->create( array( 'post_status' => 'draft' ) );
-	}
-
-	public function tear_down() {
-		Clock::unfreeze();
-		parent::tear_down();
 	}
 
 	public function test_created_link_verifies_with_its_token_only() {
@@ -199,7 +193,7 @@ class LinkStoreTest extends TestCase {
 		Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
 		Link_Store\create( $this->post_id, array( 'expires_at' => 1793001000, 'internal' => true ) );
 
-		$this->assertSame( 2, Link_Store\delete_all( $this->post_id ) );
+		$this->assertCount( 2, Link_Store\delete_all( $this->post_id ) );
 		$this->assertSame( array(), Link_Store\get_links( $this->post_id, true ) );
 		$this->assertSame( 0, Link_Store\get_latest_expiry( $this->post_id ) );
 	}

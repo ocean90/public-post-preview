@@ -38,14 +38,13 @@ function check( int $post_id, string $value ) {
 	}
 
 	$token = Token::parse( $value );
-	$post  = get_post( $post_id );
+	$post  = $post_id > 0 ? get_post( $post_id ) : null;
 	$link  = $token && $post && Preview_Policy\is_previewable( $post ) ? Link_Store\find( $post->ID, $token->id ) : null;
-	if ( ! $link || ! $token->verify( $post->ID, $link->hash ) ) {
-		return new WP_Error(
-			'ppp_preview_unavailable',
-			__( 'No public preview available!', 'public-post-preview' ),
-			array( 'status' => 404 )
-		);
+
+	// Hash even without a link, so the response time doesn't tell which link IDs exist.
+	$valid = $token && $token->verify( $post_id, $link ? $link->hash : wp_fast_hash( 'ppp-no-link' ) );
+	if ( ! $link || ! $valid ) {
+		return unavailable();
 	}
 
 	if ( $link->is_expired( Clock::now() ) ) {
@@ -64,16 +63,29 @@ function check( int $post_id, string $value ) {
 }
 
 /**
+ * Returns the error for a preview that isn't available.
+ *
+ * @return WP_Error Error with status 404.
+ */
+function unavailable(): WP_Error {
+	return new WP_Error(
+		'ppp_preview_unavailable',
+		__( 'No public preview available!', 'public-post-preview' ),
+		array( 'status' => 404 )
+	);
+}
+
+/**
  * Records a visit through a link.
  *
- * Visits by people who can edit the post don't count, so testing a link before sharing it
- * doesn't look like the recipient opened it.
+ * Visits by people who can edit the post and through internal links don't count, so testing
+ * a link before sharing it doesn't look like the recipient opened it.
  *
  * @param int  $post_id Post ID.
  * @param Link $link    Link that was used.
  */
 function record_visit( int $post_id, Link $link ): void {
-	if ( current_user_can( 'edit_post', $post_id ) ) {
+	if ( $link->internal || current_user_can( 'edit_post', $post_id ) ) {
 		return;
 	}
 
