@@ -47,13 +47,6 @@ if ( ! class_exists( 'WP' ) ) {
 class DS_Public_Post_Preview {
 
 	/**
-	 * ID of the post being shown as a public preview on the current request.
-	 *
-	 * @var int
-	 */
-	private static $preview_post_id = 0;
-
-	/**
 	 * Registers actions and filters.
 	 *
 	 * @since 1.0.0
@@ -775,6 +768,15 @@ class DS_Public_Post_Preview {
 		$nonce   = $request->get_param( '_ppp' );
 		$post_id = (int) $request->get_param( 'id' );
 
+		/** This filter is documented in public-post-preview.php */
+		if ( ! apply_filters( 'ppp_poll_for_updates', true, $post_id ) ) {
+			return new WP_Error(
+				'ppp_preview_unavailable',
+				__( 'No public preview available!', 'public-post-preview' ),
+				array( 'status' => 404 )
+			);
+		}
+
 		if ( self::verify_nonce( $nonce, 'public_post_preview_' . $post_id ) ) {
 			return true;
 		}
@@ -802,15 +804,7 @@ class DS_Public_Post_Preview {
 
 		$post = get_post( (int) $request['id'] );
 
-		if ( ! $post ) {
-			return new WP_Error(
-				'ppp_preview_unavailable',
-				__( 'No public preview available!', 'public-post-preview' ),
-				array( 'status' => 404 )
-			);
-		}
-
-		if ( in_array( get_post_status( $post ), self::get_published_statuses(), true ) ) {
+		if ( $post && in_array( get_post_status( $post ), self::get_published_statuses(), true ) && is_post_publicly_viewable( $post ) ) {
 			return rest_ensure_response(
 				array(
 					'status'    => 'published',
@@ -819,7 +813,7 @@ class DS_Public_Post_Preview {
 			);
 		}
 
-		if ( ! in_array( $post->ID, self::get_preview_post_ids(), true ) ) {
+		if ( ! $post || ! self::is_public_preview_enabled( $post ) ) {
 			return new WP_Error(
 				'ppp_preview_unavailable',
 				__( 'No public preview available!', 'public-post-preview' ),
@@ -841,8 +835,8 @@ class DS_Public_Post_Preview {
 	 * @since 4.0.0
 	 */
 	public static function enqueue_preview_updates_script() {
-		$post = get_post( self::$preview_post_id );
-		if ( ! $post ) {
+		$post = get_queried_object();
+		if ( ! $post instanceof WP_Post ) {
 			return;
 		}
 
@@ -1056,7 +1050,6 @@ CSS;
 			 * @param int  $post_id The post ID.
 			 */
 			if ( apply_filters( 'ppp_poll_for_updates', true, $post_id ) ) {
-				self::$preview_post_id = $post_id;
 				add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_preview_updates_script' ) );
 				add_action( 'wp_footer', array( __CLASS__, 'print_preview_updates_container' ) );
 			}

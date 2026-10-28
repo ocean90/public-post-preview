@@ -76,9 +76,15 @@
 			return;
 		}
 
-		// The link has expired or the preview was disabled. Neither recovers
-		// without a new link, so there is nothing left to watch.
-		if ( response.status === 403 || response.status === 404 ) {
+		// The link has expired, the preview was disabled or the endpoint is
+		// blocked. None of these recover by retrying, so stop watching. Timeouts
+		// and rate limiting are temporary and get retried.
+		if (
+			response.status >= 400 &&
+			response.status < 500 &&
+			response.status !== 408 &&
+			response.status !== 429
+		) {
 			stop();
 			return;
 		}
