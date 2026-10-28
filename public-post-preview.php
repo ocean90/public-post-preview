@@ -142,6 +142,7 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( get_current_screen()->is_block_editor() ) {
+			// Fixed paths instead of a variable, as required by the WordPress VIP code scanner.
 			$script_assets = file_exists( __DIR__ . '/js/dist/gutenberg-integration.asset.php' ) ?
 				require __DIR__ . '/js/dist/gutenberg-integration.asset.php' :
 				array(
@@ -170,13 +171,17 @@ class DS_Public_Post_Preview {
 				)
 			);
 		} else {
-			$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-
+			$script_assets = file_exists( __DIR__ . '/js/dist/classic-editor.asset.php' ) ?
+				require __DIR__ . '/js/dist/classic-editor.asset.php' :
+				array(
+					'dependencies' => array(),
+					'version'      => '',
+				);
 			wp_enqueue_script(
 				'public-post-preview',
-				plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
-				array( 'jquery' ),
-				'20221611',
+				plugins_url( 'js/dist/classic-editor.js', __FILE__ ),
+				$script_assets['dependencies'],
+				$script_assets['version'],
 				true
 			);
 

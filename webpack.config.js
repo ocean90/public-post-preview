@@ -6,11 +6,11 @@ module.exports = {
 
 	entry: {
 		'gutenberg-integration': './js/src/index.js',
+		'classic-editor': './js/src/classic-editor.js',
 	},
 
 	output: {
 		...defaultConfig.output,
 		path: path.resolve( __dirname, 'js/dist' ),
-		filename: '[name].js',
 	},
 };

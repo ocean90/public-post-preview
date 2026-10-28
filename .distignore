@@ -1,9 +1,9 @@
 /.git
 /.github
 /.wordpress-org
+/node_modules
 .distignore
 .editorconfig
-.eslintignore
 .gitattributes
 .gitignore
 .npmrc
@@ -11,6 +11,7 @@
 .wp-env.json
 babel.config.js
 composer.json
+eslint.config.js
 package.json
 package-lock.json
 README.md
