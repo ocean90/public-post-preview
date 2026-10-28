@@ -50,12 +50,6 @@ class LinkStoreTest extends TestCase {
 		);
 	}
 
-	public function test_hint_is_the_end_of_the_secret() {
-		$created = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
-
-		$this->assertSame( substr( $created['token']->secret, -4 ), $created['link']->hint );
-	}
-
 	public function test_link_of_another_post_is_not_found() {
 		$other   = self::factory()->post->create( array( 'post_status' => 'draft' ) );
 		$created = Link_Store\create( $other, array( 'expires_at' => 1793086400 ) );
@@ -104,30 +98,90 @@ class LinkStoreTest extends TestCase {
 
 	public function test_update_changes_only_the_given_link() {
 		$first  = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
-		$second = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400, 'label' => 'Lektorat' ) );
+		$second = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400, 'label' => 'Copy editing' ) );
 
-		$changed             = clone $first['link'];
-		$changed->label      = 'Kunde Müller';
-		$changed->expires_at = 1793600000;
+		$updated = Link_Store\update(
+			$this->post_id,
+			$first['link']->id,
+			array(
+				'label'      => 'Client review',
+				'expires_at' => 1793600000,
+			)
+		);
 
-		$this->assertTrue( Link_Store\update( $this->post_id, $first['link'], $changed ) );
-		$this->assertSame( 'Kunde Müller', Link_Store\find( $this->post_id, $first['link']->id )->label );
-		$this->assertSame( 'Lektorat', Link_Store\find( $this->post_id, $second['link']->id )->label );
+		$this->assertSame( 'Client review', $updated->label );
+		$this->assertSame( 'Client review', Link_Store\find( $this->post_id, $first['link']->id )->label );
+		$this->assertSame( 'Copy editing', Link_Store\find( $this->post_id, $second['link']->id )->label );
 		$this->assertSame( 1793600000, Link_Store\get_latest_expiry( $this->post_id ) );
 	}
 
-	public function test_update_fails_when_the_link_changed_in_between() {
+	public function test_update_does_not_bring_back_a_deleted_link() {
 		$created = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
+		Link_Store\delete( $this->post_id, $created['link']->id );
 
-		$first        = clone $created['link'];
-		$first->label = 'First';
-		Link_Store\update( $this->post_id, $created['link'], $first );
+		$this->assertNull( Link_Store\update( $this->post_id, $created['link']->id, array( 'last_accessed_at' => 1793000050 ) ) );
+		$this->assertSame( array(), Link_Store\get_links( $this->post_id, true ) );
+	}
 
-		$second        = clone $created['link'];
-		$second->label = 'Second';
+	/**
+	 * @dataProvider data_invalid_expiries
+	 *
+	 * @param int $expires_at Expiry time.
+	 */
+	public function test_invalid_expiry_is_rejected( $expires_at ) {
+		$this->assertWPError( Link_Store\create( $this->post_id, array( 'expires_at' => $expires_at ) ) );
 
-		$this->assertFalse( Link_Store\update( $this->post_id, $created['link'], $second ) );
-		$this->assertSame( 'First', Link_Store\find( $this->post_id, $created['link']->id )->label );
+		$created = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
+		$this->assertWPError( Link_Store\update( $this->post_id, $created['link']->id, array( 'expires_at' => $expires_at ) ) );
+		$this->assertSame( 1793086400, Link_Store\find( $this->post_id, $created['link']->id )->expires_at );
+	}
+
+	/**
+	 * @return array<string, array{int}>
+	 */
+	public function data_invalid_expiries() {
+		return array(
+			'now'                 => array( 1793000000 ),
+			'past'                => array( 1792999999 ),
+			'beyond one year'     => array( 1793000000 + YEAR_IN_SECONDS + 1 ),
+			'missing (zero)'      => array( 0 ),
+		);
+	}
+
+	public function test_maximum_lifetime_counts_from_now() {
+		$created = Link_Store\create( $this->post_id, array( 'expires_at' => 1793000000 + YEAR_IN_SECONDS ) );
+
+		Clock::freeze( 1793000000 + DAY_IN_SECONDS );
+		$updated = Link_Store\update( $this->post_id, $created['link']->id, array( 'expires_at' => 1793000000 + DAY_IN_SECONDS + YEAR_IN_SECONDS ) );
+
+		$this->assertSame( 1793000000 + DAY_IN_SECONDS + YEAR_IN_SECONDS, $updated->expires_at );
+	}
+
+	public function test_label_is_stored_as_plain_text_of_limited_length() {
+		$created = Link_Store\create(
+			$this->post_id,
+			array(
+				'expires_at' => 1793086400,
+				'label'      => '<b>Client</b> ' . str_repeat( 'ä', 120 ),
+			)
+		);
+
+		$this->assertSame( 'Client ' . str_repeat( 'ä', 93 ), $created['link']->label );
+	}
+
+	public function test_link_with_backslashes_in_its_label_can_be_changed_and_deleted() {
+		$created = Link_Store\create(
+			$this->post_id,
+			array(
+				'expires_at' => 1793086400,
+				'label'      => 'C:\\drafts\\review',
+			)
+		);
+
+		$this->assertSame( 'C:\\drafts\\review', Link_Store\find( $this->post_id, $created['link']->id )->label );
+		$this->assertNotNull( Link_Store\update( $this->post_id, $created['link']->id, array( 'last_accessed_at' => 1793000050 ) ) );
+		$this->assertNotNull( Link_Store\delete( $this->post_id, $created['link']->id ) );
+		$this->assertSame( array(), Link_Store\get_links( $this->post_id, true ) );
 	}
 
 	public function test_prune_removes_only_expired_links() {

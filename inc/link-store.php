@@ -1,6 +1,6 @@
 <?php
 /**
- * Stores preview links as post meta, one row per link.
+ * Stores preview links as post meta, one row per link, and owns their invariants.
  */
 
 namespace DS\PublicPostPreview\Link_Store;
@@ -8,6 +8,7 @@ namespace DS\PublicPostPreview\Link_Store;
 use DS\PublicPostPreview\Clock;
 use DS\PublicPostPreview\Link;
 use DS\PublicPostPreview\Token;
+use WP_Error;
 
 /**
  * Meta key of a link row.
@@ -18,6 +19,16 @@ const META_KEY = '_ppp_link';
  * Meta key of the latest expiry of all visible links, for `meta_query`.
  */
 const EXPIRY_META_KEY = '_ppp_links_expire';
+
+/**
+ * Maximum length of a label in characters.
+ */
+const LABEL_MAX_LENGTH = 100;
+
+/**
+ * Fields that `update()` may change.
+ */
+const UPDATABLE_FIELDS = array( 'label', 'expires_at', 'first_accessed_at', 'last_accessed_at' );
 
 /**
  * Registers the meta keys.
@@ -46,6 +57,22 @@ function register_meta(): void {
 }
 
 /**
+ * Returns the maximum lifetime of a link in seconds, counted from now.
+ *
+ * @return int Seconds.
+ */
+function get_max_lifetime(): int {
+	/**
+	 * Filters the maximum lifetime of a preview link.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param int $lifetime Maximum lifetime in seconds. Default one year.
+	 */
+	return (int) apply_filters( 'ppp_link_max_lifetime', YEAR_IN_SECONDS );
+}
+
+/**
  * Creates a link.
  *
  * @param int                  $post_id Post ID.
@@ -55,25 +82,34 @@ function register_meta(): void {
  *     @type int    $created_by User ID. Defaults to the current user.
  *     @type bool   $internal   Whether the link is hidden from the UI.
  * }
- * @return array{link: Link, token: Token}|null The link and its token, or null on failure.
+ * @return array{link: Link, token: Token}|WP_Error The link and its token, or an error.
  */
-function create( int $post_id, array $args ): ?array {
-	$token = Token::generate();
+function create( int $post_id, array $args ) {
+	$expires_at = (int) ( $args['expires_at'] ?? 0 );
+	$error      = validate_expiry( $expires_at );
+	if ( $error ) {
+		return $error;
+	}
 
-	$link                    = new Link();
-	$link->id                = $token->id;
-	$link->hash              = $token->hash( $post_id );
-	$link->hint              = substr( $token->secret, -4 );
-	$link->label             = (string) ( $args['label'] ?? '' );
-	$link->created_at        = Clock::now();
-	$link->created_by        = (int) ( $args['created_by'] ?? get_current_user_id() );
-	$link->expires_at        = (int) $args['expires_at'];
-	$link->first_accessed_at = null;
-	$link->last_accessed_at  = null;
-	$link->internal          = ! empty( $args['internal'] );
+	do {
+		$token = Token::generate();
+	} while ( find_row( $post_id, $token->id ) );
 
-	if ( ! add_post_meta( $post_id, META_KEY, $link->to_array() ) ) {
-		return null;
+	$link = Link::from_array(
+		array(
+			'id'         => $token->id,
+			'hash'       => $token->hash( $post_id ),
+			'hint'       => substr( $token->secret, -4 ),
+			'label'      => sanitize_label( $args['label'] ?? '' ),
+			'created_at' => Clock::now(),
+			'created_by' => $args['created_by'] ?? get_current_user_id(),
+			'expires_at' => $expires_at,
+			'internal'   => $args['internal'] ?? false,
+		)
+	);
+
+	if ( ! add_post_meta( $post_id, META_KEY, wp_slash( $link->to_array() ) ) ) {
+		return new WP_Error( 'ppp_link_not_saved', __( 'The preview link could not be saved.', 'public-post-preview' ), array( 'status' => 500 ) );
 	}
 
 	refresh_expiry( $post_id );
@@ -93,10 +129,9 @@ function create( int $post_id, array $args ): ?array {
  */
 function get_links( int $post_id, bool $include_internal = false ): array {
 	$links = array();
-	foreach ( get_post_meta( $post_id, META_KEY, false ) as $row ) {
-		$link = Link::from_array( $row );
-		if ( $link && ( $include_internal || ! $link->internal ) ) {
-			$links[] = $link;
+	foreach ( get_rows( $post_id ) as $row ) {
+		if ( $include_internal || ! $row['link']->internal ) {
+			$links[] = $row['link'];
 		}
 	}
 
@@ -118,36 +153,51 @@ function get_links( int $post_id, bool $include_internal = false ): array {
  * @return Link|null The link, or null if the post has no such link.
  */
 function find( int $post_id, string $link_id ): ?Link {
-	foreach ( get_links( $post_id, true ) as $link ) {
-		if ( hash_equals( $link->id, $link_id ) ) {
-			return $link;
-		}
-	}
+	$row = find_row( $post_id, $link_id );
 
-	return null;
+	return $row ? $row['link'] : null;
 }
 
 /**
- * Replaces a link, but only if it is still stored as given.
+ * Changes fields of a link.
  *
- * Deleting by the old value and adding the new one, instead of `update_metadata()`, makes the
- * write conditional: `update_metadata()` adds a fresh row when none exists, which would bring
- * back a link that was revoked in the meantime.
+ * Deleting the stored row and adding the changed one, instead of `update_metadata()`, makes
+ * the write conditional: `update_metadata()` adds a fresh row when the post has none left,
+ * which would bring back a link that was revoked in the meantime.
  *
- * @param int  $post_id Post ID.
- * @param Link $old     The link as read.
- * @param Link $new     The changed link.
- * @return bool True if the link was replaced, false if it changed or was deleted in between.
+ * @param int                  $post_id Post ID.
+ * @param string               $link_id Link ID.
+ * @param array<string, mixed> $changes Values for `label`, `expires_at`, `first_accessed_at`, `last_accessed_at`.
+ * @return Link|WP_Error|null The changed link, an error for invalid values, or null if the link is gone.
  */
-function update( int $post_id, Link $old, Link $new ): bool {
-	if ( ! delete_post_meta( $post_id, META_KEY, $old->to_array() ) ) {
-		return false;
+function update( int $post_id, string $link_id, array $changes ) {
+	$changes = array_intersect_key( $changes, array_flip( UPDATABLE_FIELDS ) );
+	if ( isset( $changes['expires_at'] ) ) {
+		$changes['expires_at'] = (int) $changes['expires_at'];
+		$error                 = validate_expiry( $changes['expires_at'] );
+		if ( $error ) {
+			return $error;
+		}
+	}
+	if ( isset( $changes['label'] ) ) {
+		$changes['label'] = sanitize_label( $changes['label'] );
 	}
 
-	$added = (bool) add_post_meta( $post_id, META_KEY, $new->to_array() );
-	refresh_expiry( $post_id );
+	$row = find_row( $post_id, $link_id );
+	if ( ! $row || ! delete_post_meta( $post_id, META_KEY, wp_slash( $row['raw'] ) ) ) {
+		return null;
+	}
 
-	return $added;
+	$link = Link::from_array( array_merge( $row['link']->to_array(), $changes ) );
+	if ( ! add_post_meta( $post_id, META_KEY, wp_slash( $link->to_array() ) ) ) {
+		return new WP_Error( 'ppp_link_not_saved', __( 'The preview link could not be saved.', 'public-post-preview' ), array( 'status' => 500 ) );
+	}
+
+	if ( $link->expires_at !== $row['link']->expires_at ) {
+		refresh_expiry( $post_id );
+	}
+
+	return $link;
 }
 
 /**
@@ -158,14 +208,14 @@ function update( int $post_id, Link $old, Link $new ): bool {
  * @return Link|null The deleted link, or null if the post has no such link.
  */
 function delete( int $post_id, string $link_id ): ?Link {
-	$link = find( $post_id, $link_id );
-	if ( ! $link || ! delete_post_meta( $post_id, META_KEY, $link->to_array() ) ) {
+	$row = find_row( $post_id, $link_id );
+	if ( ! $row || ! delete_post_meta( $post_id, META_KEY, wp_slash( $row['raw'] ) ) ) {
 		return null;
 	}
 
 	refresh_expiry( $post_id );
 
-	return $link;
+	return $row['link'];
 }
 
 /**
@@ -175,7 +225,7 @@ function delete( int $post_id, string $link_id ): ?Link {
  * @return int Number of deleted links.
  */
 function delete_all( int $post_id ): int {
-	$count = count( get_links( $post_id, true ) );
+	$count = count( get_rows( $post_id ) );
 
 	delete_post_meta( $post_id, META_KEY );
 	delete_post_meta( $post_id, EXPIRY_META_KEY );
@@ -192,8 +242,8 @@ function delete_all( int $post_id ): int {
 function prune_expired( int $post_id ): int {
 	$now   = Clock::now();
 	$count = 0;
-	foreach ( get_links( $post_id, true ) as $link ) {
-		if ( $link->is_expired( $now ) && delete_post_meta( $post_id, META_KEY, $link->to_array() ) ) {
+	foreach ( get_rows( $post_id ) as $row ) {
+		if ( $row['link']->is_expired( $now ) && delete_post_meta( $post_id, META_KEY, wp_slash( $row['raw'] ) ) ) {
 			++$count;
 		}
 	}
@@ -216,6 +266,84 @@ function get_latest_expiry( int $post_id ): int {
 }
 
 /**
+ * Checks an expiry time against now and the maximum lifetime.
+ *
+ * @internal
+ *
+ * @param int $expires_at Expiry time, Unix timestamp.
+ * @return WP_Error|null An error, or null if the time is valid.
+ */
+function validate_expiry( int $expires_at ): ?WP_Error {
+	$now = Clock::now();
+	if ( $expires_at > $now && $expires_at <= $now + get_max_lifetime() ) {
+		return null;
+	}
+
+	return new WP_Error(
+		'ppp_invalid_expiry',
+		__( 'The expiry date must be in the future and within the maximum lifetime of a preview link.', 'public-post-preview' ),
+		array( 'status' => 400 )
+	);
+}
+
+/**
+ * Turns a label into plain text of limited length.
+ *
+ * @internal
+ *
+ * @param mixed $label Raw label.
+ * @return string Label.
+ */
+function sanitize_label( $label ): string {
+	return mb_substr( sanitize_text_field( (string) $label ), 0, LABEL_MAX_LENGTH );
+}
+
+/**
+ * Returns the stored rows of a post with their parsed links, unsorted.
+ *
+ * The raw value is kept so writes match the row exactly as stored. Values passed to the meta
+ * API get `wp_slash()` because it unslashes them, which would change labels with backslashes.
+ *
+ * @internal
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, array{raw: mixed, link: Link}> Rows.
+ */
+function get_rows( int $post_id ): array {
+	$rows = array();
+	foreach ( get_post_meta( $post_id, META_KEY, false ) as $raw ) {
+		$link = Link::from_array( $raw );
+		if ( $link ) {
+			$rows[] = array(
+				'raw'  => $raw,
+				'link' => $link,
+			);
+		}
+	}
+
+	return $rows;
+}
+
+/**
+ * Finds the stored row of a link.
+ *
+ * @internal
+ *
+ * @param int    $post_id Post ID.
+ * @param string $link_id Link ID.
+ * @return array{raw: mixed, link: Link}|null The row, or null if the post has no such link.
+ */
+function find_row( int $post_id, string $link_id ): ?array {
+	foreach ( get_rows( $post_id ) as $row ) {
+		if ( $row['link']->id === $link_id ) {
+			return $row;
+		}
+	}
+
+	return null;
+}
+
+/**
  * Recalculates the latest expiry of all visible links.
  *
  * @internal
@@ -224,8 +352,14 @@ function get_latest_expiry( int $post_id ): int {
  */
 function refresh_expiry( int $post_id ): void {
 	$latest = 0;
-	foreach ( get_links( $post_id ) as $link ) {
-		$latest = max( $latest, $link->expires_at );
+	foreach ( get_rows( $post_id ) as $row ) {
+		if ( ! $row['link']->internal ) {
+			$latest = max( $latest, $row['link']->expires_at );
+		}
+	}
+
+	if ( get_latest_expiry( $post_id ) === $latest ) {
+		return;
 	}
 
 	if ( $latest ) {

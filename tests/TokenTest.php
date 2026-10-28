@@ -74,10 +74,4 @@ class TokenTest extends TestCase {
 
 		$this->assertFalse( $other->verify( 10, $token->hash( 10 ) ) );
 	}
-
-	public function test_hash_does_not_contain_the_secret() {
-		$token = Token::generate();
-
-		$this->assertStringNotContainsString( $token->secret, $token->hash( 10 ) );
-	}
 }

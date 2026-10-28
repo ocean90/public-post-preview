@@ -15,70 +15,70 @@ final class Link {
 	 *
 	 * @var string
 	 */
-	public $id;
+	public string $id;
 
 	/**
 	 * Hash of the token.
 	 *
 	 * @var string
 	 */
-	public $hash;
+	public string $hash;
 
 	/**
 	 * Last four characters of the secret, to tell links apart.
 	 *
 	 * @var string
 	 */
-	public $hint;
+	public string $hint;
 
 	/**
 	 * Optional label.
 	 *
 	 * @var string
 	 */
-	public $label;
+	public string $label;
 
 	/**
 	 * Creation time, Unix timestamp.
 	 *
 	 * @var int
 	 */
-	public $created_at;
+	public int $created_at;
 
 	/**
 	 * ID of the user who created the link.
 	 *
 	 * @var int
 	 */
-	public $created_by;
+	public int $created_by;
 
 	/**
 	 * Expiry time, Unix timestamp.
 	 *
 	 * @var int
 	 */
-	public $expires_at;
+	public int $expires_at;
 
 	/**
 	 * First visit, Unix timestamp.
 	 *
 	 * @var int|null
 	 */
-	public $first_accessed_at;
+	public ?int $first_accessed_at;
 
 	/**
 	 * Last visit, Unix timestamp.
 	 *
 	 * @var int|null
 	 */
-	public $last_accessed_at;
+	public ?int $last_accessed_at;
 
 	/**
 	 * Whether the link is internal and hidden from the UI.
 	 *
 	 * @var bool
 	 */
-	public $internal;
+	public bool $internal;
 
 	/**
 	 * Restores a link from its stored array.

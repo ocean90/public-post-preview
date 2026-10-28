@@ -43,7 +43,7 @@ final class Token {
 	public static function generate(): self {
 		return new self(
 			bin2hex( random_bytes( 4 ) ),
-			rtrim( strtr( base64_encode( random_bytes( 24 ) ), '+/', '-_' ), '=' ) // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Encodes random bytes, not data.
+			sodium_bin2base64( random_bytes( 24 ), SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING )
 		);
 	}
 
