@@ -67,7 +67,7 @@ class RestLinksTest extends TestCase {
 	 * @param array<string, mixed> $params Body parameters.
 	 * @return array<string, mixed> Response data.
 	 */
-	private function create_link( array $params = array() ) {
+	private function create_link_via_api( array $params = array() ) {
 		$response = $this->request( 'POST', "/posts/{$this->post_id}/links", $params );
 		$this->assertSame( 201, $response->get_status() );
 
@@ -85,7 +85,7 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_creating_a_link_returns_its_url_once() {
-		$link = $this->create_link();
+		$link = $this->create_link_via_api();
 
 		$this->assertStringContainsString( '_ppp=' . $link['id'] . '.', $link['url'] );
 
@@ -95,7 +95,7 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_no_response_contains_a_hash_or_secret() {
-		$link   = $this->create_link( array( 'label' => 'Client review' ) );
+		$link   = $this->create_link_via_api( array( 'label' => 'Client review' ) );
 		$secret = explode( '.', $this->get_token( $link['url'] ) )[1];
 		$hash   = Link_Store\find( $this->post_id, $link['id'] )->hash;
 
@@ -112,13 +112,13 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_new_link_uses_the_default_lifetime() {
-		$link = $this->create_link();
+		$link = $this->create_link_via_api();
 
 		$this->assertSame( $this->iso( self::NOW + 48 * HOUR_IN_SECONDS ), $link['expires_at'] );
 	}
 
 	public function test_new_link_can_have_its_own_expiry_and_label() {
-		$link = $this->create_link(
+		$link = $this->create_link_via_api(
 			array(
 				'label'      => 'Client review',
 				'expires_at' => $this->iso( self::NOW + WEEK_IN_SECONDS ),
@@ -152,7 +152,7 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_link_can_be_extended_and_renamed() {
-		$link = $this->create_link();
+		$link = $this->create_link_via_api();
 
 		$response = $this->request(
 			'PATCH',
@@ -169,13 +169,13 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_expiry_offset_is_respected() {
-		$link = $this->create_link( array( 'expires_at' => gmdate( 'Y-m-d\TH:i:s', self::NOW + DAY_IN_SECONDS ) . '+02:00' ) );
+		$link = $this->create_link_via_api( array( 'expires_at' => gmdate( 'Y-m-d\TH:i:s', self::NOW + DAY_IN_SECONDS ) . '+02:00' ) );
 
 		$this->assertSame( $this->iso( self::NOW + DAY_IN_SECONDS - 2 * HOUR_IN_SECONDS ), $link['expires_at'] );
 	}
 
 	public function test_expired_link_cannot_be_extended_or_revoked() {
-		$link = $this->create_link( array( 'expires_at' => $this->iso( self::NOW + 60 ) ) );
+		$link = $this->create_link_via_api( array( 'expires_at' => $this->iso( self::NOW + 60 ) ) );
 
 		Clock::freeze( self::NOW + 60 );
 
@@ -184,7 +184,7 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_empty_change_leaves_the_link_as_it_is() {
-		$link = $this->create_link( array( 'label' => 'Client review' ) );
+		$link = $this->create_link_via_api( array( 'label' => 'Client review' ) );
 
 		$response = $this->request( 'PATCH', "/posts/{$this->post_id}/links/{$link['id']}" );
 
@@ -193,7 +193,7 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_link_of_another_post_cannot_be_changed_or_revoked() {
-		$link  = $this->create_link();
+		$link  = $this->create_link_via_api();
 		$other = self::factory()->post->create( array( 'post_status' => 'draft' ) );
 
 		$this->assertSame( 404, $this->request( 'PATCH', "/posts/{$other}/links/{$link['id']}", array( 'label' => 'x' ) )->get_status() );
@@ -202,8 +202,8 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_revoking_a_link_keeps_the_others() {
-		$first  = $this->create_link();
-		$second = $this->create_link();
+		$first  = $this->create_link_via_api();
+		$second = $this->create_link_via_api();
 
 		$response = $this->request( 'DELETE', "/posts/{$this->post_id}/links/{$first['id']}" );
 
@@ -214,8 +214,8 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_revoking_all_links_counts_only_visible_links() {
-		$this->create_link();
-		$this->create_link();
+		$this->create_link_via_api();
+		$this->create_link_via_api();
 		Link_Store\create( $this->post_id, array( 'expires_at' => self::NOW + 900, 'internal' => true ) );
 
 		$response = $this->request( 'DELETE', "/posts/{$this->post_id}/links" );
@@ -225,8 +225,8 @@ class RestLinksTest extends TestCase {
 	}
 
 	public function test_internal_and_expired_links_are_not_listed() {
-		$this->create_link( array( 'expires_at' => $this->iso( self::NOW + 60 ) ) );
-		$valid = $this->create_link();
+		$this->create_link_via_api( array( 'expires_at' => $this->iso( self::NOW + 60 ) ) );
+		$valid = $this->create_link_via_api();
 		Link_Store\create( $this->post_id, array( 'expires_at' => self::NOW + 900, 'internal' => true ) );
 
 		Clock::freeze( self::NOW + 60 );

@@ -5,8 +5,9 @@
 
 namespace DS\PublicPostPreview\Tests;
 
-use DS_Public_Post_Preview;
+use DS\PublicPostPreview\Link_Service;
 use RuntimeException;
+use WP_Error;
 use WP_Post;
 use WP_UnitTestCase;
 use WPDieException;
@@ -27,6 +28,13 @@ abstract class TestCase extends WP_UnitTestCase {
 	 * @var int
 	 */
 	protected static $editor_id;
+
+	/**
+	 * Preview URLs of the links created by `create_link()`, by post ID.
+	 *
+	 * @var array<int, string>
+	 */
+	private $preview_urls = array();
 
 	/**
 	 * Creates the shared fixtures.
@@ -52,46 +60,38 @@ abstract class TestCase extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Enables the public preview through the handler of the classic editor form.
+	 * Creates a link the way the editor does.
 	 *
-	 * @param int $post_id Post ID.
-	 * @param int $user_id User who submits the form. Defaults to the editor.
+	 * @param int                  $post_id Post ID.
+	 * @param array<string, mixed> $args    Label and expiry.
+	 * @param int                  $user_id User who creates the link. Defaults to the editor.
+	 * @return array<string, mixed>|WP_Error The link with its URL, or an error.
 	 */
-	protected function enable_preview( $post_id, $user_id = 0 ) {
-		$this->submit_preview_form( $post_id, true, $user_id );
-	}
-
-	/**
-	 * Disables the public preview through the handler of the classic editor form.
-	 *
-	 * @param int $post_id Post ID.
-	 */
-	protected function disable_preview( $post_id ) {
-		$this->submit_preview_form( $post_id, false, 0 );
-	}
-
-	/**
-	 * Submits the preview checkbox of the classic editor form.
-	 *
-	 * @param int  $post_id Post ID.
-	 * @param bool $enable  Whether the checkbox is checked.
-	 * @param int  $user_id User who submits the form. Defaults to the editor.
-	 */
-	private function submit_preview_form( $post_id, $enable, $user_id ) {
+	protected function create_link( $post_id, array $args = array(), $user_id = 0 ) {
 		wp_set_current_user( $user_id ?: self::$editor_id );
+		$link = Link_Service\create_link( $post_id, $args );
+		wp_set_current_user( 0 );
 
-		$_POST['public_post_preview_wpnonce'] = wp_create_nonce( 'public-post-preview_' . $post_id );
-		if ( $enable ) {
-			$_POST['public_post_preview'] = '1';
+		if ( ! is_wp_error( $link ) ) {
+			$this->preview_urls[ $post_id ] = $link['url'];
 		}
 
-		DS_Public_Post_Preview::register_public_preview( $post_id, get_post( $post_id ) );
-
-		$_POST = array();
+		return $link;
 	}
 
 	/**
-	 * Creates a draft with an enabled public preview.
+	 * Revokes all links of a post the way the editor does.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	protected function revoke_all_links( $post_id ) {
+		wp_set_current_user( self::$editor_id );
+		Link_Service\revoke_all( $post_id );
+		wp_set_current_user( 0 );
+	}
+
+	/**
+	 * Creates a draft with a preview link.
 	 *
 	 * @return WP_Post The draft.
 	 */
@@ -103,19 +103,19 @@ abstract class TestCase extends WP_UnitTestCase {
 			)
 		);
 
-		$this->enable_preview( $post->ID );
+		$this->create_link( $post->ID );
 
 		return $post;
 	}
 
 	/**
-	 * Returns the public preview link the plugin hands out for a post.
+	 * Returns the URL of the last link created for a post.
 	 *
 	 * @param WP_Post $post Post object.
-	 * @return string The preview link.
+	 * @return string The preview URL.
 	 */
 	protected function get_preview_link( $post ) {
-		return DS_Public_Post_Preview::get_preview_link( $post );
+		return $this->preview_urls[ $post->ID ];
 	}
 
 	/**
@@ -156,7 +156,7 @@ abstract class TestCase extends WP_UnitTestCase {
 	 * Asserts that an anonymous visitor gets no access through a preview link.
 	 *
 	 * @param string $link   Preview link.
-	 * @param int    $status Expected HTTP status: 403 for an invalid link, 404 for an unavailable preview.
+	 * @param int    $status Expected HTTP status: 404 for an unknown link, 403 for an expired one, 410 for an old one.
 	 */
 	protected function assert_preview_denied( $link, $status ) {
 		try {
