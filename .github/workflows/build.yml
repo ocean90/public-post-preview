@@ -2,38 +2,56 @@ name: Build
 
 on:
   pull_request:
+  push:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   build:
-    name: Build and commit updated assets
+    name: Build assets
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Custom token to allow commits trigger other workflows.
-          token: ${{ secrets.REPO_TOKEN }}
+          persist-credentials: false
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - name: Build plugin
+        uses: ./.github/actions/build-plugin
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          upload: ${{ github.event_name == 'push' }}
 
-      - name: Install Node.js dependencies
-        run: npm ci
+  nightly:
+    name: Publish nightly branch
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # Kept apart from the build job so no npm install script ever runs with write access.
+    permissions:
+      contents: write
 
-      - name: Run build command
+    steps:
+      - name: Download plugin files
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: plugin
+          path: plugin
+
+      - name: Push to nightly branch
+        working-directory: plugin
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          npm run build:legacy
-          npm run build
-
-      - name: Commit updated assets files
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: "[auto] Update assets"
-          add: "js"
+          git init --quiet --initial-branch=nightly
+          git add --all
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --quiet --message="Build of ${GITHUB_SHA}"
+          git push --force --quiet "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" nightly

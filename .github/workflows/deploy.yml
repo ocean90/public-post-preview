@@ -4,29 +4,56 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
-  new-release:
-    name: New release
+  build:
+    name: Build plugin
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Build plugin
+      uses: ./.github/actions/build-plugin
+      with:
+        upload: true
+
+  new-release:
+    name: New release
+    needs: build
+    runs-on: ubuntu-latest
+    # Kept apart from the build job so no npm install script ever sees the SVN credentials or a write token.
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Download plugin files
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: plugin
+        path: plugin
 
     - name: WordPress Plugin Deploy
       id: deploy
-      uses: 10up/action-wordpress-plugin-deploy@stable
+      uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
       with:
         generate-zip: true
       env:
+        BUILD_DIR: plugin
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
 
     - name: Upload release asset
-      uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{github.workspace}}/${{ github.event.repository.name }}.zip
-        asset_name: ${{ github.event.repository.name }}.zip
-        asset_content_type: application/zip
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG_NAME: ${{ github.event.release.tag_name }}
+        ZIP_PATH: ${{ steps.deploy.outputs.zip-path }}
+      run: gh release upload "$TAG_NAME" "$ZIP_PATH"

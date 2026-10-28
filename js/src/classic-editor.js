@@ -1,4 +1,9 @@
 /* eslint-disable no-var, object-shorthand */
+/**
+ * External dependencies
+ */
+import jQuery from 'jquery';
+
 ( function ( $, ajaxurl, l10n ) {
 	var DSPublicPostPreview = {
 		/**
@@ -109,4 +114,4 @@
 
 	// Document is ready.
 	$( DSPublicPostPreview.initialize() );
-} )( window.jQuery, window.ajaxurl, window.DSPublicPostPreviewL10n );
+} )( jQuery, window.ajaxurl, window.DSPublicPostPreviewL10n );
