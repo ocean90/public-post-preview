@@ -73,7 +73,7 @@ class DS_Public_Post_Preview {
 			foreach( self::get_post_types() as $post_type ) {
 				add_filter( "views_edit-$post_type", array( __CLASS__, 'add_list_table_view' ) );
 			}
-			add_filter( 'pre_get_posts', array( __CLASS__, 'filter_post_list_for_public_preview' ) );
+			add_action( 'pre_get_posts', array( __CLASS__, 'filter_post_list_for_public_preview' ) );
 		}
 	}
 
@@ -118,8 +118,8 @@ class DS_Public_Post_Preview {
 			static function() {
 				$value = get_option( 'public_post_preview_expiration_time' );
 				?>
-				<input type="number" id="public-post-preview-expiration-time" name="public_post_preview_expiration_time" value="<?php echo esc_attr( $value ); ?>" class="small-text" step="1" min="1" /> <?php _e( 'hours', 'public-post-preview' ); ?>
-				<p class="description"><?php _e( 'Default expiration time of a preview link in hours.', 'public-post-preview' ); ?></p>
+				<input type="number" id="public-post-preview-expiration-time" name="public_post_preview_expiration_time" value="<?php echo esc_attr( $value ); ?>" class="small-text" step="1" min="1" /> <?php esc_html_e( 'hours', 'public-post-preview' ); ?>
+				<p class="description"><?php esc_html_e( 'Default expiration time of a preview link in hours.', 'public-post-preview' ); ?></p>
 				<?php
 			},
 			'reading',
@@ -247,7 +247,7 @@ class DS_Public_Post_Preview {
 				'post_type'      => $post_type,
 				'post__in'       => self::get_preview_post_ids(),
 				'post_status'    => 'draft',
-				'posts_per_page' => -1,
+				'posts_per_page' => $count,
 				'no_found_rows'  => true,
 				'fields'         => 'ids',
 			)
@@ -260,7 +260,7 @@ class DS_Public_Post_Preview {
 		$views['public_preview'] = sprintf(
 			'<a href="%s"%s>%s <span class="count">(%s)</span></a>',
 			esc_url( add_query_arg( array( 'post_type' => $post_type, 'public_preview' => 1 ), 'edit.php' ) ),
-			isset( $_GET['public_preview'] ) && '1' === $_GET['public_preview'] ? ' class="current"  aria-current="page"' : '',
+			isset( $_GET['public_preview'] ) && '1' === $_GET['public_preview'] ? ' class="current"  aria-current="page"' : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only list table view toggle.
 			__( 'Public Preview', 'public-post-preview' ),
 			number_format_i18n( $query->post_count )
 		);
@@ -280,7 +280,7 @@ class DS_Public_Post_Preview {
 			return;
 		}
 
-		if ( isset( $_GET['public_preview'] ) && '1' === $_GET['public_preview'] ) {
+		if ( isset( $_GET['public_preview'] ) && '1' === $_GET['public_preview'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only list table view toggle.
 			$query->set( 'post__in', self::get_preview_post_ids() );
 		}
 	}
@@ -299,7 +299,7 @@ class DS_Public_Post_Preview {
 	 * @return string The target redirect location.
 	 */
 	public static function user_switching_redirect_to( $redirect_to, $redirect_type, $new_user, $old_user ) {
-		$post_id = isset( $_GET['redirect_to_post'] ) ? (int) $_GET['redirect_to_post'] : 0;
+		$post_id = isset( $_GET['redirect_to_post'] ) ? (int) $_GET['redirect_to_post'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- User Switching verifies its own nonce; edit_post is checked below.
 
 		if ( ! $post_id ) {
 			return $redirect_to;
@@ -402,12 +402,12 @@ class DS_Public_Post_Preview {
 		$enabled = self::is_public_preview_enabled( $post );
 		?>
 		<label><input type="checkbox"<?php checked( $enabled ); ?> name="public_post_preview" id="public-post-preview" value="1" />
-		<?php _e( 'Enable public preview', 'public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
+		<?php esc_html_e( 'Enable public preview', 'public-post-preview' ); ?> <span id="public-post-preview-ajax"></span></label>
 
 		<div id="public-post-preview-link" style="margin-top:6px"<?php echo $enabled ? '' : ' class="hidden"'; ?>>
 			<label>
 				<input type="text" name="public_post_preview_link" class="regular-text" value="<?php echo esc_attr( $enabled ? self::get_preview_link( $post ) : '' ); ?>" style="width:99%" readonly />
-				<span class="description"><?php _e( 'Copy and share this preview URL.', 'public-post-preview' ); ?></span>
+				<span class="description"><?php esc_html_e( 'Copy and share this preview URL.', 'public-post-preview' ); ?></span>
 			</label>
 		</div>
 		<?php
@@ -483,7 +483,7 @@ class DS_Public_Post_Preview {
 			return false;
 		}
 
-		if ( empty( $_POST['public_post_preview_wpnonce'] ) || ! wp_verify_nonce( $_POST['public_post_preview_wpnonce'], 'public-post-preview_' . $post_id ) ) {
+		if ( empty( $_POST['public_post_preview_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['public_post_preview_wpnonce'] ) ), 'public-post-preview_' . $post_id ) ) {
 			return false;
 		}
 
@@ -586,9 +586,10 @@ class DS_Public_Post_Preview {
 		}
 
 		$preview_post_id = (int) $_POST['post_ID'];
-		$checked         = (string) $_POST['checked'];
 
 		check_ajax_referer( 'public-post-preview_' . $preview_post_id );
+
+		$checked = sanitize_text_field( wp_unslash( $_POST['checked'] ) );
 
 		$post = get_post( $preview_post_id );
 
@@ -679,11 +680,11 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( ! self::verify_nonce( get_query_var( '_ppp' ), 'public_post_preview_' . $post_id ) ) {
-			wp_die( __( 'This link has expired!', 'public-post-preview' ), 403 );
+			wp_die( esc_html__( 'This link has expired!', 'public-post-preview' ), 403 );
 		}
 
 		if ( ! in_array( $post_id, self::get_preview_post_ids(), true ) ) {
-			wp_die( __( 'No public preview available!', 'public-post-preview' ), 404 );
+			wp_die( esc_html__( 'No public preview available!', 'public-post-preview' ), 404 );
 		}
 
 		return true;
