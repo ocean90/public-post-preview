@@ -51,6 +51,7 @@ require_once __DIR__ . '/inc/class-rest-preview-status-controller.php';
 require_once __DIR__ . '/inc/frontend.php';
 require_once __DIR__ . '/inc/assets.php';
 require_once __DIR__ . '/inc/admin.php';
+require_once __DIR__ . '/inc/classic-editor.php';
 require_once __DIR__ . '/inc/abilities.php';
 
 use DS\PublicPostPreview\Clock;
@@ -92,6 +93,7 @@ class DS_Public_Post_Preview {
 
 		if ( is_admin() ) {
 			DS\PublicPostPreview\Admin\register();
+			DS\PublicPostPreview\Classic_Editor\register();
 		} else {
 			DS\PublicPostPreview\Frontend\register();
 		}
