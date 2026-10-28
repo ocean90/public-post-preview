@@ -168,6 +168,30 @@ class RestLinksTest extends TestCase {
 		$this->assertSame( $this->iso( self::NOW + 30 * DAY_IN_SECONDS ), $response->get_data()['expires_at'] );
 	}
 
+	public function test_expiry_offset_is_respected() {
+		$link = $this->create_link( array( 'expires_at' => gmdate( 'Y-m-d\TH:i:s', self::NOW + DAY_IN_SECONDS ) . '+02:00' ) );
+
+		$this->assertSame( $this->iso( self::NOW + DAY_IN_SECONDS - 2 * HOUR_IN_SECONDS ), $link['expires_at'] );
+	}
+
+	public function test_expired_link_cannot_be_extended_or_revoked() {
+		$link = $this->create_link( array( 'expires_at' => $this->iso( self::NOW + 60 ) ) );
+
+		Clock::freeze( self::NOW + 60 );
+
+		$this->assertSame( 404, $this->request( 'PATCH', "/posts/{$this->post_id}/links/{$link['id']}", array( 'expires_at' => $this->iso( self::NOW + DAY_IN_SECONDS ) ) )->get_status() );
+		$this->assertSame( 404, $this->request( 'DELETE', "/posts/{$this->post_id}/links/{$link['id']}" )->get_status() );
+	}
+
+	public function test_empty_change_leaves_the_link_as_it_is() {
+		$link = $this->create_link( array( 'label' => 'Client review' ) );
+
+		$response = $this->request( 'PATCH', "/posts/{$this->post_id}/links/{$link['id']}" );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'Client review', $response->get_data()['label'] );
+	}
+
 	public function test_link_of_another_post_cannot_be_changed_or_revoked() {
 		$link  = $this->create_link();
 		$other = self::factory()->post->create( array( 'post_status' => 'draft' ) );

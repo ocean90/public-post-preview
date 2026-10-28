@@ -49,7 +49,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'create_item' ),
 					'permission_callback' => array( $this, 'permissions_check' ),
-					'args'                => $this->get_link_args(),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
 				),
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
@@ -77,7 +77,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 					'methods'             => WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'update_item' ),
 					'permission_callback' => array( $this, 'permissions_check' ),
-					'args'                => $this->get_link_args(),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
 				),
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
@@ -108,12 +108,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response.
 	 */
 	public function get_items( $request ) {
-		$post = Link_Service\get_manageable_post( (int) $request['post_id'] );
-		if ( is_wp_error( $post ) ) {
-			return $post;
-		}
-
-		return rest_ensure_response( Link_Service\list_links( $post ) );
+		return rest_ensure_response( Link_Service\list_links( (int) $request['post_id'] ) );
 	}
 
 	/**
@@ -123,17 +118,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response.
 	 */
 	public function create_item( $request ) {
-		$post = Link_Service\get_manageable_post( (int) $request['post_id'] );
-		if ( is_wp_error( $post ) ) {
-			return $post;
-		}
-
-		$args = $this->get_link_changes( $request );
-		if ( is_wp_error( $args ) ) {
-			return $args;
-		}
-
-		$link = Link_Service\create_link( $post, $args );
+		$link = Link_Service\create_link( (int) $request['post_id'], $this->get_link_fields( $request ) );
 		if ( is_wp_error( $link ) ) {
 			return $link;
 		}
@@ -151,17 +136,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response.
 	 */
 	public function update_item( $request ) {
-		$post = Link_Service\get_manageable_post( (int) $request['post_id'] );
-		if ( is_wp_error( $post ) ) {
-			return $post;
-		}
-
-		$changes = $this->get_link_changes( $request );
-		if ( is_wp_error( $changes ) ) {
-			return $changes;
-		}
-
-		return rest_ensure_response( Link_Service\update_link( $post, (string) $request['link_id'], $changes ) );
+		return rest_ensure_response( Link_Service\update_link( (int) $request['post_id'], (string) $request['link_id'], $this->get_link_fields( $request ) ) );
 	}
 
 	/**
@@ -171,12 +146,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response.
 	 */
 	public function delete_item( $request ) {
-		$post = Link_Service\get_manageable_post( (int) $request['post_id'] );
-		if ( is_wp_error( $post ) ) {
-			return $post;
-		}
-
-		$link = Link_Service\revoke_link( $post, (string) $request['link_id'] );
+		$link = Link_Service\revoke_link( (int) $request['post_id'], (string) $request['link_id'] );
 		if ( is_wp_error( $link ) ) {
 			return $link;
 		}
@@ -196,12 +166,12 @@ final class REST_Links_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response.
 	 */
 	public function delete_items( $request ) {
-		$post = Link_Service\get_manageable_post( (int) $request['post_id'] );
-		if ( is_wp_error( $post ) ) {
-			return $post;
+		$deleted = Link_Service\revoke_all( (int) $request['post_id'] );
+		if ( is_wp_error( $deleted ) ) {
+			return $deleted;
 		}
 
-		return rest_ensure_response( array( 'deleted' => Link_Service\revoke_all( $post ) ) );
+		return rest_ensure_response( array( 'deleted' => $deleted ) );
 	}
 
 	/**
@@ -211,7 +181,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 	 */
 	public function get_item_schema() {
 		if ( $this->schema ) {
-			return $this->add_additional_fields_schema( $this->schema );
+			return $this->schema;
 		}
 
 		$date = array(
@@ -246,7 +216,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 					'readonly'    => true,
 				),
 				'expires_at'        => array(
-					'description' => __( 'Expiry time in UTC.', 'public-post-preview' ),
+					'description' => __( 'Expiry time as ISO 8601 date, UTC unless an offset is given.', 'public-post-preview' ),
 					'type'        => 'string',
 					'format'      => 'date-time',
 				),
@@ -261,47 +231,24 @@ final class REST_Links_Controller extends WP_REST_Controller {
 			),
 		);
 
-		return $this->add_additional_fields_schema( $this->schema );
-	}
-
-	/**
-	 * Returns the arguments for creating and changing a link.
-	 *
-	 * @return array<string, array<string, mixed>> Arguments.
-	 */
-	private function get_link_args(): array {
-		return array(
-			'label'      => array(
-				'description' => __( 'Optional label to tell links apart.', 'public-post-preview' ),
-				'type'        => 'string',
-			),
-			'expires_at' => array(
-				'description' => __( 'Expiry time as ISO 8601 date, UTC unless an offset is given.', 'public-post-preview' ),
-				'type'        => 'string',
-				'format'      => 'date-time',
-			),
-		);
+		return $this->schema;
 	}
 
 	/**
 	 * Reads the label and expiry from a request.
 	 *
 	 * @param WP_REST_Request $request Request.
-	 * @return array<string, mixed>|WP_Error Changes, or an error for an invalid date.
+	 * @return array<string, mixed> Fields that were sent.
 	 */
-	private function get_link_changes( WP_REST_Request $request ) {
-		$changes = array();
-		if ( isset( $request['label'] ) ) {
-			$changes['label'] = (string) $request['label'];
-		}
-		if ( isset( $request['expires_at'] ) ) {
-			$expires_at = Link_Service\parse_date( (string) $request['expires_at'] );
-			if ( null === $expires_at ) {
-				return new WP_Error( 'rest_invalid_param', __( 'Invalid expiry date.', 'public-post-preview' ), array( 'status' => 400 ) );
+	private function get_link_fields( WP_REST_Request $request ): array {
+		return array_filter(
+			array(
+				'label'      => $request['label'],
+				'expires_at' => $request['expires_at'],
+			),
+			static function ( $value ) {
+				return null !== $value;
 			}
-			$changes['expires_at'] = $expires_at;
-		}
-
-		return $changes;
+		);
 	}
 }

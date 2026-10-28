@@ -2,7 +2,8 @@
 /**
  * Manages the links of a post on behalf of the current user.
  *
- * Shared by the REST API and the abilities, so both apply the same permissions and rules.
+ * Shared by the REST API and the abilities. Every operation checks access itself, so neither
+ * caller can skip it, and dates go in and out as ISO 8601 strings.
  */
 
 namespace DS\PublicPostPreview\Link_Service;
@@ -55,10 +56,15 @@ function get_manageable_post( int $post_id ) {
 /**
  * Returns the visible links of a post, after removing expired ones.
  *
- * @param WP_Post $post Post object.
- * @return array<int, array<string, mixed>> Links.
+ * @param int $post_id Post ID.
+ * @return array<int, array<string, mixed>>|WP_Error Links, or an error.
  */
-function list_links( WP_Post $post ): array {
+function list_links( int $post_id ) {
+	$post = get_manageable_post( $post_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
+	}
+
 	Link_Store\prune_expired( $post->ID );
 
 	return array_map( __NAMESPACE__ . '\\prepare', Link_Store\get_links( $post->ID ) );
@@ -67,21 +73,34 @@ function list_links( WP_Post $post ): array {
 /**
  * Creates a link and returns it with its URL, the only time the URL is available.
  *
- * @param WP_Post              $post Post object.
+ * @param int                  $post_id Post ID.
  * @param array<string, mixed> $args {
  *     @type string $label      Optional label.
- *     @type int    $expires_at Optional expiry, Unix timestamp. Defaults to the default lifetime.
+ *     @type string $expires_at Optional expiry as ISO 8601 date. Defaults to the default lifetime.
  * }
  * @return array<string, mixed>|WP_Error The link, or an error.
  */
-function create_link( WP_Post $post, array $args ) {
+function create_link( int $post_id, array $args ) {
+	$post = get_manageable_post( $post_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
+	}
+
+	$expires_at = Clock::now() + Preview_Policy\get_default_lifetime();
+	if ( isset( $args['expires_at'] ) ) {
+		$expires_at = parse_date( (string) $args['expires_at'] );
+		if ( is_wp_error( $expires_at ) ) {
+			return $expires_at;
+		}
+	}
+
 	Link_Store\prune_expired( $post->ID );
 
 	$created = Link_Store\create(
 		$post->ID,
 		array(
 			'label'      => $args['label'] ?? '',
-			'expires_at' => $args['expires_at'] ?? Clock::now() + Preview_Policy\get_default_lifetime(),
+			'expires_at' => $expires_at,
 		)
 	);
 	if ( is_wp_error( $created ) ) {
@@ -108,18 +127,30 @@ function create_link( WP_Post $post, array $args ) {
 /**
  * Changes the label or expiry of a link.
  *
- * @param WP_Post              $post    Post object.
+ * @param int                  $post_id Post ID.
  * @param string               $link_id Link ID.
- * @param array<string, mixed> $changes Values for `label` and `expires_at` (Unix timestamp).
+ * @param array<string, mixed> $changes Values for `label` and `expires_at` (ISO 8601 date).
  * @return array<string, mixed>|WP_Error The changed link, or an error.
  */
-function update_link( WP_Post $post, string $link_id, array $changes ) {
-	$link = find_visible( $post, $link_id );
+function update_link( int $post_id, string $link_id, array $changes ) {
+	$link = find_visible( $post_id, $link_id );
 	if ( is_wp_error( $link ) ) {
 		return $link;
 	}
 
-	$updated = Link_Store\update( $post->ID, $link->id, array_intersect_key( $changes, array_flip( array( 'label', 'expires_at' ) ) ) );
+	$changes = array_intersect_key( $changes, array_flip( array( 'label', 'expires_at' ) ) );
+	if ( isset( $changes['expires_at'] ) ) {
+		$changes['expires_at'] = parse_date( (string) $changes['expires_at'] );
+		if ( is_wp_error( $changes['expires_at'] ) ) {
+			return $changes['expires_at'];
+		}
+	}
+
+	if ( ! $changes ) {
+		return prepare( $link );
+	}
+
+	$updated = Link_Store\update( $post_id, $link->id, $changes );
 	if ( null === $updated ) {
 		return link_not_found();
 	}
@@ -133,33 +164,40 @@ function update_link( WP_Post $post, string $link_id, array $changes ) {
 /**
  * Revokes a link.
  *
- * @param WP_Post $post    Post object.
- * @param string  $link_id Link ID.
+ * @param int    $post_id Post ID.
+ * @param string $link_id Link ID.
  * @return array<string, mixed>|WP_Error The revoked link, or an error.
  */
-function revoke_link( WP_Post $post, string $link_id ) {
-	$link = find_visible( $post, $link_id );
+function revoke_link( int $post_id, string $link_id ) {
+	$link = find_visible( $post_id, $link_id );
 	if ( is_wp_error( $link ) ) {
 		return $link;
 	}
 
-	$deleted = Link_Store\delete( $post->ID, $link->id );
+	$deleted = Link_Store\delete( $post_id, $link->id );
 	if ( ! $deleted ) {
 		return link_not_found();
 	}
 
-	fire_revoked( $post->ID, $deleted->id );
+	fire_revoked( $post_id, $deleted->id );
 
 	return prepare( $deleted );
 }
 
 /**
- * Revokes all links of a post, internal links included.
+ * Revokes all links of a post.
  *
- * @param WP_Post $post Post object.
- * @return int Number of revoked visible links.
+ * Internal links are deleted too, without an action, as they never appear anywhere.
+ *
+ * @param int $post_id Post ID.
+ * @return int|WP_Error Number of revoked visible links, or an error.
  */
-function revoke_all( WP_Post $post ): int {
+function revoke_all( int $post_id ) {
+	$post = get_manageable_post( $post_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
+	}
+
 	$links = Link_Store\get_links( $post->ID );
 
 	Link_Store\delete_all( $post->ID );
@@ -193,13 +231,23 @@ function prepare( Link $link ): array {
 /**
  * Parses an ISO 8601 date.
  *
+ * @internal
+ *
  * @param string $date Date, UTC unless it has an offset.
- * @return int|null Unix timestamp, or null if the date is invalid.
+ * @return int|WP_Error Unix timestamp, or an error for an invalid date.
  */
-function parse_date( string $date ): ?int {
-	$timestamp = rest_parse_date( $date, true );
+function parse_date( string $date ) {
+	// Without forcing UTC, so an offset in the date is applied. Dates without one parse as UTC.
+	$timestamp = rest_parse_date( $date );
+	if ( false === $timestamp ) {
+		return new WP_Error(
+			'ppp_invalid_expiry',
+			__( 'The expiry date must be an ISO 8601 date.', 'public-post-preview' ),
+			array( 'status' => 400 )
+		);
+	}
 
-	return false === $timestamp ? null : (int) $timestamp;
+	return (int) $timestamp;
 }
 
 /**
@@ -215,18 +263,28 @@ function format_date( ?int $timestamp ): ?string {
 }
 
 /**
- * Finds a link that is not internal.
+ * Finds a link that is not internal, on a post the current user may manage.
  *
  * @internal
  *
- * @param WP_Post $post    Post object.
- * @param string  $link_id Link ID.
+ * @param int    $post_id Post ID.
+ * @param string $link_id Link ID.
  * @return Link|WP_Error The link, or an error.
  */
-function find_visible( WP_Post $post, string $link_id ) {
+function find_visible( int $post_id, string $link_id ) {
+	$post = get_manageable_post( $post_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
+	}
+
 	$link = Link_Store\find( $post->ID, $link_id );
 
-	return $link && ! $link->internal ? $link : link_not_found();
+	// An expired link that hasn't been pruned yet must not come back through an update.
+	if ( ! $link || $link->internal || $link->is_expired( Clock::now() ) ) {
+		return link_not_found();
+	}
+
+	return $link;
 }
 
 /**

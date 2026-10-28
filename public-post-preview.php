@@ -1084,7 +1084,8 @@ CSS;
 	 * @return int The time-dependent variable.
 	 */
 	private static function nonce_tick() {
-		$nonce_life = DS\PublicPostPreview\Preview_Policy\get_default_lifetime();
+		$expiration = get_option( 'public_post_preview_expiration_time' ) ?: 48;
+		$nonce_life = apply_filters( 'ppp_nonce_life', $expiration * HOUR_IN_SECONDS );
 
 		return ceil( time() / ( $nonce_life / 2 ) );
 	}
