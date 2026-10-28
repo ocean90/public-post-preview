@@ -6,3 +6,13 @@
 	width: 360px;
 	padding: 16px;
 }
+
+.public-post-preview__badge {
+	flex-shrink: 0;
+	padding: 0 6px;
+	border-radius: 2px;
+	background: #eff9f1;
+	color: #005c12;
+	font-size: 12px;
+	line-height: 20px;
+}

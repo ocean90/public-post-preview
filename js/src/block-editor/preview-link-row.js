@@ -156,6 +156,7 @@ export default function PreviewLinkRow() {
 												<LinkItem
 													key={ link.id }
 													link={ link }
+													isNew={ fresh?.id === link.id }
 													maxLifetime={ maxLifetime }
 													onUpdate={ updateLink }
 													onRevoke={ ( item ) =>

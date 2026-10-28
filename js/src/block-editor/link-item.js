@@ -148,11 +148,12 @@ function LabelEditor( { label, onSave, onCancel } ) {
  *
  * @param {Object}   props             Props.
  * @param {Object}   props.link        Link.
+ * @param {boolean}  props.isNew       Whether the link was just created, so its URL is the one shown above.
  * @param {number}   props.maxLifetime Maximum lifetime in seconds.
  * @param {Function} props.onUpdate    Called with the link ID and the changes; resolves to whether it worked.
  * @param {Function} props.onRevoke    Called with the link to revoke.
  */
-export default function LinkItem( { link, maxLifetime, onUpdate, onRevoke } ) {
+export default function LinkItem( { link, isNew, maxLifetime, onUpdate, onRevoke } ) {
 	const [ mode, setMode ] = useState( null );
 	const name = getLinkName( link );
 	const save = async ( changes ) => {
@@ -166,9 +167,16 @@ export default function LinkItem( { link, maxLifetime, onUpdate, onRevoke } ) {
 			<VStack spacing={ 3 }>
 				<HStack alignment="center" spacing={ 2 }>
 					<VStack spacing={ 0 } alignment="topLeft" style={ { flex: 1, minWidth: 0 } }>
-						<Text weight={ 500 } truncate>
-							{ name }
-						</Text>
+						<HStack spacing={ 2 } justify="flex-start">
+							<Text weight={ 500 } truncate>
+								{ name }
+							</Text>
+							{ isNew && (
+								<span className="public-post-preview__badge">
+									{ __( 'New', 'public-post-preview' ) }
+								</span>
+							) }
+						</HStack>
 						<Text variant="muted" size={ 12 }>
 							{ sprintf(
 								/* translators: %s: Relative time, e.g. "in 6 days". */
