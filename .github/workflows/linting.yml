@@ -34,7 +34,20 @@ jobs:
       - name: Install Node.js dependencies
         run: npm ci
 
+      - name: Set up PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      - name: Install PHP dependencies
+        run: |
+          composer install --prefer-dist --no-progress --no-ansi --no-interaction
+          echo "${PWD}/vendor/bin" >> "$GITHUB_PATH"
+
       - name: Run linters
         uses: wearerequired/lint-action@124229c6e2974984ba137c67a499ba28bfc33e33 # v3.0.2
         with:
           eslint: true
+          php_codesniffer: true

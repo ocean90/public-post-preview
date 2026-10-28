@@ -16,3 +16,6 @@ package.json
 package-lock.json
 README.md
 webpack.config.js
+/vendor
+composer.lock
+phpcs.xml.dist

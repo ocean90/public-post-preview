@@ -2,7 +2,7 @@ const config = require( '@wearerequired/eslint-config' );
 
 module.exports = [
 	{
-		ignores: [ 'js/dist/**' ],
+		ignores: [ 'js/dist/**', 'vendor/**' ],
 	},
 	...config,
 	{

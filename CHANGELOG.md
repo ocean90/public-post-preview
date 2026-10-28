@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+* Requires WordPress 6.8.
+* Compatibility with WordPress 7.1.
 * Show a notice on the public preview page when the post has been updated or published since the page was loaded. Disable with the `ppp_poll_for_updates` filter.
 
 ## 3.1.1 / 3.1.2 (2026-06-16)

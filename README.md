@@ -61,3 +61,7 @@ function my_nonce_life() {
 	return 5 * DAY_IN_SECONDS;
 }
 ```
+
+**The public preview shows an outdated version of the post. Why?**
+
+Preview pages are sent with headers that tell browsers, proxies and CDNs not to cache them. Some caching setups ignore these headers, for example a CDN rule that caches every page, such as "Cache Everything" on Cloudflare, or a page cache that also caches URLs with query strings. Exclude URLs containing the `_ppp` parameter from your cache to fix this.
