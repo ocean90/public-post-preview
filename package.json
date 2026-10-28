@@ -22,6 +22,7 @@
     "@wearerequired/browserslist-config": "0.3.0",
     "@wearerequired/eslint-config": "7.0.0",
     "@wordpress/babel-preset-default": "9.0.0",
+    "@wordpress/env": "11.17.0",
     "@wordpress/eslint-plugin": "25.10.0",
     "@wordpress/scripts": "36.1.0",
     "prettier": "npm:wp-prettier@3.9.6"
