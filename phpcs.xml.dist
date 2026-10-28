@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="Public Post Preview">
+	<description>Coding standard for Public Post Preview, aligned with the WordPress VIP code scanner.</description>
+
+	<file>.</file>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/js/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="severity" value="1"/>
+	<arg value="sp"/>
+
+	<config name="testVersion" value="8.0-"/>
+	<config name="minimum_wp_version" value="6.8"/>
+
+	<rule ref="WordPress-VIP-Go"/>
+	<rule ref="PHPCompatibilityWP"/>
+</ruleset>
