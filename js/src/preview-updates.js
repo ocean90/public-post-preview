@@ -1,4 +1,3 @@
-/* global DSPublicPostPreviewUpdates */
 ( function ( config ) {
 	if ( ! config || ! window.fetch ) {
 		return;
@@ -72,7 +71,7 @@
 				cache: 'no-store',
 				headers: { Accept: 'application/json' },
 			} );
-		} catch ( error ) {
+		} catch {
 			scheduleNext();
 			return;
 		}
@@ -92,26 +91,18 @@
 		let data;
 		try {
 			data = await response.json();
-		} catch ( error ) {
+		} catch {
 			scheduleNext();
 			return;
 		}
 
 		if ( data.status === 'published' && data.permalink ) {
 			stop();
-			showNotice(
-				config.strings.published,
-				config.strings.viewPost,
-				data.permalink
-			);
+			showNotice( config.strings.published, config.strings.viewPost, data.permalink );
 			return;
 		}
 
-		if (
-			data.status === 'preview' &&
-			data.modified &&
-			data.modified !== config.modified
-		) {
+		if ( data.status === 'preview' && data.modified && data.modified !== config.modified ) {
 			stop();
 			showNotice( config.strings.updated, config.strings.reload );
 			return;

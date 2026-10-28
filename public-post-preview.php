@@ -150,9 +150,9 @@ class DS_Public_Post_Preview {
 		}
 
 		if ( get_current_screen()->is_block_editor() ) {
-			$script_assets_path = plugin_dir_path( __FILE__ ) . 'js/dist/gutenberg-integration.asset.php';
-			$script_assets      = file_exists( $script_assets_path ) ?
-				require $script_assets_path :
+			// Fixed paths instead of a variable, as required by the WordPress VIP code scanner.
+			$script_assets = file_exists( __DIR__ . '/js/dist/gutenberg-integration.asset.php' ) ?
+				require __DIR__ . '/js/dist/gutenberg-integration.asset.php' :
 				array(
 					'dependencies' => array(),
 					'version'      => '',
@@ -179,13 +179,17 @@ class DS_Public_Post_Preview {
 				)
 			);
 		} else {
-			$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-
+			$script_assets = file_exists( __DIR__ . '/js/dist/classic-editor.asset.php' ) ?
+				require __DIR__ . '/js/dist/classic-editor.asset.php' :
+				array(
+					'dependencies' => array(),
+					'version'      => '',
+				);
 			wp_enqueue_script(
 				'public-post-preview',
-				plugins_url( "js/public-post-preview$suffix.js", __FILE__ ),
-				array( 'jquery' ),
-				'20221611',
+				plugins_url( 'js/dist/classic-editor.js', __FILE__ ),
+				$script_assets['dependencies'],
+				$script_assets['version'],
 				true
 			);
 
@@ -695,7 +699,7 @@ class DS_Public_Post_Preview {
 	/**
 	 * Registers the REST API route used by preview pages to poll for updates.
 	 *
-	 * @since x.y.z
+	 * @since 4.0.0
 	 */
 	public static function register_rest_routes() {
 		register_rest_route(
@@ -728,7 +732,7 @@ class DS_Public_Post_Preview {
 	/**
 	 * Returns the schema for the preview status response.
 	 *
-	 * @since x.y.z
+	 * @since 4.0.0
 	 *
 	 * @return array The schema.
 	 */
@@ -762,7 +766,7 @@ class DS_Public_Post_Preview {
 	/**
 	 * Checks that the request carries a valid preview nonce for the post.
 	 *
-	 * @since x.y.z
+	 * @since 4.0.0
 	 *
 	 * @param WP_REST_Request $request The request.
 	 * @return true|WP_Error True if the nonce is valid, WP_Error otherwise.
@@ -788,7 +792,7 @@ class DS_Public_Post_Preview {
 	 * The response contains either the publication permalink or a token which
 	 * changes whenever the post is saved.
 	 *
-	 * @since x.y.z
+	 * @since 4.0.0
 	 *
 	 * @param WP_REST_Request $request The request.
 	 * @return WP_REST_Response|WP_Error The response.
@@ -834,7 +838,7 @@ class DS_Public_Post_Preview {
 	/**
 	 * Enqueues the script which polls for updates to the previewed post.
 	 *
-	 * @since x.y.z
+	 * @since 4.0.0
 	 */
 	public static function enqueue_preview_updates_script() {
 		$post = get_post( self::$preview_post_id );
@@ -842,13 +846,17 @@ class DS_Public_Post_Preview {
 			return;
 		}
 
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-
+		$script_assets = file_exists( __DIR__ . '/js/dist/preview-updates.asset.php' ) ?
+			require __DIR__ . '/js/dist/preview-updates.asset.php' :
+			array(
+				'dependencies' => array(),
+				'version'      => '',
+			);
 		wp_enqueue_script(
 			'public-post-preview-updates',
-			plugins_url( "js/public-post-preview-updates$suffix.js", __FILE__ ),
-			array(),
-			'x.y.z',
+			plugins_url( 'js/dist/preview-updates.js', __FILE__ ),
+			$script_assets['dependencies'],
+			$script_assets['version'],
 			true
 		);
 
@@ -870,7 +878,7 @@ class DS_Public_Post_Preview {
 
 		wp_localize_script( 'public-post-preview-updates', 'DSPublicPostPreviewUpdates', $config );
 
-		wp_register_style( 'public-post-preview-updates', false, array(), 'x.y.z' );
+		wp_register_style( 'public-post-preview-updates', false, array(), $script_assets['version'] );
 		wp_enqueue_style( 'public-post-preview-updates' );
 		wp_add_inline_style( 'public-post-preview-updates', self::get_preview_updates_css() );
 	}
@@ -881,7 +889,7 @@ class DS_Public_Post_Preview {
 	 * The region is present from page load so assistive technology announces
 	 * content added to it later.
 	 *
-	 * @since x.y.z
+	 * @since 4.0.0
 	 */
 	public static function print_preview_updates_container() {
 		echo '<div id="public-post-preview-updates" class="public-post-preview-updates" role="status" aria-live="polite"></div>' . "\n";
@@ -890,7 +898,7 @@ class DS_Public_Post_Preview {
 	/**
 	 * Returns the CSS for the update notice.
 	 *
-	 * @since x.y.z
+	 * @since 4.0.0
 	 *
 	 * @return string The CSS.
 	 */
@@ -1042,7 +1050,7 @@ CSS;
 			/**
 			 * Filters whether the public preview page should poll for updates to the post.
 			 *
-			 * @since x.y.z
+			 * @since 4.0.0
 			 *
 			 * @param bool $poll    Whether to poll for updates. Default true.
 			 * @param int  $post_id The post ID.

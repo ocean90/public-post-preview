@@ -1,0 +1,38 @@
+name: Build plugin
+description: Installs dependencies, builds the assets and optionally uploads the distributable plugin files as an artifact.
+
+inputs:
+  upload:
+    description: Whether to upload the plugin files, filtered by .distignore, as the artifact "plugin".
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
+
+    - name: Install Node.js dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Run build command
+      shell: bash
+      run: npm run build
+
+    - name: Collect plugin files
+      if: inputs.upload == 'true'
+      shell: bash
+      run: rsync -r --exclude-from=.distignore --exclude=/plugin ./ plugin/
+
+    - name: Upload plugin files
+      if: inputs.upload == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: plugin
+        path: plugin/
+        retention-days: 1
