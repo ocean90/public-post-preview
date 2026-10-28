@@ -7,7 +7,7 @@
  * Author URI: https://dominikschilling.de/
  * Plugin URI: https://github.com/ocean90/public-post-preview
  * Text Domain: public-post-preview
- * Requires at least: 6.8
+ * Requires at least: 6.9
  * Tested up to: 7.1
  * Requires PHP: 8.0
  * License: GPLv2 or later

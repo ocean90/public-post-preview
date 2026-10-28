@@ -15,7 +15,8 @@ permissions:
 
 jobs:
   phpunit:
-    name: PHPUnit (WP ${{ matrix.wp }}, PHP ${{ matrix.php }})
+    # Stable job names, so raising the minimum versions doesn't rename required checks.
+    name: PHPUnit (${{ matrix.label }})
     runs-on: ubuntu-latest
 
     strategy:
@@ -23,12 +24,12 @@ jobs:
       matrix:
         include:
           # Latest WordPress release with the newest PHP version.
-          - wp: latest
+          - label: latest
             core: ''
             php: '8.4'
           # Lowest supported WordPress and PHP versions.
-          - wp: '6.8'
-            core: WordPress/WordPress#6.8-branch
+          - label: lowest supported
+            core: WordPress/WordPress#6.9-branch
             php: '8.0'
 
     steps:
