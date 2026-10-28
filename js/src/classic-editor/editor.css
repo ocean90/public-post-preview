@@ -26,6 +26,16 @@
 	border-bottom: 0;
 }
 
+#public-post-preview .ppp-badge {
+	margin-left: 6px;
+	padding: 0 6px;
+	border-radius: 2px;
+	background: #edfaef;
+	color: #00450c;
+	font-size: 12px;
+	line-height: 1.6;
+}
+
 #public-post-preview .ppp-meta {
 	display: block;
 	color: #646970;

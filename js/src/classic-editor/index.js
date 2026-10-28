@@ -353,6 +353,8 @@ function renderLink( link ) {
 		'li',
 		{ 'data-link': link.id },
 		el( 'strong', {}, name ),
+		state.fresh?.id === link.id &&
+			el( 'span', { className: 'ppp-badge' }, __( 'New', 'public-post-preview' ) ),
 		el(
 			'span',
 			{ className: 'ppp-meta' },
