@@ -220,6 +220,55 @@ function remove_all_links( int $post_id ): int {
 }
 
 /**
+ * Returns the JSON schema properties of a link, as returned by `prepare()`.
+ *
+ * @return array<string, array<string, mixed>> Schema properties.
+ */
+function get_link_schema_properties(): array {
+	$date = array(
+		'type'     => array( 'string', 'null' ),
+		'format'   => 'date-time',
+		'readonly' => true,
+	);
+
+	return array(
+		'id'                => array(
+			'description' => __( 'ID of the preview link.', 'public-post-preview' ),
+			'type'        => 'string',
+			'readonly'    => true,
+		),
+		'label'             => array(
+			'description' => __( 'Optional label to tell links apart.', 'public-post-preview' ),
+			'type'        => 'string',
+		),
+		'hint'              => array(
+			'description' => __( 'Last four characters of the link, to tell links apart.', 'public-post-preview' ),
+			'type'        => 'string',
+			'readonly'    => true,
+		),
+		'created_at'        => array_merge( $date, array( 'description' => __( 'Creation time in UTC.', 'public-post-preview' ) ) ),
+		'created_by'        => array(
+			'description' => __( 'ID of the user who created the link.', 'public-post-preview' ),
+			'type'        => 'integer',
+			'readonly'    => true,
+		),
+		'expires_at'        => array(
+			'description' => __( 'Expiry time as ISO 8601 date, UTC unless an offset is given.', 'public-post-preview' ),
+			'type'        => 'string',
+			'format'      => 'date-time',
+		),
+		'first_accessed_at' => array_merge( $date, array( 'description' => __( 'First visit in UTC.', 'public-post-preview' ) ) ),
+		'last_accessed_at'  => array_merge( $date, array( 'description' => __( 'Last visit in UTC, updated at most every 15 minutes.', 'public-post-preview' ) ) ),
+		'url'               => array(
+			'description' => __( 'Preview URL. Only included when the link is created.', 'public-post-preview' ),
+			'type'        => 'string',
+			'format'      => 'uri',
+			'readonly'    => true,
+		),
+	);
+}
+
+/**
  * Returns the public representation of a link, without its hash.
  *
  * @param Link $link Link.
