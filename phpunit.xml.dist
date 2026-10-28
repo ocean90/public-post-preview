@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<phpunit
+	bootstrap="tests/bootstrap.php"
+	colors="true"
+	convertDeprecationsToExceptions="true"
+>
+	<testsuites>
+		<testsuite name="Public Post Preview">
+			<directory>./tests/</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

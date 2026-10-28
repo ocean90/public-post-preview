@@ -31,7 +31,9 @@
     "build": "wp-scripts build",
     "start": "wp-scripts start",
     "lint-js": "wp-scripts lint-js",
-    "env": "wp-env"
+    "env": "wp-env",
+    "test:env": "wp-env start --config=.wp-env.test.json",
+    "test:php": "wp-env run cli --config=.wp-env.test.json --env-cwd=wp-content/plugins/public-post-preview vendor/bin/phpunit"
   },
   "browserslist": [
     "extends @wearerequired/browserslist-config/modern"
