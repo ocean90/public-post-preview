@@ -43,6 +43,9 @@ require_once __DIR__ . '/inc/class-clock.php';
 require_once __DIR__ . '/inc/class-token.php';
 require_once __DIR__ . '/inc/class-link.php';
 require_once __DIR__ . '/inc/link-store.php';
+require_once __DIR__ . '/inc/preview-policy.php';
+require_once __DIR__ . '/inc/link-service.php';
+require_once __DIR__ . '/inc/class-rest-links-controller.php';
 
 /**
  * The class which controls the plugin.
@@ -59,6 +62,12 @@ class DS_Public_Post_Preview {
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_settings' ) );
 		add_action( 'init', 'DS\\PublicPostPreview\\Link_Store\\register_meta' );
+		add_action(
+			'rest_api_init',
+			static function () {
+				( new DS\PublicPostPreview\REST_Links_Controller() )->register_routes();
+			}
+		);
 
 		add_action( 'transition_post_status', array( __CLASS__, 'unregister_public_preview_on_status_change' ), 20, 3 );
 		add_action( 'post_updated', array( __CLASS__, 'unregister_public_preview_on_edit' ), 20, 2 );
@@ -367,15 +376,7 @@ class DS_Public_Post_Preview {
 	 * @return string[] List with post types.
 	 */
 	private static function get_post_types() {
-		$viewable_post_types = array();
-		$post_types          = get_post_types( [], 'objects' );
-		foreach ( $post_types as $post_type ) {
-			if ( is_post_type_viewable( $post_type ) ) {
-				$viewable_post_types[] = $post_type->name;
-			}
-		}
-
-		return apply_filters( 'ppp_post_types', $viewable_post_types );
+		return DS\PublicPostPreview\Preview_Policy\get_previewable_post_types();
 	}
 
 	/**
@@ -386,9 +387,7 @@ class DS_Public_Post_Preview {
 	 * @return array List with post statuses.
 	 */
 	private static function get_published_statuses() {
-		$published_statuses = array( 'publish', 'private' );
-
-		return apply_filters( 'ppp_published_statuses', $published_statuses );
+		return DS\PublicPostPreview\Preview_Policy\get_published_statuses();
 	}
 
 	/**
@@ -446,27 +445,7 @@ class DS_Public_Post_Preview {
 	 * @return string The generated public preview link.
 	 */
 	public static function get_preview_link( $post ) {
-		if ( 'page' === $post->post_type ) {
-			$args = array(
-				'page_id' => $post->ID,
-			);
-		} elseif ( 'post' === $post->post_type ) {
-			$args = array(
-				'p' => $post->ID,
-			);
-		} else {
-			$args = array(
-				'p'         => $post->ID,
-				'post_type' => $post->post_type,
-			);
-		}
-
-		$args['preview'] = true;
-		$args['_ppp']    = self::create_nonce( 'public_post_preview_' . $post->ID );
-
-		$link = add_query_arg( $args, home_url( '/' ) );
-
-		return apply_filters( 'ppp_preview_link', $link, $post->ID, $post );
+		return DS\PublicPostPreview\Preview_Policy\get_preview_url( $post, self::create_nonce( 'public_post_preview_' . $post->ID ) );
 	}
 
 	/**
@@ -1105,8 +1084,7 @@ CSS;
 	 * @return int The time-dependent variable.
 	 */
 	private static function nonce_tick() {
-		$expiration = get_option( 'public_post_preview_expiration_time' ) ?: 48;
-		$nonce_life = apply_filters( 'ppp_nonce_life', $expiration * HOUR_IN_SECONDS );
+		$nonce_life = DS\PublicPostPreview\Preview_Policy\get_default_lifetime();
 
 		return ceil( time() / ( $nonce_life / 2 ) );
 	}
