@@ -8,6 +8,7 @@
     "WP_DEBUG_DISPLAY": true,
     "WP_DISABLE_FATAL_ERROR_HANDLER": true
   },
+  "testsEnvironment": false,
   "plugins": [
     ".",
     "https://downloads.wordpress.org/plugin/gutenberg.24.2.0.zip",
