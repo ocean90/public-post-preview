@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { humanTimeDiff } from '@wordpress/date';
+import { getDate, humanTimeDiff } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 
 export const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -46,6 +46,35 @@ export function getExtendingPreset( presets, expiresAt ) {
 	const expiry = Date.parse( expiresAt );
 
 	return presets.find( ( preset ) => Date.now() + preset.duration > expiry )?.value ?? 'date';
+}
+
+/**
+ * Returns the expiry for the choice in an expiry form.
+ *
+ * @param {Object[]} presets   Presets.
+ * @param {string}   value     Value of the chosen preset, or `date`.
+ * @param {string}   localDate Chosen date in the site's timezone, used for `date`.
+ * @return {string|null} Expiry as ISO 8601 in UTC, or null if the date is invalid.
+ */
+export function getExpiryFromChoice( presets, value, localDate ) {
+	const preset = presets.find( ( item ) => item.value === value );
+	if ( ! preset && ! localDate ) {
+		return null;
+	}
+
+	const expiry = preset ? new Date( Date.now() + preset.duration ) : getDate( localDate );
+
+	return Number.isNaN( expiry.getTime() ) ? null : expiry.toISOString();
+}
+
+/**
+ * Returns the message of a failed request.
+ *
+ * @param {Object} error Error from `apiFetch`.
+ * @return {string} Message.
+ */
+export function getErrorMessage( error ) {
+	return error?.message || __( 'The preview link could not be saved.', 'public-post-preview' );
 }
 
 /**

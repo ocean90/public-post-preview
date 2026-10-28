@@ -15,7 +15,7 @@ import {
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
-import { date, getDate } from '@wordpress/date';
+import { date } from '@wordpress/date';
 import { useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
@@ -27,6 +27,7 @@ import {
 	DAY_IN_MS,
 	getAccessText,
 	getExpiryPresets,
+	getExpiryFromChoice,
 	getExpiryText,
 	getExtendingPreset,
 	getLinkName,
@@ -78,15 +79,11 @@ function ExpiryEditor( { expiresAt, maxLifetime, onSave, onCancel } ) {
 	const [ preset, setPreset ] = useState( () => getExtendingPreset( presets, expiresAt ) );
 	const [ localDate, setLocalDate ] = useState( date( 'Y-m-d\\TH:i:s', expiresAt ) );
 
-	const getExpiry = () =>
-		'date' === preset
-			? getDate( localDate ).toISOString()
-			: new Date(
-					now + presets.find( ( item ) => item.value === preset ).duration
-				).toISOString();
-
 	return (
-		<EditorForm onSave={ () => onSave( getExpiry() ) } onCancel={ onCancel }>
+		<EditorForm
+			onSave={ () => onSave( getExpiryFromChoice( presets, preset, localDate ) ) }
+			onCancel={ onCancel }
+		>
 			<ToggleGroupControl
 				label={ __( 'Expires in', 'public-post-preview' ) }
 				value={ preset }

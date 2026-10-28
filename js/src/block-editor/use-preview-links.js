@@ -59,11 +59,7 @@ export default function usePreviewLinks( postId, enabled ) {
 			try {
 				return await call();
 			} catch ( error ) {
-				createErrorNotice(
-					error?.message ||
-						__( 'The preview link could not be saved.', 'public-post-preview' ),
-					{ type: 'snackbar' }
-				);
+				createErrorNotice( api.getErrorMessage( error ), { type: 'snackbar' } );
 				return null;
 			} finally {
 				setIsBusy( false );

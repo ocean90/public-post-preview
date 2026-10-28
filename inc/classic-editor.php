@@ -5,7 +5,6 @@
 
 namespace DS\PublicPostPreview\Classic_Editor;
 
-use DS\PublicPostPreview\Admin;
 use DS\PublicPostPreview\Assets;
 use DS\PublicPostPreview\Link_Service;
 use WP_Post;
@@ -24,46 +23,16 @@ function register(): void {
 }
 
 /**
- * Returns the active links of a post, if the current user may manage them.
+ * Renders the section in the publish box, which the script fills.
  *
- * @internal
- *
- * @param WP_Post $post Post object.
- * @return array<int, array<string, mixed>>|null Links, or null if the post can't have links.
- */
-function get_links( WP_Post $post ): ?array {
-	$links = Link_Service\list_links( $post->ID );
-
-	return is_wp_error( $links ) ? null : $links;
-}
-
-/**
- * Renders the section in the publish box, which the script turns into the full UI.
+ * The UI needs the REST API, so without JavaScript there is nothing to show.
  *
  * @param WP_Post $post Post object.
  */
 function render( $post ) {
-	$links = $post instanceof WP_Post ? get_links( $post ) : null;
-	if ( null === $links ) {
-		return;
+	if ( $post instanceof WP_Post && ! is_wp_error( Link_Service\get_manageable_post( $post->ID ) ) ) {
+		echo '<div class="misc-pub-section misc-pub-public-post-preview hide-if-no-js" id="public-post-preview"></div>';
 	}
-
-	$count = count( $links );
-	?>
-	<div class="misc-pub-section misc-pub-public-post-preview" id="public-post-preview">
-		<?php esc_html_e( 'Public preview:', 'public-post-preview' ); ?>
-		<strong>
-			<?php
-			echo esc_html(
-				$count
-					/* translators: %s: Number of preview links. */
-					? sprintf( _n( '%s link', '%s links', $count, 'public-post-preview' ), number_format_i18n( $count ) )
-					: __( 'Off', 'public-post-preview' )
-			);
-			?>
-		</strong>
-	</div>
-	<?php
 }
 
 /**
@@ -72,7 +41,8 @@ function render( $post ) {
  * @param string $hook_suffix Admin page.
  */
 function enqueue_assets( $hook_suffix ) {
-	if ( 'post.php' !== $hook_suffix && 'post-new.php' !== $hook_suffix ) {
+	// New posts are auto-drafts, which can't have links yet.
+	if ( 'post.php' !== $hook_suffix ) {
 		return;
 	}
 
@@ -82,21 +52,18 @@ function enqueue_assets( $hook_suffix ) {
 		return;
 	}
 
-	$links = get_links( $post );
-	if ( null === $links ) {
+	// Passed with the page, so the box shows the links without waiting for a request.
+	$links = Link_Service\list_links( $post->ID );
+	if ( is_wp_error( $links ) ) {
 		return;
 	}
 
-	$version = Assets\enqueue_script( HANDLE, 'classic-editor' );
-	Assets\add_settings(
+	Assets\enqueue_editor_ui(
 		HANDLE,
-		array_merge(
-			Admin\get_editor_settings(),
-			array(
-				'postId' => $post->ID,
-				'links'  => $links,
-			)
+		'classic-editor',
+		array(
+			'postId' => $post->ID,
+			'links'  => $links,
 		)
 	);
-	Assets\enqueue_style( HANDLE, 'classic-editor', array(), $version );
 }

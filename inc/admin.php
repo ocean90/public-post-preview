@@ -33,22 +33,12 @@ function enqueue_block_editor_assets() {
 		return;
 	}
 
-	$version = Assets\enqueue_script( 'public-post-preview-block-editor', 'block-editor' );
-	Assets\add_settings( 'public-post-preview-block-editor', get_editor_settings() );
-	Assets\enqueue_style( 'public-post-preview-block-editor', 'block-editor', array( 'wp-components' ), $version );
-}
-
-/**
- * Returns the settings both editors need.
- *
- * @return array<string, mixed> Settings.
- */
-function get_editor_settings(): array {
-	return array(
-		'defaultLifetimeLabel' => format_lifetime( Preview_Policy\get_default_lifetime() ),
-		'maxLifetime'          => Link_Store\get_max_lifetime(),
+	Assets\enqueue_editor_ui(
+		'public-post-preview-block-editor',
+		'block-editor',
 		// Passed from here, so filters on the published statuses apply in the editor too.
-		'excludedStatuses'     => Preview_Policy\get_excluded_statuses(),
+		array( 'excludedStatuses' => Preview_Policy\get_excluded_statuses() ),
+		array( 'wp-components' )
 	);
 }
 
@@ -84,30 +74,6 @@ function register_settings_ui() {
 			'label_for' => 'public-post-preview-expiration-time',
 		)
 	);
-}
-
-/**
- * Formats a lifetime as days, or as hours if it isn't a whole number of days.
- *
- * `human_time_diff()` doesn't fit: its words are meant for "… ago" and read wrong in some languages.
- *
- * @internal
- *
- * @param int $seconds Lifetime in seconds.
- * @return string Duration, e.g. "2 days".
- */
-function format_lifetime( int $seconds ): string {
-	if ( 0 === $seconds % DAY_IN_SECONDS ) {
-		$days = intdiv( $seconds, DAY_IN_SECONDS );
-
-		/* translators: %s: Number of days. */
-		return sprintf( _n( '%s day', '%s days', $days, 'public-post-preview' ), number_format_i18n( $days ) );
-	}
-
-	$hours = (int) ceil( $seconds / HOUR_IN_SECONDS );
-
-	/* translators: %s: Number of hours. */
-	return sprintf( _n( '%s hour', '%s hours', $hours, 'public-post-preview' ), number_format_i18n( $hours ) );
 }
 
 /**
