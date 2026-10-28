@@ -16,6 +16,11 @@ use WP_Error;
 use WP_Post;
 
 /**
+ * Link fields that can be set when creating or changing a link.
+ */
+const WRITABLE_FIELDS = array( 'label', 'expires_at' );
+
+/**
  * Returns a post the current user may manage links for.
  *
  * Missing posts and posts the user can't edit get the same error, so the response doesn't
@@ -54,7 +59,9 @@ function get_manageable_post( int $post_id ) {
 }
 
 /**
- * Returns the visible links of a post, after removing expired ones.
+ * Returns the active visible links of a post.
+ *
+ * Expired links are left out but not deleted here, so listing stays free of side effects.
  *
  * @param int $post_id Post ID.
  * @return array<int, array<string, mixed>>|WP_Error Links, or an error.
@@ -65,9 +72,15 @@ function list_links( int $post_id ) {
 		return $post;
 	}
 
-	Link_Store\prune_expired( $post->ID );
+	$now   = Clock::now();
+	$links = array_filter(
+		Link_Store\get_links( $post->ID ),
+		static function ( Link $link ) use ( $now ) {
+			return ! $link->is_expired( $now );
+		}
+	);
 
-	return array_map( __NAMESPACE__ . '\\prepare', Link_Store\get_links( $post->ID ) );
+	return array_values( array_map( __NAMESPACE__ . '\\prepare', $links ) );
 }
 
 /**
@@ -138,7 +151,7 @@ function update_link( int $post_id, string $link_id, array $changes ) {
 		return $link;
 	}
 
-	$changes = array_intersect_key( $changes, array_flip( array( 'label', 'expires_at' ) ) );
+	$changes = array_intersect_key( $changes, array_flip( WRITABLE_FIELDS ) );
 	if ( isset( $changes['expires_at'] ) ) {
 		$changes['expires_at'] = parse_date( (string) $changes['expires_at'] );
 		if ( is_wp_error( $changes['expires_at'] ) ) {

@@ -11,6 +11,7 @@
 namespace DS\PublicPostPreview\Abilities;
 
 use DS\PublicPostPreview\Link_Service;
+use DS\PublicPostPreview\Token;
 
 /**
  * Slug of the ability category.
@@ -42,79 +43,64 @@ function register_category(): void {
  * Registers the abilities.
  */
 function register_abilities(): void {
-	$link      = array(
+	$properties = Link_Service\get_link_schema_properties();
+	$link       = array(
 		'type'       => 'object',
-		'properties' => Link_Service\get_link_schema_properties(),
+		'properties' => $properties,
 	);
-	$post_id   = array(
-		'description' => __( 'ID of the post.', 'public-post-preview' ),
-		'type'        => 'integer',
-		'minimum'     => 1,
+	$fields     = array_intersect_key( $properties, array_flip( Link_Service\WRITABLE_FIELDS ) );
+	$link_id    = array(
+		'link_id' => array(
+			'description' => __( 'ID of the preview link.', 'public-post-preview' ),
+			'type'        => 'string',
+			'pattern'     => '^' . Token::ID_PATTERN . '$',
+		),
 	);
-	$link_id   = array(
-		'description' => __( 'ID of the preview link.', 'public-post-preview' ),
-		'type'        => 'string',
-		'pattern'     => '^[0-9a-f]{8}$',
-	);
-	$fields    = array_intersect_key( Link_Service\get_link_schema_properties(), array_flip( array( 'label', 'expires_at' ) ) );
-	$with_post = static function ( array $properties, array $required = array() ) use ( $post_id ) {
-		return array(
-			'type'                 => 'object',
-			'properties'           => array_merge( array( 'post_id' => $post_id ), $properties ),
-			'required'             => array_merge( array( 'post_id' ), $required ),
-			'additionalProperties' => false,
-		);
-	};
 
 	register_ability(
 		'list-links',
 		array(
-			'label'         => __( 'List preview links', 'public-post-preview' ),
-			'description'   => __( 'Lists the active preview links of an unpublished post, without their URLs.', 'public-post-preview' ),
-			'input_schema'  => $with_post( array() ),
-			'output_schema' => array(
+			'label'            => __( 'List preview links', 'public-post-preview' ),
+			'description'      => __( 'Lists the active preview links of an unpublished post, without their URLs.', 'public-post-preview' ),
+			'input_schema'     => get_input_schema(),
+			'output_schema'    => array(
 				'type'  => 'array',
 				'items' => $link,
 			),
-			'callback'      => static function ( array $input ) {
+			'execute_callback' => static function ( array $input ) {
 				return Link_Service\list_links( (int) $input['post_id'] );
 			},
-			'annotations'   => array(
-				'readonly'   => true,
-				'idempotent' => true,
-			),
+			'annotations'      => array( 'readonly' => true ),
 		)
 	);
 
 	register_ability(
 		'create-link',
 		array(
-			'label'         => __( 'Create a preview link', 'public-post-preview' ),
-			'description'   => __( 'Creates a preview link for an unpublished post. The returned URL is shown only this once.', 'public-post-preview' ),
-			'input_schema'  => $with_post( $fields ),
-			'output_schema' => $link,
-			'callback'      => static function ( array $input ) {
+			'label'            => __( 'Create a preview link', 'public-post-preview' ),
+			'description'      => __( 'Creates a preview link for an unpublished post. The returned URL is shown only this once.', 'public-post-preview' ),
+			'input_schema'     => get_input_schema( $fields ),
+			'output_schema'    => $link,
+			'execute_callback' => static function ( array $input ) {
 				return Link_Service\create_link( (int) $input['post_id'], $input );
 			},
-			'annotations'   => array(
-				'readonly' => false,
-			),
+			'annotations'      => array( 'destructive' => false ),
 		)
 	);
 
 	register_ability(
 		'update-link',
 		array(
-			'label'         => __( 'Change a preview link', 'public-post-preview' ),
-			'description'   => __( 'Changes the label or extends the expiry of a preview link.', 'public-post-preview' ),
-			'input_schema'  => $with_post( array_merge( array( 'link_id' => $link_id ), $fields ), array( 'link_id' ) ),
-			'output_schema' => $link,
-			'callback'      => static function ( array $input ) {
+			'label'            => __( 'Change a preview link', 'public-post-preview' ),
+			'description'      => __( 'Changes the label or the expiry of a preview link. The link keeps its URL.', 'public-post-preview' ),
+			'input_schema'     => get_input_schema( array_merge( $link_id, $fields ), array( 'link_id' ) ),
+			'output_schema'    => $link,
+			'execute_callback' => static function ( array $input ) {
 				return Link_Service\update_link( (int) $input['post_id'], (string) $input['link_id'], $input );
 			},
-			'annotations'   => array(
-				'readonly'   => false,
-				'idempotent' => true,
+			'annotations'      => array(
+				'destructive' => false,
+				'idempotent'  => true,
 			),
 		)
 	);
@@ -122,15 +108,14 @@ function register_abilities(): void {
 	register_ability(
 		'revoke-link',
 		array(
-			'label'         => __( 'Revoke a preview link', 'public-post-preview' ),
-			'description'   => __( 'Revokes a preview link, so it no longer shows the post.', 'public-post-preview' ),
-			'input_schema'  => $with_post( array( 'link_id' => $link_id ), array( 'link_id' ) ),
-			'output_schema' => $link,
-			'callback'      => static function ( array $input ) {
+			'label'            => __( 'Revoke a preview link', 'public-post-preview' ),
+			'description'      => __( 'Revokes a preview link, so it no longer shows the post.', 'public-post-preview' ),
+			'input_schema'     => get_input_schema( $link_id, array( 'link_id' ) ),
+			'output_schema'    => $link,
+			'execute_callback' => static function ( array $input ) {
 				return Link_Service\revoke_link( (int) $input['post_id'], (string) $input['link_id'] );
 			},
-			'annotations'   => array(
-				'readonly'    => false,
+			'annotations'      => array(
 				'destructive' => true,
 				'idempotent'  => true,
 			),
@@ -140,10 +125,10 @@ function register_abilities(): void {
 	register_ability(
 		'revoke-all-links',
 		array(
-			'label'         => __( 'Revoke all preview links', 'public-post-preview' ),
-			'description'   => __( 'Revokes all preview links of a post.', 'public-post-preview' ),
-			'input_schema'  => $with_post( array() ),
-			'output_schema' => array(
+			'label'            => __( 'Revoke all preview links', 'public-post-preview' ),
+			'description'      => __( 'Revokes all preview links of a post.', 'public-post-preview' ),
+			'input_schema'     => get_input_schema(),
+			'output_schema'    => array(
 				'type'       => 'object',
 				'properties' => array(
 					'deleted' => array(
@@ -152,16 +137,43 @@ function register_abilities(): void {
 					),
 				),
 			),
-			'callback'      => static function ( array $input ) {
+			'execute_callback' => static function ( array $input ) {
 				$deleted = Link_Service\revoke_all( (int) $input['post_id'] );
 
 				return is_wp_error( $deleted ) ? $deleted : array( 'deleted' => $deleted );
 			},
-			'annotations'   => array(
-				'readonly'    => false,
+			'annotations'      => array(
 				'destructive' => true,
+				'idempotent'  => true,
 			),
 		)
+	);
+}
+
+/**
+ * Returns an input schema with the post ID and further properties.
+ *
+ * @internal
+ *
+ * @param array<string, array<string, mixed>> $properties Further properties.
+ * @param string[]                            $required   Further required properties.
+ * @return array<string, mixed> Input schema.
+ */
+function get_input_schema( array $properties = array(), array $required = array() ): array {
+	return array(
+		'type'                 => 'object',
+		'properties'           => array_merge(
+			array(
+				'post_id' => array(
+					'description' => __( 'ID of the post.', 'public-post-preview' ),
+					'type'        => 'integer',
+					'minimum'     => 1,
+				),
+			),
+			$properties
+		),
+		'required'             => array_merge( array( 'post_id' ), $required ),
+		'additionalProperties' => false,
 	);
 }
 
@@ -171,7 +183,7 @@ function register_abilities(): void {
  * @internal
  *
  * @param string               $name Ability name without namespace.
- * @param array<string, mixed> $args Label, description, schemas, callback and annotations.
+ * @param array<string, mixed> $args Label, description, schemas, execute callback and annotations.
  */
 function register_ability( string $name, array $args ): void {
 	wp_register_ability(
@@ -182,11 +194,13 @@ function register_ability( string $name, array $args ): void {
 			'category'            => CATEGORY,
 			'input_schema'        => $args['input_schema'],
 			'output_schema'       => $args['output_schema'],
-			'execute_callback'    => $args['callback'],
+			'execute_callback'    => $args['execute_callback'],
 			'permission_callback' => 'is_user_logged_in',
 			'meta'                => array(
 				'annotations'  => $args['annotations'],
 				'show_in_rest' => true,
+				// Lists the ability on the default server of the MCP Adapter.
+				'mcp'          => array( 'public' => true ),
 			),
 		)
 	);
