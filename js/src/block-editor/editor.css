@@ -1,0 +1,8 @@
+.public-post-preview__dropdown {
+	display: block;
+}
+
+.public-post-preview__dialog .components-popover__content {
+	width: 360px;
+	padding: 16px;
+}

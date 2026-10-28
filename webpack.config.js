@@ -5,6 +5,7 @@ module.exports = {
 	...defaultConfig,
 
 	entry: {
+		'block-editor': './js/src/block-editor/index.js',
 		'preview-updates': './js/src/preview-updates.js',
 	},
 
