@@ -899,73 +899,84 @@ class DS_Public_Post_Preview {
 	 */
 	private static function get_preview_updates_css() {
 		return <<<'CSS'
-.public-post-preview-updates {
+#public-post-preview-updates {
 	position: fixed;
-	inset-block-end: 1rem;
+	inset-block-end: 16px;
 	inset-inline-start: 50%;
 	transform: translateX(-50%);
 	z-index: 999999;
-	max-width: calc(100% - 2rem);
+	max-width: calc(100% - 32px);
 	font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	letter-spacing: normal;
 }
-.public-post-preview-updates:empty {
+#public-post-preview-updates:empty {
 	display: none;
 }
-.public-post-preview-updates__toast {
+#public-post-preview-updates .public-post-preview-updates__toast {
+	box-sizing: border-box;
 	display: flex;
 	align-items: center;
-	gap: 0.75rem;
-	padding: 0.75rem 1rem;
+	gap: 12px;
+	padding: 12px 16px;
 	background: #1d2327;
 	color: #fff;
 	border-radius: 4px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-.public-post-preview-updates__text {
+#public-post-preview-updates .public-post-preview-updates__text {
 	margin: 0;
+	font: inherit;
+	color: inherit;
+	letter-spacing: inherit;
 }
-.public-post-preview-updates__action,
-.public-post-preview-updates__dismiss {
+#public-post-preview-updates .public-post-preview-updates__action,
+#public-post-preview-updates .public-post-preview-updates__dismiss {
 	appearance: none;
+	box-sizing: border-box;
 	margin: 0;
 	font: inherit;
 	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	text-decoration: none;
+	text-shadow: none;
 	color: #fff;
 	background: transparent;
 	border: 1px solid #fff;
 	border-radius: 3px;
+	box-shadow: none;
+	transition: none;
 	cursor: pointer;
-	text-decoration: none;
 	white-space: nowrap;
 }
-.public-post-preview-updates__action {
-	padding: 0.375rem 0.75rem;
+#public-post-preview-updates .public-post-preview-updates__action {
+	padding: 6px 12px;
 }
-.public-post-preview-updates__dismiss {
-	padding: 0.25rem 0.5rem;
+#public-post-preview-updates .public-post-preview-updates__dismiss {
+	padding: 4px 8px;
 	border-color: transparent;
-	font-size: 1.25rem;
+	font-size: 20px;
 }
-.public-post-preview-updates__action:hover,
-.public-post-preview-updates__action:focus,
-.public-post-preview-updates__dismiss:hover,
-.public-post-preview-updates__dismiss:focus {
+#public-post-preview-updates .public-post-preview-updates__action:hover,
+#public-post-preview-updates .public-post-preview-updates__action:focus,
+#public-post-preview-updates .public-post-preview-updates__dismiss:hover,
+#public-post-preview-updates .public-post-preview-updates__dismiss:focus {
 	color: #1d2327;
 	background: #fff;
 }
-.public-post-preview-updates__action:focus-visible,
-.public-post-preview-updates__dismiss:focus-visible {
+#public-post-preview-updates .public-post-preview-updates__action:focus-visible,
+#public-post-preview-updates .public-post-preview-updates__dismiss:focus-visible {
 	outline: 2px solid #fff;
 	outline-offset: 2px;
 }
 @media (prefers-reduced-motion: no-preference) {
-	.public-post-preview-updates__toast {
+	#public-post-preview-updates .public-post-preview-updates__toast {
 		animation: public-post-preview-updates-in 0.2s ease-out;
 	}
 	@keyframes public-post-preview-updates-in {
 		from {
 			opacity: 0;
-			transform: translateY(0.5rem);
+			transform: translateY(8px);
 		}
 	}
 }
