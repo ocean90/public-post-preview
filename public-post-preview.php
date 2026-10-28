@@ -61,6 +61,7 @@ class DS_Public_Post_Preview {
 			add_action( 'pre_get_posts', array( __CLASS__, 'show_public_preview' ) );
 			add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
 			add_filter( 'user_switching_redirect_to', array( __CLASS__, 'user_switching_redirect_to' ), 10, 4 );
+			add_action( 'rest_api_init', array( __CLASS__, 'register_rest_routes' ) );
 		} else {
 			add_action( 'post_submitbox_misc_actions', array( __CLASS__, 'post_submitbox_misc_actions' ) );
 			add_action( 'save_post', array( __CLASS__, 'register_public_preview' ), 20, 2 );
@@ -690,6 +691,299 @@ class DS_Public_Post_Preview {
 	}
 
 	/**
+	 * Registers the REST API route used by preview pages to poll for updates.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function register_rest_routes() {
+		register_rest_route(
+			'public-post-preview/v1',
+			'/status/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'rest_get_preview_status' ),
+					'permission_callback' => array( __CLASS__, 'rest_preview_status_permission_check' ),
+					'args'                => array(
+						'id'   => array(
+							'description' => __( 'The ID of the previewed post.', 'public-post-preview' ),
+							'type'        => 'integer',
+							'required'    => true,
+							'minimum'     => 1,
+						),
+						'_ppp' => array(
+							'description' => __( 'The nonce from the public preview link.', 'public-post-preview' ),
+							'type'        => 'string',
+							'required'    => true,
+						),
+					),
+				),
+				'schema' => array( __CLASS__, 'get_rest_preview_status_schema' ),
+			)
+		);
+	}
+
+	/**
+	 * Returns the schema for the preview status response.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return array The schema.
+	 */
+	public static function get_rest_preview_status_schema() {
+		return array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'public-post-preview-status',
+			'type'       => 'object',
+			'properties' => array(
+				'status'    => array(
+					'description' => __( 'Whether the post is still a preview or has been published.', 'public-post-preview' ),
+					'type'        => 'string',
+					'enum'        => array( 'preview', 'published' ),
+					'readonly'    => true,
+				),
+				'modified'  => array(
+					'description' => __( 'The last modified time of the post, in the site\'s timezone. Only present while the post is a preview.', 'public-post-preview' ),
+					'type'        => 'string',
+					'readonly'    => true,
+				),
+				'permalink' => array(
+					'description' => __( 'The URL of the post. Only present once the post has been published.', 'public-post-preview' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'readonly'    => true,
+				),
+			),
+		);
+	}
+
+	/**
+	 * Checks that the request carries a valid preview nonce for the post.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return true|WP_Error True if the nonce is valid, WP_Error otherwise.
+	 */
+	public static function rest_preview_status_permission_check( $request ) {
+		$nonce   = $request->get_param( '_ppp' );
+		$post_id = (int) $request->get_param( 'id' );
+
+		/** This filter is documented in public-post-preview.php */
+		if ( ! apply_filters( 'ppp_poll_for_updates', true, $post_id ) ) {
+			return new WP_Error(
+				'ppp_preview_unavailable',
+				__( 'No public preview available!', 'public-post-preview' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( self::verify_nonce( $nonce, 'public_post_preview_' . $post_id ) ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'ppp_link_expired',
+			__( 'This link has expired!', 'public-post-preview' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
+	 * Returns the current state of a previewed post.
+	 *
+	 * The response contains either the publication permalink or a token which
+	 * changes whenever the post is saved.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response|WP_Error The response.
+	 */
+	public static function rest_get_preview_status( $request ) {
+		add_filter( 'rest_send_nocache_headers', '__return_true' );
+
+		$post = get_post( (int) $request['id'] );
+
+		if ( $post && in_array( get_post_status( $post ), self::get_published_statuses(), true ) && is_post_publicly_viewable( $post ) ) {
+			return rest_ensure_response(
+				array(
+					'status'    => 'published',
+					'permalink' => get_permalink( $post ),
+				)
+			);
+		}
+
+		if ( ! $post || ! self::is_public_preview_enabled( $post ) ) {
+			return new WP_Error(
+				'ppp_preview_unavailable',
+				__( 'No public preview available!', 'public-post-preview' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'status'   => 'preview',
+				'modified' => $post->post_modified,
+			)
+		);
+	}
+
+	/**
+	 * Enqueues the script which polls for updates to the previewed post.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function enqueue_preview_updates_script() {
+		$post = get_queried_object();
+		if ( ! $post instanceof WP_Post ) {
+			return;
+		}
+
+		$script_assets = file_exists( __DIR__ . '/js/dist/preview-updates.asset.php' ) ?
+			require __DIR__ . '/js/dist/preview-updates.asset.php' :
+			array(
+				'dependencies' => array(),
+				'version'      => '',
+			);
+		wp_enqueue_script(
+			'public-post-preview-updates',
+			plugins_url( 'js/dist/preview-updates.js', __FILE__ ),
+			$script_assets['dependencies'],
+			$script_assets['version'],
+			true
+		);
+
+		$config = array(
+			'endpoint'    => add_query_arg(
+				'_ppp',
+				get_query_var( '_ppp' ),
+				rest_url( sprintf( 'public-post-preview/v1/status/%d', $post->ID ) )
+			),
+			'modified'    => $post->post_modified,
+			'strings'     => array(
+				'updated'   => __( 'This post has been updated.', 'public-post-preview' ),
+				'published' => __( 'This post has now been published.', 'public-post-preview' ),
+				'reload'    => __( 'Reload', 'public-post-preview' ),
+				'viewPost'  => __( 'View post', 'public-post-preview' ),
+				'dismiss'   => __( 'Dismiss', 'public-post-preview' ),
+			),
+		);
+
+		wp_localize_script( 'public-post-preview-updates', 'DSPublicPostPreviewUpdates', $config );
+
+		wp_register_style( 'public-post-preview-updates', false, array(), $script_assets['version'] );
+		wp_enqueue_style( 'public-post-preview-updates' );
+		wp_add_inline_style( 'public-post-preview-updates', self::get_preview_updates_css() );
+	}
+
+	/**
+	 * Prints the live region the update notice is rendered into.
+	 *
+	 * The region is present from page load so assistive technology announces
+	 * content added to it later.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function print_preview_updates_container() {
+		echo '<div id="public-post-preview-updates" class="public-post-preview-updates" role="status" aria-live="polite"></div>' . "\n";
+	}
+
+	/**
+	 * Returns the CSS for the update notice.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return string The CSS.
+	 */
+	private static function get_preview_updates_css() {
+		return <<<'CSS'
+#public-post-preview-updates {
+	position: fixed;
+	inset-block-end: 16px;
+	inset-inline-start: 50%;
+	transform: translateX(-50%);
+	z-index: 999999;
+	max-width: calc(100% - 32px);
+	font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	letter-spacing: normal;
+}
+#public-post-preview-updates:empty {
+	display: none;
+}
+#public-post-preview-updates .public-post-preview-updates__toast {
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	background: #1d2327;
+	color: #fff;
+	border-radius: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+#public-post-preview-updates .public-post-preview-updates__text {
+	margin: 0;
+	font: inherit;
+	color: inherit;
+	letter-spacing: inherit;
+}
+#public-post-preview-updates .public-post-preview-updates__action,
+#public-post-preview-updates .public-post-preview-updates__dismiss {
+	appearance: none;
+	box-sizing: border-box;
+	margin: 0;
+	font: inherit;
+	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	text-decoration: none;
+	text-shadow: none;
+	color: #fff;
+	background: transparent;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	box-shadow: none;
+	transition: none;
+	cursor: pointer;
+	white-space: nowrap;
+}
+#public-post-preview-updates .public-post-preview-updates__action {
+	padding: 6px 12px;
+}
+#public-post-preview-updates .public-post-preview-updates__dismiss {
+	padding: 4px 8px;
+	border-color: transparent;
+	font-size: 20px;
+}
+#public-post-preview-updates .public-post-preview-updates__action:hover,
+#public-post-preview-updates .public-post-preview-updates__action:focus,
+#public-post-preview-updates .public-post-preview-updates__dismiss:hover,
+#public-post-preview-updates .public-post-preview-updates__dismiss:focus {
+	color: #1d2327;
+	background: #fff;
+}
+#public-post-preview-updates .public-post-preview-updates__action:focus-visible,
+#public-post-preview-updates .public-post-preview-updates__dismiss:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+	#public-post-preview-updates .public-post-preview-updates__toast {
+		animation: public-post-preview-updates-in 0.2s ease-out;
+	}
+	@keyframes public-post-preview-updates-in {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+	}
+}
+CSS;
+	}
+
+	/**
 	 * Filters the HTML output of individual page number links to use the
 	 * preview link.
 	 *
@@ -758,6 +1052,19 @@ class DS_Public_Post_Preview {
 			add_filter( 'comments_open', '__return_false' );
 			add_filter( 'pings_open', '__return_false' );
 			add_filter( 'wp_link_pages_link', array( __CLASS__, 'filter_wp_link_pages_link' ), 10, 2 );
+
+			/**
+			 * Filters whether the public preview page should poll for updates to the post.
+			 *
+			 * @since 4.0.0
+			 *
+			 * @param bool $poll    Whether to poll for updates. Default true.
+			 * @param int  $post_id The post ID.
+			 */
+			if ( apply_filters( 'ppp_poll_for_updates', true, $post_id ) ) {
+				add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_preview_updates_script' ) );
+				add_action( 'wp_footer', array( __CLASS__, 'print_preview_updates_container' ) );
+			}
 
 			do_action( 'ppp_show_public_preview', $post_id );
 		}
