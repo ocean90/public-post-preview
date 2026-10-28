@@ -48,19 +48,23 @@ function get_published_statuses(): array {
 }
 
 /**
+ * Returns the post statuses in which a post can't have preview links.
+ *
+ * @return string[] Post statuses.
+ */
+function get_excluded_statuses(): array {
+	return array_values( array_unique( array_merge( get_published_statuses(), array( 'auto-draft', 'trash' ) ) ) );
+}
+
+/**
  * Whether a post may have preview links.
  *
  * @param WP_Post $post Post object.
  * @return bool True if the post supports public previews in its current state.
  */
 function is_previewable( WP_Post $post ): bool {
-	if ( ! in_array( $post->post_type, get_previewable_post_types(), true ) ) {
-		return false;
-	}
-
-	$excluded = array_merge( get_published_statuses(), array( 'auto-draft', 'trash' ) );
-
-	return ! in_array( $post->post_status, $excluded, true );
+	return in_array( $post->post_type, get_previewable_post_types(), true )
+		&& ! in_array( $post->post_status, get_excluded_statuses(), true );
 }
 
 /**

@@ -14,7 +14,6 @@ import {
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
 import { useCopyToClipboard } from '@wordpress/compose';
-import { store as coreStore } from '@wordpress/core-data';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { PluginPostStatusInfo, store as editorStore } from '@wordpress/editor';
 import { useMemo, useState } from '@wordpress/element';
@@ -25,13 +24,15 @@ import { store as noticesStore } from '@wordpress/notices';
 /**
  * Internal dependencies
  */
-import LinkItem, { getLinkName } from './link-item';
+import { getLinkName, isActive } from '../preview-links';
+import LinkItem from './link-item';
 import usePreviewLinks from './use-preview-links';
 
-const { defaultLifetimeLabel, maxLifetime } = window.DSPublicPostPreview || {};
-
-// Statuses without public previews, as in Preview_Policy::is_previewable().
-const EXCLUDED_STATUSES = [ 'auto-draft', 'publish', 'private', 'trash' ];
+const {
+	defaultLifetimeLabel,
+	maxLifetime,
+	excludedStatuses = [],
+} = window.DSPublicPostPreview || {};
 
 /**
  * The URL of a link created in this session, which can't be shown again later.
@@ -79,22 +80,16 @@ function FreshLink( { url } ) {
  */
 export default function PreviewLinkRow() {
 	const { postId, isPreviewable } = useSelect( ( select ) => {
-		const { getCurrentPostId, getCurrentPostAttribute, getCurrentPostType } =
-			select( editorStore );
-		const postType = select( coreStore ).getPostType( getCurrentPostType() );
+		const { getCurrentPostId, getCurrentPostAttribute } = select( editorStore );
 
 		return {
 			postId: getCurrentPostId(),
-			isPreviewable:
-				!! postType?.viewable &&
-				! EXCLUDED_STATUSES.includes( getCurrentPostAttribute( 'status' ) ),
+			isPreviewable: ! excludedStatuses.includes( getCurrentPostAttribute( 'status' ) ),
 		};
 	}, [] );
 
-	const { links, fresh, isBusy, createLink, updateLink, revokeLink, revokeAll } = usePreviewLinks(
-		postId,
-		isPreviewable
-	);
+	const { links, fresh, isLoading, isBusy, createLink, updateLink, revokeLink, revokeAll } =
+		usePreviewLinks( postId, isPreviewable );
 	const [ anchor, setAnchor ] = useState( null );
 	const [ confirming, setConfirming ] = useState( null );
 	const popoverProps = useMemo(
@@ -106,7 +101,9 @@ export default function PreviewLinkRow() {
 		return null;
 	}
 
-	const count = links.length;
+	// The list isn't reloaded, so links that expire while the editor is open drop out here.
+	const activeLinks = links.filter( isActive );
+	const count = activeLinks.length;
 	const toggleLabel = count
 		? sprintf(
 				/* translators: %s: Number of preview links. */
@@ -132,10 +129,12 @@ export default function PreviewLinkRow() {
 								size="compact"
 								variant="tertiary"
 								aria-expanded={ isOpen }
-								isBusy={ isBusy && ! count }
+								isBusy={ isLoading || ( isBusy && ! count ) }
+								disabled={ isLoading || ( isBusy && ! count ) }
+								accessibleWhenDisabled
 								onClick={ async () => {
-									if ( ! count ) {
-										await createLink();
+									if ( ! isOpen && ! count && ! ( await createLink() ) ) {
+										return;
 									}
 									onToggle();
 								} }
@@ -153,13 +152,25 @@ export default function PreviewLinkRow() {
 									{ fresh && <FreshLink url={ fresh.url } /> }
 									{ count > 0 && (
 										<ItemGroup isBordered isSeparated size="medium">
-											{ links.map( ( link ) => (
+											{ activeLinks.map( ( link ) => (
 												<LinkItem
 													key={ link.id }
 													link={ link }
 													maxLifetime={ maxLifetime }
 													onUpdate={ updateLink }
-													onRevoke={ ( item ) => setConfirming( item ) }
+													onRevoke={ ( item ) =>
+														setConfirming( {
+															message: sprintf(
+																/* translators: %s: Name of the preview link. */
+																__(
+																	'Revoke “%s”? Whoever has the link can no longer see the draft.',
+																	'public-post-preview'
+																),
+																getLinkName( item )
+															),
+															onConfirm: () => revokeLink( item.id ),
+														} )
+													}
 												/>
 											) ) }
 										</ItemGroup>
@@ -169,6 +180,8 @@ export default function PreviewLinkRow() {
 											variant="secondary"
 											size="compact"
 											isBusy={ isBusy }
+											disabled={ isBusy }
+											accessibleWhenDisabled
 											onClick={ createLink }
 										>
 											{ count
@@ -180,7 +193,15 @@ export default function PreviewLinkRow() {
 												variant="tertiary"
 												size="compact"
 												isDestructive
-												onClick={ () => setConfirming( 'all' ) }
+												onClick={ () =>
+													setConfirming( {
+														message: __(
+															'Revoke all preview links? Nobody can see the draft through them anymore.',
+															'public-post-preview'
+														),
+														onConfirm: revokeAll,
+													} )
+												}
 											>
 												{ __( 'Revoke all', 'public-post-preview' ) }
 											</Button>
@@ -208,29 +229,12 @@ export default function PreviewLinkRow() {
 				isOpen={ !! confirming }
 				confirmButtonText={ __( 'Revoke', 'public-post-preview' ) }
 				onConfirm={ () => {
-					if ( 'all' === confirming ) {
-						revokeAll();
-					} else {
-						revokeLink( confirming.id );
-					}
+					confirming.onConfirm();
 					setConfirming( null );
 				} }
 				onCancel={ () => setConfirming( null ) }
 			>
-				{ 'all' === confirming
-					? __(
-							'Revoke all preview links? Nobody can see the draft through them anymore.',
-							'public-post-preview'
-						)
-					: confirming &&
-						sprintf(
-							/* translators: %s: Name of the preview link. */
-							__(
-								'Revoke “%s”? Whoever has the link can no longer see the draft.',
-								'public-post-preview'
-							),
-							getLinkName( confirming )
-						) }
+				{ confirming?.message }
 			</ConfirmDialog>
 		</PluginPostStatusInfo>
 	);

@@ -1,11 +1,15 @@
 /**
  * WordPress dependencies
  */
-import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
 import { useCallback, useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { store as noticesStore } from '@wordpress/notices';
+
+/**
+ * Internal dependencies
+ */
+import * as api from '../preview-links';
 
 /**
  * Loads and changes the preview links of a post through the REST API.
@@ -17,27 +21,43 @@ import { store as noticesStore } from '@wordpress/notices';
 export default function usePreviewLinks( postId, enabled ) {
 	const [ links, setLinks ] = useState( [] );
 	const [ fresh, setFresh ] = useState( null );
+	const [ isLoading, setIsLoading ] = useState( enabled );
 	const [ isBusy, setIsBusy ] = useState( false );
 	const { createErrorNotice } = useDispatch( noticesStore );
 
-	const path = `/public-post-preview/v1/posts/${ postId }/links`;
-
 	useEffect( () => {
+		// Links are deleted on publish, so a fresh URL from before can't work anymore.
+		setLinks( [] );
+		setFresh( null );
+		setIsLoading( enabled );
 		if ( ! enabled ) {
-			setLinks( [] );
 			return;
 		}
 
-		apiFetch( { path } )
-			.then( setLinks )
-			.catch( () => setLinks( [] ) );
-	}, [ path, enabled ] );
+		let isCurrent = true;
+		api.listLinks( postId )
+			.then( ( result ) => isCurrent && setLinks( result ) )
+			.catch(
+				( error ) =>
+					isCurrent &&
+					createErrorNotice(
+						error?.message ||
+							__( 'The preview links could not be loaded.', 'public-post-preview' ),
+						{ type: 'snackbar' }
+					)
+			)
+			.finally( () => isCurrent && setIsLoading( false ) );
+
+		return () => {
+			isCurrent = false;
+		};
+	}, [ postId, enabled, createErrorNotice ] );
 
 	const request = useCallback(
-		async ( options ) => {
+		async ( call ) => {
 			setIsBusy( true );
 			try {
-				return await apiFetch( options );
+				return await call();
 			} catch ( error ) {
 				createErrorNotice(
 					error?.message ||
@@ -53,21 +73,18 @@ export default function usePreviewLinks( postId, enabled ) {
 	);
 
 	const createLink = useCallback( async () => {
-		const link = await request( { path, method: 'POST' } );
+		const link = await request( () => api.createLink( postId ) );
 		if ( link ) {
 			const { url, ...data } = link;
 			setLinks( ( current ) => [ data, ...current ] );
 			setFresh( { id: link.id, url } );
 		}
-	}, [ path, request ] );
+		return !! link;
+	}, [ postId, request ] );
 
 	const updateLink = useCallback(
 		async ( id, changes ) => {
-			const link = await request( {
-				path: `${ path }/${ id }`,
-				method: 'PATCH',
-				data: changes,
-			} );
+			const link = await request( () => api.updateLink( postId, id, changes ) );
 			if ( link ) {
 				setLinks( ( current ) =>
 					current.map( ( item ) => ( item.id === id ? link : item ) )
@@ -75,25 +92,34 @@ export default function usePreviewLinks( postId, enabled ) {
 			}
 			return !! link;
 		},
-		[ path, request ]
+		[ postId, request ]
 	);
 
 	const revokeLink = useCallback(
 		async ( id ) => {
-			if ( await request( { path: `${ path }/${ id }`, method: 'DELETE' } ) ) {
+			if ( await request( () => api.revokeLink( postId, id ) ) ) {
 				setLinks( ( current ) => current.filter( ( item ) => item.id !== id ) );
 				setFresh( ( current ) => ( current?.id === id ? null : current ) );
 			}
 		},
-		[ path, request ]
+		[ postId, request ]
 	);
 
 	const revokeAll = useCallback( async () => {
-		if ( await request( { path, method: 'DELETE' } ) ) {
+		if ( await request( () => api.revokeAllLinks( postId ) ) ) {
 			setLinks( [] );
 			setFresh( null );
 		}
-	}, [ path, request ] );
+	}, [ postId, request ] );
 
-	return { links, fresh, isBusy, createLink, updateLink, revokeLink, revokeAll };
+	return {
+		links,
+		fresh,
+		isLoading,
+		isBusy,
+		createLink,
+		updateLink,
+		revokeLink,
+		revokeAll,
+	};
 }

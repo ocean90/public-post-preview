@@ -54,6 +54,8 @@ function enqueue_block_editor_assets() {
 			array(
 				'defaultLifetimeLabel' => format_lifetime( Preview_Policy\get_default_lifetime() ),
 				'maxLifetime'          => Link_Store\get_max_lifetime(),
+				// Passed from here, so filters on the published statuses apply in the editor too.
+				'excludedStatuses'     => Preview_Policy\get_excluded_statuses(),
 			)
 		) . ';',
 		'before'

@@ -20,22 +20,40 @@ import { useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
-const PRESETS = {
-	day: DAY_IN_MS,
-	week: 7 * DAY_IN_MS,
-	month: 30 * DAY_IN_MS,
-};
+/**
+ * Internal dependencies
+ */
+import { DAY_IN_MS, getExpiryPresets, getLinkName } from '../preview-links';
 
 /**
- * Returns the name of a link for the list.
+ * Form with Cancel and Save buttons, which also saves on Enter.
  *
- * @param {Object} link Link.
- * @return {string} Label, or the end of the link.
+ * @param {Object}   props          Props.
+ * @param {Function} props.onSave   Called when the form is submitted.
+ * @param {Function} props.onCancel Called when the form is closed without saving.
+ * @param {Element}  props.children Fields.
  */
-export function getLinkName( link ) {
-	/* translators: %s: Last four characters of the preview link. */
-	return link.label || sprintf( __( 'Link …%s', 'public-post-preview' ), link.hint );
+function EditorForm( { onSave, onCancel, children } ) {
+	return (
+		<form
+			onSubmit={ ( event ) => {
+				event.preventDefault();
+				onSave();
+			} }
+		>
+			<VStack spacing={ 3 }>
+				{ children }
+				<HStack justify="flex-end">
+					<Button variant="tertiary" size="compact" onClick={ onCancel }>
+						{ __( 'Cancel', 'public-post-preview' ) }
+					</Button>
+					<Button variant="primary" size="compact" type="submit">
+						{ __( 'Save', 'public-post-preview' ) }
+					</Button>
+				</HStack>
+			</VStack>
+		</form>
+	);
 }
 
 /**
@@ -48,17 +66,25 @@ export function getLinkName( link ) {
  * @param {Function} props.onCancel    Called when the form is closed without saving.
  */
 function ExpiryEditor( { expiresAt, maxLifetime, onSave, onCancel } ) {
-	const [ preset, setPreset ] = useState( 'week' );
-	const [ localDate, setLocalDate ] = useState( date( 'Y-m-d\\TH:i:s', expiresAt ) );
 	const now = Date.now();
+	const presets = getExpiryPresets( maxLifetime );
+	// The first preset that extends the link, so saving the default never shortens it.
+	const [ preset, setPreset ] = useState(
+		() =>
+			presets.find( ( item ) => now + item.duration > Date.parse( expiresAt ) )?.value ??
+			'date'
+	);
+	const [ localDate, setLocalDate ] = useState( date( 'Y-m-d\\TH:i:s', expiresAt ) );
 
 	const getExpiry = () =>
 		'date' === preset
 			? getDate( localDate ).toISOString()
-			: new Date( now + PRESETS[ preset ] ).toISOString();
+			: new Date(
+					now + presets.find( ( item ) => item.value === preset ).duration
+				).toISOString();
 
 	return (
-		<VStack spacing={ 3 }>
+		<EditorForm onSave={ () => onSave( getExpiry() ) } onCancel={ onCancel }>
 			<ToggleGroupControl
 				label={ __( 'Expires in', 'public-post-preview' ) }
 				value={ preset }
@@ -67,18 +93,13 @@ function ExpiryEditor( { expiresAt, maxLifetime, onSave, onCancel } ) {
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 			>
-				<ToggleGroupControlOption
-					value="day"
-					label={ __( '1 day', 'public-post-preview' ) }
-				/>
-				<ToggleGroupControlOption
-					value="week"
-					label={ __( '7 days', 'public-post-preview' ) }
-				/>
-				<ToggleGroupControlOption
-					value="month"
-					label={ __( '30 days', 'public-post-preview' ) }
-				/>
+				{ presets.map( ( item ) => (
+					<ToggleGroupControlOption
+						key={ item.value }
+						value={ item.value }
+						label={ item.label }
+					/>
+				) ) }
 				<ToggleGroupControlOption
 					value="date"
 					label={ __( 'Date', 'public-post-preview' ) }
@@ -93,15 +114,7 @@ function ExpiryEditor( { expiresAt, maxLifetime, onSave, onCancel } ) {
 					}
 				/>
 			) }
-			<HStack justify="flex-end">
-				<Button variant="tertiary" size="compact" onClick={ onCancel }>
-					{ __( 'Cancel', 'public-post-preview' ) }
-				</Button>
-				<Button variant="primary" size="compact" onClick={ () => onSave( getExpiry() ) }>
-					{ __( 'Save', 'public-post-preview' ) }
-				</Button>
-			</HStack>
-		</VStack>
+		</EditorForm>
 	);
 }
 
@@ -117,7 +130,7 @@ function LabelEditor( { label, onSave, onCancel } ) {
 	const [ value, setValue ] = useState( label );
 
 	return (
-		<VStack spacing={ 3 }>
+		<EditorForm onSave={ () => onSave( value ) } onCancel={ onCancel }>
 			<TextControl
 				label={ __( 'Label', 'public-post-preview' ) }
 				value={ value }
@@ -126,15 +139,7 @@ function LabelEditor( { label, onSave, onCancel } ) {
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 			/>
-			<HStack justify="flex-end">
-				<Button variant="tertiary" size="compact" onClick={ onCancel }>
-					{ __( 'Cancel', 'public-post-preview' ) }
-				</Button>
-				<Button variant="primary" size="compact" onClick={ () => onSave( value ) }>
-					{ __( 'Save', 'public-post-preview' ) }
-				</Button>
-			</HStack>
-		</VStack>
+		</EditorForm>
 	);
 }
 
