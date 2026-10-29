@@ -164,7 +164,7 @@ function find( int $post_id, string $link_id ): ?Link {
  * @param int                  $post_id Post ID.
  * @param string               $link_id Link ID.
  * @param array<string, mixed> $changes Values for `label`, `expires_at`, `first_accessed_at`, `last_accessed_at`.
- * @return Link|WP_Error|null The changed link, an error for invalid values, or null if the link is gone or changed in between.
+ * @return Link|WP_Error|null The link with its new values, an error for invalid values, or null if the link is gone or changed in between.
  */
 function update( int $post_id, string $link_id, array $changes ) {
 	$changes = array_intersect_key( $changes, array_flip( UPDATABLE_FIELDS ) );
@@ -185,6 +185,11 @@ function update( int $post_id, string $link_id, array $changes ) {
 	}
 
 	$link = Link::from_array( array_merge( $row['link']->to_array(), $changes ) );
+
+	// MySQL reports no affected row for an identical value, which the check below would take for a lost link.
+	if ( $link->to_array() === $row['link']->to_array() ) {
+		return $link;
+	}
 
 	/*
 	 * One conditional UPDATE instead of the meta API: `update_metadata()` adds a fresh row
