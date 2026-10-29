@@ -26,6 +26,11 @@ const EXPIRY_META_KEY = '_ppp_links_expire';
 const LABEL_MAX_LENGTH = 100;
 
 /**
+ * Default maximum number of active visible links per post.
+ */
+const MAX_LINKS = 20;
+
+/**
  * Fields that `update()` may change.
  */
 const UPDATABLE_FIELDS = array( 'label', 'expires_at', 'first_accessed_at', 'last_accessed_at' );
@@ -73,6 +78,26 @@ function get_max_lifetime(): int {
 }
 
 /**
+ * Returns the maximum number of active links a post can have, internal links aside.
+ *
+ * @param int $post_id Post ID.
+ * @return int Maximum number of links, or 0 for no limit.
+ */
+function get_max_links( int $post_id ): int {
+	/**
+	 * Filters the maximum number of active preview links a post can have.
+	 *
+	 * Expired links and internal links, like the one User Switching redirects to, don't count.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param int $max_links Maximum number of links. Default 20. A value below 1 removes the limit.
+	 * @param int $post_id   Post ID.
+	 */
+	return max( 0, (int) apply_filters( 'ppp_max_links_per_post', MAX_LINKS, $post_id ) );
+}
+
+/**
  * Creates a link.
  *
  * @param int                  $post_id Post ID.
@@ -91,6 +116,14 @@ function create( int $post_id, array $args ) {
 		return $error;
 	}
 
+	$internal = ! empty( $args['internal'] );
+	if ( ! $internal ) {
+		$error = validate_count( $post_id );
+		if ( $error ) {
+			return $error;
+		}
+	}
+
 	do {
 		$token = Token::generate();
 	} while ( find_row( $post_id, $token->id ) );
@@ -104,7 +137,7 @@ function create( int $post_id, array $args ) {
 			'created_at' => Clock::now(),
 			'created_by' => $args['created_by'] ?? get_current_user_id(),
 			'expires_at' => $expires_at,
-			'internal'   => $args['internal'] ?? false,
+			'internal'   => $internal,
 		)
 	);
 
@@ -309,6 +342,31 @@ function validate_expiry( int $expires_at ): ?WP_Error {
 }
 
 /**
+ * Checks that a post can take one more visible link.
+ *
+ * @internal
+ *
+ * @param int $post_id Post ID.
+ * @return WP_Error|null An error, or null if the post is below its limit.
+ */
+function validate_count( int $post_id ): ?WP_Error {
+	$max = get_max_links( $post_id );
+	if ( ! $max || count_active( $post_id ) < $max ) {
+		return null;
+	}
+
+	return new WP_Error(
+		'ppp_too_many_links',
+		sprintf(
+			/* translators: %s: Maximum number of links. */
+			__( 'A post can have at most %s active preview links. Revoke one to create a new one.', 'public-post-preview' ),
+			number_format_i18n( $max )
+		),
+		array( 'status' => 400 )
+	);
+}
+
+/**
  * Turns a label into plain text of limited length.
  *
  * @internal
@@ -344,6 +402,26 @@ function get_rows( int $post_id ): array {
 	}
 
 	return $rows;
+}
+
+/**
+ * Counts the visible links that haven't expired.
+ *
+ * @internal
+ *
+ * @param int $post_id Post ID.
+ * @return int Number of links.
+ */
+function count_active( int $post_id ): int {
+	$now   = Clock::now();
+	$count = 0;
+	foreach ( get_rows( $post_id ) as $row ) {
+		if ( ! $row['link']->internal && ! $row['link']->is_expired( $now ) ) {
+			++$count;
+		}
+	}
+
+	return $count;
 }
 
 /**

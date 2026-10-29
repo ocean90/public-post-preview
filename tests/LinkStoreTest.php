@@ -205,6 +205,45 @@ class LinkStoreTest extends TestCase {
 		$this->assertNotNull( Link_Store\find( $this->post_id, $valid['link']->id ) );
 	}
 
+	public function test_number_of_active_links_per_post_is_limited() {
+		add_filter( 'ppp_max_links_per_post', static fn() => 2 );
+
+		Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
+		$second = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
+
+		$this->assertWPError( Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) ) );
+		$this->assertCount( 2, Link_Store\get_links( $this->post_id ) );
+
+		Link_Store\delete( $this->post_id, $second['link']->id );
+		$this->assertIsArray( Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) ) );
+	}
+
+	public function test_expired_and_internal_links_do_not_count_towards_the_limit() {
+		add_filter( 'ppp_max_links_per_post', static fn() => 1 );
+
+		Link_Store\create( $this->post_id, array( 'expires_at' => 1793000100 ) );
+		Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400, 'internal' => true ) );
+
+		Clock::freeze( 1793000100 );
+		$this->assertIsArray( Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) ) );
+	}
+
+	public function test_internal_link_is_created_when_the_limit_is_reached() {
+		add_filter( 'ppp_max_links_per_post', static fn() => 1 );
+
+		Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
+
+		$this->assertIsArray( Link_Store\create( $this->post_id, array( 'expires_at' => 1793001000, 'internal' => true ) ) );
+	}
+
+	public function test_limit_can_be_removed() {
+		add_filter( 'ppp_max_links_per_post', static fn() => 0 );
+
+		for ( $i = 0; $i <= Link_Store\MAX_LINKS; $i++ ) {
+			$this->assertIsArray( Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) ) );
+		}
+	}
+
 	public function test_delete_all_removes_internal_links_too() {
 		Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
 		Link_Store\create( $this->post_id, array( 'expires_at' => 1793001000, 'internal' => true ) );
