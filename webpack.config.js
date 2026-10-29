@@ -5,8 +5,6 @@ module.exports = {
 	...defaultConfig,
 
 	entry: {
-		'gutenberg-integration': './js/src/index.js',
-		'classic-editor': './js/src/classic-editor.js',
 		'preview-updates': './js/src/preview-updates.js',
 	},
 

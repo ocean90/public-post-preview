@@ -7,7 +7,6 @@
 .npmrc export-ignore
 .nvmrc export-ignore
 .wp-env.json export-ignore
-babel.config.js export-ignore
 eslint.config.js export-ignore
 package.json export-ignore
 package-lock.json export-ignore
