@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
+import { getDate, humanTimeDiff } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 
 export const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -35,6 +36,48 @@ export function getExpiryPresets( maxLifetime ) {
 }
 
 /**
+ * Returns the first preset that extends a link, so saving the default never shortens it.
+ *
+ * @param {Object[]} presets   Presets.
+ * @param {string}   expiresAt Current expiry, ISO 8601 in UTC.
+ * @return {string} Value of the preset, or `date` if none extends the link.
+ */
+export function getExtendingPreset( presets, expiresAt ) {
+	const expiry = Date.parse( expiresAt );
+
+	return presets.find( ( preset ) => Date.now() + preset.duration > expiry )?.value ?? 'date';
+}
+
+/**
+ * Returns the expiry for the choice in an expiry form.
+ *
+ * @param {Object[]} presets   Presets.
+ * @param {string}   value     Value of the chosen preset, or `date`.
+ * @param {string}   localDate Chosen date in the site's timezone, used for `date`.
+ * @return {string|null} Expiry as ISO 8601 in UTC, or null if the date is invalid.
+ */
+export function getExpiryFromChoice( presets, value, localDate ) {
+	const preset = presets.find( ( item ) => item.value === value );
+	if ( ! preset && ! localDate ) {
+		return null;
+	}
+
+	const expiry = preset ? new Date( Date.now() + preset.duration ) : getDate( localDate );
+
+	return Number.isNaN( expiry.getTime() ) ? null : expiry.toISOString();
+}
+
+/**
+ * Returns the message of a failed request.
+ *
+ * @param {Object} error Error from `apiFetch`.
+ * @return {string} Message.
+ */
+export function getErrorMessage( error ) {
+	return error?.message || __( 'The preview link could not be saved.', 'public-post-preview' );
+}
+
+/**
  * Returns the name of a link for the list.
  *
  * @param {Object} link Link.
@@ -43,6 +86,33 @@ export function getExpiryPresets( maxLifetime ) {
 export function getLinkName( link ) {
 	/* translators: %s: Last four characters of the preview link. */
 	return link.label || sprintf( __( 'Link …%s', 'public-post-preview' ), link.hint );
+}
+
+/**
+ * Returns when a link expires, relative to now.
+ *
+ * @param {Object} link Link.
+ * @return {string} Text, e.g. "Expires in 6 days".
+ */
+export function getExpiryText( link ) {
+	/* translators: %s: Relative time, e.g. "in 6 days". */
+	return sprintf( __( 'Expires %s', 'public-post-preview' ), humanTimeDiff( link.expires_at ) );
+}
+
+/**
+ * Returns when a link was last opened, relative to now.
+ *
+ * @param {Object} link Link.
+ * @return {string} Text, e.g. "Last opened 2 hours ago".
+ */
+export function getAccessText( link ) {
+	return link.last_accessed_at
+		? sprintf(
+				/* translators: %s: Relative time, e.g. "2 hours ago". */
+				__( 'Last opened %s', 'public-post-preview' ),
+				humanTimeDiff( link.last_accessed_at )
+			)
+		: __( 'Not opened yet', 'public-post-preview' );
 }
 
 /**

@@ -6,6 +6,7 @@ module.exports = {
 
 	entry: {
 		'block-editor': './js/src/block-editor/index.js',
+		'classic-editor': './js/src/classic-editor/index.js',
 		'preview-updates': './js/src/preview-updates.js',
 	},
 

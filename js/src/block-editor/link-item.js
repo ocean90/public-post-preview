@@ -15,7 +15,7 @@ import {
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
-import { date, getDate, humanTimeDiff } from '@wordpress/date';
+import { date } from '@wordpress/date';
 import { useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
@@ -23,7 +23,15 @@ import { moreVertical } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { DAY_IN_MS, getExpiryPresets, getLinkName } from '../preview-links';
+import {
+	DAY_IN_MS,
+	getAccessText,
+	getExpiryPresets,
+	getExpiryFromChoice,
+	getExpiryText,
+	getExtendingPreset,
+	getLinkName,
+} from '../preview-links';
 
 /**
  * Form with Cancel and Save buttons, which also saves on Enter.
@@ -68,23 +76,14 @@ function EditorForm( { onSave, onCancel, children } ) {
 function ExpiryEditor( { expiresAt, maxLifetime, onSave, onCancel } ) {
 	const now = Date.now();
 	const presets = getExpiryPresets( maxLifetime );
-	// The first preset that extends the link, so saving the default never shortens it.
-	const [ preset, setPreset ] = useState(
-		() =>
-			presets.find( ( item ) => now + item.duration > Date.parse( expiresAt ) )?.value ??
-			'date'
-	);
+	const [ preset, setPreset ] = useState( () => getExtendingPreset( presets, expiresAt ) );
 	const [ localDate, setLocalDate ] = useState( date( 'Y-m-d\\TH:i:s', expiresAt ) );
 
-	const getExpiry = () =>
-		'date' === preset
-			? getDate( localDate ).toISOString()
-			: new Date(
-					now + presets.find( ( item ) => item.value === preset ).duration
-				).toISOString();
-
 	return (
-		<EditorForm onSave={ () => onSave( getExpiry() ) } onCancel={ onCancel }>
+		<EditorForm
+			onSave={ () => onSave( getExpiryFromChoice( presets, preset, localDate ) ) }
+			onCancel={ onCancel }
+		>
 			<ToggleGroupControl
 				label={ __( 'Expires in', 'public-post-preview' ) }
 				value={ preset }
@@ -178,20 +177,10 @@ export default function LinkItem( { link, isNew, maxLifetime, onUpdate, onRevoke
 							) }
 						</HStack>
 						<Text variant="muted" size={ 12 }>
-							{ sprintf(
-								/* translators: %s: Relative time, e.g. "in 6 days". */
-								__( 'Expires %s', 'public-post-preview' ),
-								humanTimeDiff( link.expires_at )
-							) }
+							{ getExpiryText( link ) }
 						</Text>
 						<Text variant="muted" size={ 12 }>
-							{ link.last_accessed_at
-								? sprintf(
-										/* translators: %s: Relative time, e.g. "2 hours ago". */
-										__( 'Last opened %s', 'public-post-preview' ),
-										humanTimeDiff( link.last_accessed_at )
-									)
-								: __( 'Not opened yet', 'public-post-preview' ) }
+							{ getAccessText( link ) }
 						</Text>
 					</VStack>
 					<DropdownMenu
