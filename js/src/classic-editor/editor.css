@@ -1,0 +1,85 @@
+#public-post-preview::before {
+	content: "\f103";
+	font: normal 20px/1 dashicons;
+	color: #8c8f94;
+	display: inline-block;
+	margin-left: -1px;
+	padding-right: 3px;
+	vertical-align: top;
+}
+
+#public-post-preview .ppp-box {
+	margin: 8px 0 4px;
+}
+
+#public-post-preview ul {
+	margin: 0 0 8px;
+}
+
+#public-post-preview li {
+	margin: 0;
+	padding: 6px 0;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+#public-post-preview li:last-child {
+	border-bottom: 0;
+}
+
+#public-post-preview .ppp-badge {
+	margin-left: 6px;
+	padding: 0 6px;
+	border-radius: 2px;
+	background: #edfaef;
+	color: #00450c;
+	font-size: 12px;
+	line-height: 1.6;
+}
+
+#public-post-preview .ppp-meta {
+	display: block;
+	color: #646970;
+}
+
+#public-post-preview .ppp-actions,
+#public-post-preview .ppp-editor {
+	display: block;
+	margin-top: 2px;
+}
+
+#public-post-preview .ppp-editor {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	align-items: center;
+	margin-top: 6px;
+}
+
+#public-post-preview .ppp-editor input[type="text"],
+#public-post-preview .ppp-editor input[type="datetime-local"] {
+	flex: 1 1 100%;
+	min-width: 0;
+}
+
+#public-post-preview .ppp-url {
+	display: flex;
+	gap: 4px;
+	margin: 4px 0;
+}
+
+#public-post-preview .ppp-url input {
+	flex: 1;
+	min-width: 0;
+}
+
+#public-post-preview .notice {
+	margin: 4px 0 6px;
+}
+
+#public-post-preview .ppp-footer {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: 4px;
+}
