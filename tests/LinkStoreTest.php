@@ -109,6 +109,22 @@ class LinkStoreTest extends TestCase {
 		$this->assertSame( 1793600000, Link_Store\get_latest_expiry( $this->post_id ) );
 	}
 
+	public function test_update_with_the_stored_values_keeps_the_link() {
+		$created = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400, 'label' => 'Client review' ) );
+
+		$updated = Link_Store\update(
+			$this->post_id,
+			$created['link']->id,
+			array(
+				'label'      => 'Client review',
+				'expires_at' => 1793086400,
+			)
+		);
+
+		$this->assertNotNull( $updated );
+		$this->assertSame( 'Client review', Link_Store\find( $this->post_id, $created['link']->id )->label );
+	}
+
 	public function test_update_does_not_bring_back_a_deleted_link() {
 		$created = Link_Store\create( $this->post_id, array( 'expires_at' => 1793086400 ) );
 		Link_Store\delete( $this->post_id, $created['link']->id );

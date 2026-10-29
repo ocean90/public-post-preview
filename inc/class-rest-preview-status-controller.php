@@ -93,7 +93,9 @@ final class REST_Preview_Status_Controller extends WP_REST_Controller {
 			return true;
 		}
 
-		$link = Preview_Access\check( $post_id, (string) $request['_ppp'] );
+		// `rest_send_allow_header` runs this callback for requests that failed validation too, with the parameter as sent.
+		$token = $request['_ppp'];
+		$link  = Preview_Access\check( $post_id, is_string( $token ) ? $token : '' );
 
 		return is_wp_error( $link ) ? $link : true;
 	}
