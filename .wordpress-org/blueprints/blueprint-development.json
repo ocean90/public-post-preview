@@ -1,6 +1,6 @@
 {
   "$schema": "https://playground.wordpress.net/blueprint-schema.json",
-  "landingPage": "/wp-admin/edit.php",
+  "landingPage": "/wp-admin/post.php?post=1&action=edit",
   "preferredVersions": {
     "php": "8.3",
     "wp": "latest"
@@ -27,15 +27,12 @@
     },
     {
       "step": "runPHP",
-      "code": "<?php require_once 'wordpress/wp-load.php'; wp_update_post( [ 'ID' => 1, 'post_status' => 'draft' ] ); ?>"
+      "code": "<?php\nrequire_once '/wordpress/wp-load.php';\n\nuse DS\\PublicPostPreview\\Clock;\nuse DS\\PublicPostPreview\\Link_Service;\nuse DS\\PublicPostPreview\\Link_Store;\n\nwp_set_current_user( 1 );\nupdate_user_meta( 1, $wpdb->get_blog_prefix() . 'persisted_preferences', array(\n\t'core/edit-post' => array( 'welcomeGuide' => false ),\n\t'core'           => array( 'welcomeGuide' => false, 'isComplementaryAreaVisible' => true ),\n\t'_modified'      => gmdate( 'c' ),\n) );\n\nwp_update_post( array(\n\t'ID'           => 1,\n\t'post_status'  => 'draft',\n\t'post_title'   => 'Ten Kitchens, One Street: A Walk Down Harbor Lane',\n\t'post_content' => \"<!-- wp:paragraph -->\\n<p>Harbor Lane is barely four hundred meters long, yet it feeds half the neighborhood. We spent a week walking it from the fish market to the old tram depot, one kitchen at a time.</p>\\n<!-- /wp:paragraph -->\\n\\n<!-- wp:paragraph -->\\n<p>This draft already has three preview links. Open \\\"Preview link\\\" in the sidebar to see who opened theirs, extend one or revoke it. Then create your own link, open it in a private window, change this text and save: the preview tells you that the draft was updated.</p>\\n<!-- /wp:paragraph -->\",\n) );\n\n$now   = time();\n$links = array(\n\tarray( 'Photographer', 2 * DAY_IN_SECONDS, null ),\n\tarray( 'Copy desk', DAY_IN_SECONDS, 12 * MINUTE_IN_SECONDS ),\n\tarray( 'Legal review', 3 * HOUR_IN_SECONDS, 30 * MINUTE_IN_SECONDS ),\n);\nforeach ( $links as $age => list( $label, $expires, $opened ) ) {\n\t// Spread the creation times, as if the links were shared over the last hours.\n\tClock::freeze( $now - ( 3 - $age ) * HOUR_IN_SECONDS );\n\t$link = Link_Service\\create_link( 1, array( 'label' => $label, 'expires_at' => gmdate( 'c', $now + $expires ) ) );\n\tClock::unfreeze();\n\tif ( $opened ) {\n\t\tLink_Store\\update( 1, $link['id'], array( 'first_accessed_at' => $now - $opened, 'last_accessed_at' => $now - $opened ) );\n\t}\n}\n"
     },
     {
       "step": "setSiteOptions",
       "options": {
-        "blogname": "Public Post Preview Demo",
-        "public_post_preview": [
-          1
-        ]
+        "blogname": "Public Post Preview Demo"
       }
     }
   ]

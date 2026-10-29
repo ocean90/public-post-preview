@@ -24,15 +24,12 @@
     },
     {
       "step": "runPHP",
-      "code": "<?php require_once 'wordpress/wp-load.php'; wp_update_post( [ 'ID' => 1, 'post_status' => 'draft' ] ); ?>"
+      "code": "<?php require_once '/wordpress/wp-load.php'; wp_update_post( [ 'ID' => 1, 'post_status' => 'draft' ] ); ?>"
     },
     {
       "step": "setSiteOptions",
       "options": {
-        "blogname": "Public Post Preview Demo",
-        "public_post_preview": [
-          1
-        ]
+        "blogname": "Public Post Preview Demo"
       }
     }
   ]
