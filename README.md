@@ -73,6 +73,10 @@ function my_preview_link_lifetime() {
 
 The setting is hidden if the filter is used. No link can last longer than one year, which you can lower with the filter `ppp_link_max_lifetime`. The old filter `ppp_nonce_life` still works but is deprecated.
 
+**How many preview links can a post have?**
+
+Up to 20 active links. Expired and revoked links don't count. You can change the limit with the filter `ppp_max_links_per_post`.
+
 **Can I see whether someone opened a link?**
 
 Yes. The editor shows when each link was last opened. The plugin doesn't store IP addresses, and visits by users who can edit the post don't count.

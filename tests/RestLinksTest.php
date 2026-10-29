@@ -143,6 +143,16 @@ class RestLinksTest extends TestCase {
 		);
 	}
 
+	public function test_post_with_the_maximum_number_of_links_gets_no_further_link() {
+		add_filter( 'ppp_max_links_per_post', static fn() => 1 );
+		$this->create_link_via_api();
+
+		$response = $this->request( 'POST', "/posts/{$this->post_id}/links" );
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertCount( 1, Link_Store\get_links( $this->post_id ) );
+	}
+
 	public function test_link_can_be_extended_and_renamed() {
 		$link = $this->create_link_via_api();
 
