@@ -20,6 +20,53 @@ function register(): void {
 	add_action( 'admin_init', __NAMESPACE__ . '\\register_settings_ui' );
 	add_action( 'current_screen', __NAMESPACE__ . '\\register_list_table_view' );
 	add_action( 'pre_get_posts', __NAMESPACE__ . '\\filter_post_list_for_public_preview' );
+	add_action( 'enqueue_block_editor_assets', __NAMESPACE__ . '\\enqueue_block_editor_assets' );
+}
+
+/**
+ * Enqueues the preview link UI of the block editor.
+ */
+function enqueue_block_editor_assets() {
+	$screen = get_current_screen();
+	if ( ! $screen || 'post' !== $screen->base || ! in_array( $screen->post_type, Preview_Policy\get_previewable_post_types(), true ) ) {
+		return;
+	}
+
+	// Fixed paths instead of a variable, as required by the WordPress VIP code scanner.
+	$script_assets = file_exists( dirname( __DIR__ ) . '/js/dist/block-editor.asset.php' ) ?
+		require dirname( __DIR__ ) . '/js/dist/block-editor.asset.php' :
+		array(
+			'dependencies' => array(),
+			'version'      => '',
+		);
+
+	wp_enqueue_script(
+		'public-post-preview-block-editor',
+		plugins_url( 'js/dist/block-editor.js', __DIR__ ),
+		$script_assets['dependencies'],
+		$script_assets['version'],
+		true
+	);
+	wp_set_script_translations( 'public-post-preview-block-editor', 'public-post-preview' );
+	wp_add_inline_script(
+		'public-post-preview-block-editor',
+		'window.DSPublicPostPreview = ' . wp_json_encode(
+			array(
+				'defaultLifetimeLabel' => format_lifetime( Preview_Policy\get_default_lifetime() ),
+				'maxLifetime'          => Link_Store\get_max_lifetime(),
+				// Passed from here, so filters on the published statuses apply in the editor too.
+				'excludedStatuses'     => Preview_Policy\get_excluded_statuses(),
+			)
+		) . ';',
+		'before'
+	);
+
+	wp_enqueue_style(
+		'public-post-preview-block-editor',
+		plugins_url( 'js/dist/block-editor.css', __DIR__ ),
+		array( 'wp-components' ),
+		$script_assets['version']
+	);
 }
 
 /**
@@ -54,6 +101,30 @@ function register_settings_ui() {
 			'label_for' => 'public-post-preview-expiration-time',
 		)
 	);
+}
+
+/**
+ * Formats a lifetime as days, or as hours if it isn't a whole number of days.
+ *
+ * `human_time_diff()` doesn't fit: its words are meant for "… ago" and read wrong in some languages.
+ *
+ * @internal
+ *
+ * @param int $seconds Lifetime in seconds.
+ * @return string Duration, e.g. "2 days".
+ */
+function format_lifetime( int $seconds ): string {
+	if ( 0 === $seconds % DAY_IN_SECONDS ) {
+		$days = intdiv( $seconds, DAY_IN_SECONDS );
+
+		/* translators: %s: Number of days. */
+		return sprintf( _n( '%s day', '%s days', $days, 'public-post-preview' ), number_format_i18n( $days ) );
+	}
+
+	$hours = (int) ceil( $seconds / HOUR_IN_SECONDS );
+
+	/* translators: %s: Number of hours. */
+	return sprintf( _n( '%s hour', '%s hours', $hours, 'public-post-preview' ), number_format_i18n( $hours ) );
 }
 
 /**
