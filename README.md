@@ -54,6 +54,8 @@ No. The plugin stores only a hash of each link, so nobody can read the link from
 
 Version 4.0 replaced the old links, which were based on a nonce, with links that can be revoked one by one. Old links show the message "This link format is no longer valid". Create a new link for each draft you still want to share.
 
+On the plus side, new links last exactly as long as you set. A nonce counts time in steps of half its lifetime, so an old link set to 48 hours could stop working after just 24 hours.
+
 **A preview link says "This link expired on …". What can I do?**
 
 By default a new link expires after 48 hours. Extend the link in the editor, up to one year from now, or create a new one.
