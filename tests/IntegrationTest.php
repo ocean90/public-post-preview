@@ -77,7 +77,17 @@ class IntegrationTest extends TestCase {
 		Clock::freeze( self::NOW + 60 );
 		$states = \DS\PublicPostPreview\Admin\display_preview_state( array(), $post );
 
-		$this->assertSame( 'Public Preview (1 link)', $states['ppp_enabled'] );
+		$this->assertSame( 'Public Preview', $states['ppp_enabled'] );
+	}
+
+	public function test_post_list_shows_the_number_of_several_links() {
+		$post = self::factory()->post->create_and_get( array( 'post_status' => 'draft' ) );
+		$this->create_link( $post->ID );
+		$this->create_link( $post->ID );
+
+		$states = \DS\PublicPostPreview\Admin\display_preview_state( array(), $post );
+
+		$this->assertSame( 'Public Preview (2 links)', $states['ppp_enabled'] );
 	}
 
 	public function test_post_list_shows_no_state_without_links() {

@@ -57,7 +57,7 @@ function register_settings_ui() {
 }
 
 /**
- * Adds "Public Preview" with the number of active links to the post states in list tables.
+ * Adds "Public Preview" to the post states in list tables, with the number of active links if there are several.
  *
  * @param string[] $post_states Post states.
  * @param WP_Post  $post        Post object.
@@ -76,11 +76,13 @@ function display_preview_state( $post_states, $post ) {
 		}
 	}
 
-	$post_states['ppp_enabled'] = sprintf(
-		/* translators: %s: Number of preview links. */
-		_n( 'Public Preview (%s link)', 'Public Preview (%s links)', $count, 'public-post-preview' ),
-		number_format_i18n( $count )
-	);
+	$post_states['ppp_enabled'] = 1 === $count ?
+		__( 'Public Preview', 'public-post-preview' ) :
+		sprintf(
+			/* translators: %s: Number of preview links. */
+			_n( 'Public Preview (%s link)', 'Public Preview (%s links)', $count, 'public-post-preview' ),
+			number_format_i18n( $count )
+		);
 
 	return $post_states;
 }
