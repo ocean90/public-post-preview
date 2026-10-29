@@ -127,6 +127,17 @@ class PreviewStatusEndpointTest extends TestCase {
 		$this->assertStringContainsString( 'no-store', $response->get_headers()['Cache-Control'] ?? '' );
 	}
 
+	public function test_token_that_is_not_a_string_is_rejected() {
+		$post    = $this->create_previewable_draft();
+		$request = new WP_REST_Request( 'GET', "/public-post-preview/v1/posts/{$post->ID}/preview-status" );
+		$request->set_param( '_ppp', array( 'x' ) );
+
+		// The Allow header runs the permission callback again, with the parameters as they were sent.
+		$response = apply_filters( 'rest_post_dispatch', rest_do_request( $request ), rest_get_server(), $request );
+
+		$this->assertSame( 400, $response->get_status() );
+	}
+
 	public function test_post_id_zero_is_rejected() {
 		$this->assertSame( 400, $this->request_status( 0, 'invalid' )->get_status() );
 	}
