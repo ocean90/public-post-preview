@@ -12,7 +12,7 @@
 	<arg value="sp"/>
 
 	<config name="testVersion" value="8.0-"/>
-	<config name="minimum_wp_version" value="6.8"/>
+	<config name="minimum_wp_version" value="6.9"/>
 
 	<rule ref="WordPress-VIP-Go"/>
 	<rule ref="PHPCompatibilityWP"/>
