@@ -50,6 +50,7 @@ require_once __DIR__ . '/inc/class-rest-links-controller.php';
 require_once __DIR__ . '/inc/class-rest-preview-status-controller.php';
 require_once __DIR__ . '/inc/frontend.php';
 require_once __DIR__ . '/inc/admin.php';
+require_once __DIR__ . '/inc/abilities.php';
 
 use DS\PublicPostPreview\Clock;
 use DS\PublicPostPreview\Link_Service;
@@ -86,6 +87,7 @@ class DS_Public_Post_Preview {
 		add_filter( 'rest_post_dispatch', array( DS\PublicPostPreview\REST_Preview_Status_Controller::class, 'add_nocache_headers' ), 10, 3 );
 		add_action( 'transition_post_status', array( __CLASS__, 'delete_links_on_status_change' ), 20, 3 );
 		add_filter( 'user_switching_redirect_to', array( __CLASS__, 'user_switching_redirect_to' ), 10, 4 );
+		DS\PublicPostPreview\Abilities\register();
 
 		if ( is_admin() ) {
 			DS\PublicPostPreview\Admin\register();

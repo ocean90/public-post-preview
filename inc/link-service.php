@@ -16,6 +16,11 @@ use WP_Error;
 use WP_Post;
 
 /**
+ * Link fields that can be set when creating or changing a link.
+ */
+const WRITABLE_FIELDS = array( 'label', 'expires_at' );
+
+/**
  * Returns a post the current user may manage links for.
  *
  * Missing posts and posts the user can't edit get the same error, so the response doesn't
@@ -54,7 +59,9 @@ function get_manageable_post( int $post_id ) {
 }
 
 /**
- * Returns the visible links of a post, after removing expired ones.
+ * Returns the active visible links of a post.
+ *
+ * Expired links are left out but not deleted here, so listing stays free of side effects.
  *
  * @param int $post_id Post ID.
  * @return array<int, array<string, mixed>>|WP_Error Links, or an error.
@@ -65,9 +72,15 @@ function list_links( int $post_id ) {
 		return $post;
 	}
 
-	Link_Store\prune_expired( $post->ID );
+	$now   = Clock::now();
+	$links = array_filter(
+		Link_Store\get_links( $post->ID ),
+		static function ( Link $link ) use ( $now ) {
+			return ! $link->is_expired( $now );
+		}
+	);
 
-	return array_map( __NAMESPACE__ . '\\prepare', Link_Store\get_links( $post->ID ) );
+	return array_values( array_map( __NAMESPACE__ . '\\prepare', $links ) );
 }
 
 /**
@@ -138,7 +151,7 @@ function update_link( int $post_id, string $link_id, array $changes ) {
 		return $link;
 	}
 
-	$changes = array_intersect_key( $changes, array_flip( array( 'label', 'expires_at' ) ) );
+	$changes = array_intersect_key( $changes, array_flip( WRITABLE_FIELDS ) );
 	if ( isset( $changes['expires_at'] ) ) {
 		$changes['expires_at'] = parse_date( (string) $changes['expires_at'] );
 		if ( is_wp_error( $changes['expires_at'] ) ) {
@@ -217,6 +230,55 @@ function remove_all_links( int $post_id ): int {
 	}
 
 	return $count;
+}
+
+/**
+ * Returns the JSON schema properties of a link, as returned by `prepare()`.
+ *
+ * @return array<string, array<string, mixed>> Schema properties.
+ */
+function get_link_schema_properties(): array {
+	$date = array(
+		'type'     => array( 'string', 'null' ),
+		'format'   => 'date-time',
+		'readonly' => true,
+	);
+
+	return array(
+		'id'                => array(
+			'description' => __( 'ID of the preview link.', 'public-post-preview' ),
+			'type'        => 'string',
+			'readonly'    => true,
+		),
+		'label'             => array(
+			'description' => __( 'Optional label to tell links apart.', 'public-post-preview' ),
+			'type'        => 'string',
+		),
+		'hint'              => array(
+			'description' => __( 'Last four characters of the link, to tell links apart.', 'public-post-preview' ),
+			'type'        => 'string',
+			'readonly'    => true,
+		),
+		'created_at'        => array_merge( $date, array( 'description' => __( 'Creation time in UTC.', 'public-post-preview' ) ) ),
+		'created_by'        => array(
+			'description' => __( 'ID of the user who created the link.', 'public-post-preview' ),
+			'type'        => 'integer',
+			'readonly'    => true,
+		),
+		'expires_at'        => array(
+			'description' => __( 'Expiry time as ISO 8601 date, UTC unless an offset is given.', 'public-post-preview' ),
+			'type'        => 'string',
+			'format'      => 'date-time',
+		),
+		'first_accessed_at' => array_merge( $date, array( 'description' => __( 'First visit in UTC.', 'public-post-preview' ) ) ),
+		'last_accessed_at'  => array_merge( $date, array( 'description' => __( 'Last visit in UTC, updated at most every 15 minutes.', 'public-post-preview' ) ) ),
+		'url'               => array(
+			'description' => __( 'Preview URL. Only included when the link is created.', 'public-post-preview' ),
+			'type'        => 'string',
+			'format'      => 'uri',
+			'readonly'    => true,
+		),
+	);
 }
 
 /**

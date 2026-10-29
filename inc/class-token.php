@@ -11,6 +11,11 @@ namespace DS\PublicPostPreview;
 final class Token {
 
 	/**
+	 * Regular expression for a link ID, without delimiters.
+	 */
+	public const ID_PATTERN = '[0-9a-f]{8}';
+
+	/**
 	 * Public link ID, 8 hex characters.
 	 *
 	 * @var string
@@ -54,7 +59,7 @@ final class Token {
 	 * @return self|null The token, or null if the value is not a token.
 	 */
 	public static function parse( string $value ): ?self {
-		if ( ! preg_match( '/^([0-9a-f]{8})\.([A-Za-z0-9_-]{32})$/D', $value, $matches ) ) {
+		if ( ! preg_match( '/^(' . self::ID_PATTERN . ')\.([A-Za-z0-9_-]{32})$/D', $value, $matches ) ) {
 			return null;
 		}
 

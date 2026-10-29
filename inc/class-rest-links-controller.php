@@ -62,7 +62,7 @@ final class REST_Links_Controller extends WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<link_id>[0-9a-f]{8})',
+			'/' . $this->rest_base . '/(?P<link_id>' . Token::ID_PATTERN . ')',
 			array(
 				'args'   => array_merge(
 					$post_id,
@@ -184,51 +184,11 @@ final class REST_Links_Controller extends WP_REST_Controller {
 			return $this->schema;
 		}
 
-		$date = array(
-			'type'     => array( 'string', 'null' ),
-			'format'   => 'date-time',
-			'readonly' => true,
-		);
-
 		$this->schema = array(
 			'$schema'    => 'http://json-schema.org/draft-04/schema#',
 			'title'      => 'public-post-preview-link',
 			'type'       => 'object',
-			'properties' => array(
-				'id'                => array(
-					'description' => __( 'ID of the preview link.', 'public-post-preview' ),
-					'type'        => 'string',
-					'readonly'    => true,
-				),
-				'label'             => array(
-					'description' => __( 'Optional label to tell links apart.', 'public-post-preview' ),
-					'type'        => 'string',
-				),
-				'hint'              => array(
-					'description' => __( 'Last four characters of the link, to tell links apart.', 'public-post-preview' ),
-					'type'        => 'string',
-					'readonly'    => true,
-				),
-				'created_at'        => array_merge( $date, array( 'description' => __( 'Creation time in UTC.', 'public-post-preview' ) ) ),
-				'created_by'        => array(
-					'description' => __( 'ID of the user who created the link.', 'public-post-preview' ),
-					'type'        => 'integer',
-					'readonly'    => true,
-				),
-				'expires_at'        => array(
-					'description' => __( 'Expiry time as ISO 8601 date, UTC unless an offset is given.', 'public-post-preview' ),
-					'type'        => 'string',
-					'format'      => 'date-time',
-				),
-				'first_accessed_at' => array_merge( $date, array( 'description' => __( 'First visit in UTC.', 'public-post-preview' ) ) ),
-				'last_accessed_at'  => array_merge( $date, array( 'description' => __( 'Last visit in UTC, updated at most every 15 minutes.', 'public-post-preview' ) ) ),
-				'url'               => array(
-					'description' => __( 'Preview URL. Only included when the link is created.', 'public-post-preview' ),
-					'type'        => 'string',
-					'format'      => 'uri',
-					'readonly'    => true,
-				),
-			),
+			'properties' => Link_Service\get_link_schema_properties(),
 		);
 
 		return $this->schema;
@@ -241,14 +201,13 @@ final class REST_Links_Controller extends WP_REST_Controller {
 	 * @return array<string, mixed> Fields that were sent.
 	 */
 	private function get_link_fields( WP_REST_Request $request ): array {
-		return array_filter(
-			array(
-				'label'      => $request['label'],
-				'expires_at' => $request['expires_at'],
-			),
-			static function ( $value ) {
-				return null !== $value;
+		$fields = array();
+		foreach ( Link_Service\WRITABLE_FIELDS as $field ) {
+			if ( null !== $request[ $field ] ) {
+				$fields[ $field ] = $request[ $field ];
 			}
-		);
+		}
+
+		return $fields;
 	}
 }
