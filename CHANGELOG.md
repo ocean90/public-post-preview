@@ -3,7 +3,16 @@
 ## Unreleased
 * Requires WordPress 6.9.
 * Compatibility with WordPress 7.1.
+* Replace the single preview link per post with separate links that can each be labeled, extended and revoked. Links are stored as hashes and expire after at most one year.
+* Show when each link was last opened, without storing IP addresses.
+* New preview link UI in the block editor and the classic editor.
+* Show the number of active links in the post state of list tables, instead of the link icon. The Preview dropdown of the block editor no longer has a public preview entry.
 * Show a notice on the public preview page when the post has been updated or published since the page was loaded. Disable with the `ppp_poll_for_updates` filter.
+* Add a REST API and abilities for the Abilities API to manage preview links.
+* Add the filters `ppp_default_link_lifetime` and `ppp_link_max_lifetime`, and the actions `ppp_link_created`, `ppp_link_revoked` and `ppp_preview_accessed`.
+* Breaking: Preview links from earlier versions no longer work and show a notice instead.
+* Breaking: Deprecate the `ppp_nonce_life` filter in favor of `ppp_default_link_lifetime`.
+* Breaking: Remove `DS_Public_Post_Preview::get_preview_link()` and other public methods of the class, and the `public-post-preview` Ajax action.
 
 ## 3.1.1 / 3.1.2 (2026-06-16)
 * Fix hidden dynamic content added through the Block Bindings API. Props [@krokodok](https://github.com/krokodok).
